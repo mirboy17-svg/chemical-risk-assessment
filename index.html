@@ -28,7 +28,7 @@
         /* --- 완벽한 자연스러운 출력을 위한 인쇄 전용 CSS 최적화 --- */
         @page { 
             size: A4 portrait; 
-            margin: 15mm !important; /* 자연스러운 출력을 위한 최적의 여백 */
+            margin: 15mm 15mm 20mm 15mm !important; /* 상 15mm, 우 15mm, 하 20mm, 좌 15mm (적절하고 안정적인 황금비율 여백) */
         }
 
         @media print {
@@ -42,11 +42,11 @@
                 width: 100% !important; max-width: 100% !important; margin: 0 !important; padding: 0 !important; display: block !important; overflow: visible !important; 
             }
             
-            /* 컨테이너에서 강제 분할을 방지하여 표가 끊기지 않고 밑바닥까지 채운 뒤 자연스럽게 다음 장으로 넘어가도록 유도 */
+            /* 컨테이너에서 여백을 0으로 만들어 하단 빈 공간 낭비를 완벽히 차단 */
             .a4-page, .page-container { 
                 width: 100% !important; max-width: 100% !important; height: auto !important; min-height: 0 !important; 
                 display: block !important; 
-                margin: 0 0 10mm 0 !important; padding: 0 !important; box-shadow: none !important; border: none !important;
+                margin: 0 !important; padding: 0 !important; box-shadow: none !important; border: none !important;
                 page-break-inside: auto !important; break-inside: auto !important;
                 page-break-after: auto !important; break-after: auto !important;
             }
@@ -56,11 +56,11 @@
             #section-1 { page-break-before: avoid !important; break-before: avoid !important; }
 
             /* 표가 넘어갈 때 Thead 영역(대제목 포함)을 새 페이지 상단에 무조건 반복 */
-            table { width: 100% !important; max-width: 100% !important; border-collapse: collapse !important; margin-bottom: 5mm !important; page-break-inside: auto !important; break-inside: auto !important; display: table !important; }
+            table { width: 100% !important; max-width: 100% !important; border-collapse: collapse !important; margin-bottom: 3mm !important; page-break-inside: auto !important; break-inside: auto !important; display: table !important; }
             thead { display: table-header-group !important; } 
             tfoot { display: table-footer-group !important; }
             
-            /* 행(tr)이 반토막 나는 것 방지 */
+            /* 행(tr) 1개가 가로로 반토막 나는 것만 방지 */
             tr { page-break-inside: avoid !important; break-inside: avoid !important; page-break-after: auto !important; break-after: auto !important; }
             
             /* 넓고 식별이 잘되는 표 간격 유지 */
@@ -484,8 +484,7 @@
             return rows;
         }
 
-        // ★ 강제로 표를 끊지 않고 브라우저 자연 페이지 넘김(Native Pagination) 유도
-        // 제목은 Thead 내부로 삽입하여 새 페이지로 넘어가더라도 최상단에 계속 반복되도록 고정!
+        // ★ 빈 공란 없애기(가짜 병합) + 무한 통짜 렌더링 + 제목 자동 반복 엔진
         function renderSectionStrict(sectionNum, title, thead, rows, renderRow, isGrouped, prefixHtml, suffixHtml) {
             
             // 페이지 넘김 발생 시 표 최상단에 반복해서 출력될 대제목 (녹색 라인 통일)
@@ -500,7 +499,7 @@
                         `<thead>${enhancedThead}</thead>` +
                         `<tbody><tr><td colspan="15" class="py-10 text-gray-400 text-center border border-green-300">데이터가 없습니다.</td></tr></tbody></table>`;
             } else {
-                // table-layout: fixed 충돌 로직 삭제 -> 1번 항목의 표가 자연스럽게 100% 폭까지 시원하게 펼쳐지도록 수정
+                // 1번 항목을 포함한 모든 표가 제목 줄과 딱 맞게 끝까지 채워지도록 width: 100% 적용
                 let tableStyle = "width: 100%; border-bottom: 1px solid #86efac !important;";
                 
                 let tableHtml = `<table style="${tableStyle}"><thead>${enhancedThead}</thead><tbody>`;
@@ -509,8 +508,9 @@
                     let r = rows[i];
                     let rowspan = 1; let subRowspan = 1;
                     let isNewGroup = false; let isNewSubGroup = false;
+                    let isLastInGroup = false; let isLastInSubGroup = false;
 
-                    // 진짜 병합(Real Rowspan)을 사용하여 녹색선 테두리가 식별 잘되고 튼튼하게 유지되도록 복구
+                    // 병합된 것처럼 보이지만 실제로는 모든 행이 1줄짜리로 개별 존재하여 "하단 빈 공간 낭비를 100% 없애는" 로직
                     if (isGrouped) {
                         isNewGroup = (i === 0 || rows[i-1].mainKey !== r.mainKey);
                         if (isNewGroup) {
@@ -518,8 +518,10 @@
                             for (let j = i; j < rows.length; j++) {
                                 if (rows[j].mainKey === r.mainKey) count++; else break;
                             }
-                            rowspan = Math.max(1, count);
+                            rowspan = count;
                         }
+                        isLastInGroup = (i === rows.length - 1 || rows[i+1].mainKey !== r.mainKey);
+
                         if (r.subKey !== undefined) {
                             isNewSubGroup = (i === 0 || rows[i-1].mainKey !== r.mainKey || rows[i-1].subKey !== r.subKey);
                             if (isNewSubGroup) {
@@ -527,12 +529,13 @@
                                 for (let j = i; j < rows.length; j++) {
                                     if (rows[j].mainKey === r.mainKey && rows[j].subKey === r.subKey) count++; else break;
                                 }
-                                subRowspan = Math.max(1, count);
+                                subRowspan = count;
                             }
+                            isLastInSubGroup = (i === rows.length - 1 || rows[i+1].mainKey !== r.mainKey || rows[i+1].subKey !== r.subKey);
                         }
                     }
 
-                    tableHtml += renderRow(r, isGrouped, isNewGroup, rowspan, isNewSubGroup, subRowspan);
+                    tableHtml += renderRow(r, isGrouped, isNewGroup, rowspan, isNewSubGroup, subRowspan, isLastInGroup, isLastInSubGroup);
                 }
                 tableHtml += `</tbody></table>`;
                 html += tableHtml;
@@ -542,7 +545,7 @@
                 html += suffixHtml;
             }
 
-            // 각 대분류 항목(1번, 2번 등)이 시작될 때만 새 종이에서 깔끔하게 시작되게 처리
+            // major-section 클래스는 각 섹션(1번 항목, 2번 항목 등 대분류)이 시작될 때만 새 종이에서 깔끔하게 시작되게 처리
             return `<div id="section-${sectionNum}" class="a4-page page-container flex flex-col justify-start major-section" data-section="${sectionNum}">${html}</div>`;
         }
 
@@ -594,7 +597,7 @@
             
             const sec1Thead = `<tr><th width="10%">분류</th><th width="15%">세부 인자명</th><th width="6%">측정 건수</th><th width="6%">초과 건수</th><th width="7%">최대값</th><th width="7%">최소값</th><th width="7%">기하평균</th><th width="8%">기하표준편차</th><th width="7%">노출배수</th><th width="9%">법적 준수율</th><th width="6%">신호등</th><th width="12%">노출기준(단위)</th></tr>`;
             
-            const sec1Render = (r, isG, isNG, rs) => {
+            const sec1Render = (r, isG, isNG, rs, isNSG, subRS, isLastG, isLastSG) => {
                 let extractedUnit = r.first.rawLimit ? String(r.first.rawLimit).replace(/^[\d\.\,\s]+/g, '').trim() : '';
                 if (!extractedUnit) extractedUnit = (r.first.category === '물리적 인자') ? (r.first.agent.includes('고열') ? '℃' : 'dB(A)') : ((r.first.category === '분진' || r.first.category === '금속류' || r.first.category === '금속가공유') ? 'mg/㎥' : 'ppm');
                 
@@ -616,7 +619,11 @@
                 
                 let groupTd = '';
                 if (isG) {
-                    groupTd = isNG ? `<td rowspan="${rs}" class="font-bold border-green-300 bg-white align-middle break-keep">${r.mainKey}</td>` : '';
+                    // 가짜 병합(Fake Rowspan) CSS 테크닉 적용 (여백 낭비 제로화)
+                    let style = '';
+                    style += isNG ? 'border-top: 1px solid #86efac !important; ' : 'border-top: none !important; ';
+                    style += isLastG ? 'border-bottom: 1px solid #86efac !important; ' : 'border-bottom: none !important; ';
+                    groupTd = `<td class="border-green-300 bg-white align-middle break-keep ${isNG ? 'font-bold' : ''}" style="${style}">${isNG ? r.mainKey : ''}</td>`;
                 }
                 
                 return `<tr>${groupTd}${agentTd}<td class="border-green-300">${r.stats.n}</td><td class="border-green-300 font-bold ${r.stats.excCount > 0 ? 'text-red-600' : ''}">${r.stats.excCount}</td><td class="border-green-300 ${parseFloat(r.stats.max) > limit ? 'text-red-600 font-bold' : ''}">${r.stats.max}</td><td class="border-green-300">${r.stats.min}</td><td class="border-green-300">${r.stats.gm}</td><td class="border-green-300">${r.stats.gsd}</td><td class="border-green-300 font-bold text-gray-700">${expMult}</td><td class="border-green-300 font-bold">${compRate}</td><td class="border-green-300"><span class="inline-block w-3.5 h-3.5 rounded-full ${lightCol} shadow-sm border border-gray-300"></span></td><td class="border-green-300 font-bold bg-green-50 break-keep">${limitText}</td></tr>`;
@@ -643,7 +650,6 @@
             reportHtml += renderSectionStrict(2, `<span>2</span> 노출기준 초과 현황 상세 리스트`, sec2Thead, exceedData, sec2Render, false, '', '');
 
             // --- Section 3 ---
-            // 하드코딩 되어있던 border-blue-600 클래스들을 border-green-600으로 통일
             reportHtml += `
                 <div id="section-3" class="a4-page page-container flex flex-col justify-start major-section" data-section="3">
                     <div class="section-title mt-4 border-b-2 border-green-600 pb-2 mb-4 font-bold text-gray-900 text-xl"><span>3</span> 분류별 측정 분포 및 초과 현황</div>
@@ -707,12 +713,15 @@
                         });
                     });
 
-                    const sec4Render = (r, isG, isNG, rs) => {
+                    const sec4Render = (r, isG, isNG, rs, isNSG, subRS, isLastG, isLastSG) => {
                         const agentTd = getAgentTd(r.agent, 'text-left border-green-300 bg-white align-middle');
                         
                         let groupTd = '';
                         if (isG) {
-                            groupTd = isNG ? `<td rowspan="${rs}" class="font-bold border-green-300 bg-white align-middle break-keep">${r.mainKey}</td>` : '';
+                            let style = '';
+                            style += isNG ? 'border-top: 1px solid #86efac !important; ' : 'border-top: none !important; ';
+                            style += isLastG ? 'border-bottom: 1px solid #86efac !important; ' : 'border-bottom: none !important; ';
+                            groupTd = `<td class="border-green-300 bg-white align-middle break-keep ${isNG ? 'font-bold' : ''}" style="${style}">${isNG ? r.mainKey : ''}</td>`;
                         }
                         
                         let trHtml = `<tr>${groupTd}${agentTd}`;
@@ -727,14 +736,21 @@
             }
 
             // --- Section 5 ---
-            const groupRender5 = (r, isG, isNG, rs, isNSG, subRS) => {
+            const groupRender5 = (r, isG, isNG, rs, isNSG, subRS, isLastG, isLastSG) => {
                 let note = r.lightColor === 'bg-green-500' ? '-' : (r.lightColor === 'bg-yellow-400' ? '관찰 필요' : (r.lightColor === 'bg-orange-400' ? '개선 필요' : '개선 대상'));
                 const agentTd = getAgentTd(r.agent, 'text-left border-green-300 align-middle');
                 
                 let groupTd = '', subGroupTd = '';
                 if (isG) {
-                    groupTd = isNG ? `<td rowspan="${rs}" class="font-bold border-green-300 bg-white align-middle break-keep">${r.mainKey}</td>` : '';
-                    subGroupTd = isNSG ? `<td rowspan="${subRS}" class="border-green-300 bg-white align-middle break-keep">${r.subKey}</td>` : '';
+                    let style1 = '';
+                    style1 += isNG ? 'border-top: 1px solid #86efac !important; ' : 'border-top: none !important; ';
+                    style1 += isLastG ? 'border-bottom: 1px solid #86efac !important; ' : 'border-bottom: none !important; ';
+                    groupTd = `<td class="border-green-300 bg-white align-middle break-keep ${isNG ? 'font-bold' : ''}" style="${style1}">${isNG ? r.mainKey : ''}</td>`;
+                    
+                    let style2 = '';
+                    style2 += isNSG ? 'border-top: 1px solid #86efac !important; ' : 'border-top: none !important; ';
+                    style2 += isLastSG ? 'border-bottom: 1px solid #86efac !important; ' : 'border-bottom: none !important; ';
+                    subGroupTd = `<td class="border-green-300 bg-white align-middle break-keep" style="${style2}">${isNSG ? r.subKey : ''}</td>`;
                 }
                 
                 return `<tr>${groupTd}${subGroupTd}${agentTd}<td class="border-green-300">${r.n}</td><td class="border-green-300 ${r.exc > 0 ? 'text-red-600 font-bold' : ''}">${r.exc}</td><td class="border-green-300"><span class="inline-block w-3.5 h-3.5 rounded-full ${r.lightColor} shadow-sm border border-gray-300"></span></td><td class="text-left text-xs border-green-300 font-bold ${r.lightColor === 'bg-red-600' ? 'text-red-600' : ''}">${note}</td></tr>`;
@@ -747,7 +763,7 @@
             // --- Section 6 ---
             const sec6Data = data.filter(d => d.sheetType !== '소음');
 
-            const groupRender6 = (r, isG, isNG, rs, isNSG, subRS) => {
+            const groupRender6 = (r, isG, isNG, rs, isNSG, subRS, isLastG, isLastSG) => {
                 let extractedUnit = r.rawLimit ? String(r.rawLimit).replace(/^[\d\.\,\s]+/g, '').trim().toLowerCase() : '';
                 
                 let exLv = '-', hzLv = '-', rkLv = '-';
@@ -792,8 +808,15 @@
                 
                 let groupTd = '', subGroupTd = '';
                 if (isG) {
-                    groupTd = isNG ? `<td rowspan="${rs}" class="font-bold border-green-300 bg-white align-middle break-keep">${r.mainKey}</td>` : '';
-                    subGroupTd = isNSG ? `<td rowspan="${subRS}" class="border-green-300 bg-white align-middle break-keep">${r.subKey}</td>` : '';
+                    let style1 = '';
+                    style1 += isNG ? 'border-top: 1px solid #86efac !important; ' : 'border-top: none !important; ';
+                    style1 += isLastG ? 'border-bottom: 1px solid #86efac !important; ' : 'border-bottom: none !important; ';
+                    groupTd = `<td class="border-green-300 bg-white align-middle break-keep ${isNG ? 'font-bold' : ''}" style="${style1}">${isNG ? r.mainKey : ''}</td>`;
+                    
+                    let style2 = '';
+                    style2 += isNSG ? 'border-top: 1px solid #86efac !important; ' : 'border-top: none !important; ';
+                    style2 += isLastSG ? 'border-bottom: 1px solid #86efac !important; ' : 'border-bottom: none !important; ';
+                    subGroupTd = `<td class="border-green-300 bg-white align-middle break-keep" style="${style2}">${isNSG ? r.subKey : ''}</td>`;
                 }
                 
                 return `<tr>${groupTd}${subGroupTd}${agentTd}<td class="border-green-300">${r.n}</td><td class="border-green-300 ${r.exc > 0 ? 'text-red-600 font-bold' : ''}">${r.exc}</td><td class="border-green-300 text-gray-700">${exLv}</td><td class="border-green-300 text-gray-700">${hzLv}</td><td class="border-green-300 font-bold ${rkLv >= 12 ? 'text-red-600' : 'text-blue-600'}">${rkLv}</td><td class="border-green-300"><span class="inline-block w-3.5 h-3.5 rounded-full ${sec6LightColor} shadow-sm border border-gray-300"></span></td><td class="text-center text-xs border-green-300 font-bold ${judColorClass}">${jud}</td></tr>`;

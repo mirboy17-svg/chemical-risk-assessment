@@ -482,9 +482,8 @@
             return rows;
         }
 
-        // 고정 행 분할 로직 부활 (1항목: 1p 12개, 2p~ 15개 / 2~6항목: 19개 고정)
-        function renderSectionStrict(sectionNum, title, thead, rows, renderRow, isGrouped, prefixHtml, suffixHtml, suffixRowsCost = 0) {
-            let htmlArr = [];
+        // 고정 행 분할 로직 제거: 표가 데이터 길이에 맞춰 하나의 테이블로 생성되며 인쇄 시 자연스럽게 다음 페이지로 넘어가도록 수정
+        function renderSectionStrict(sectionNum, title, thead, rows, renderRow, isGrouped, prefixHtml, suffixHtml) {
             if (rows.length === 0) {
                 let emptyHtml = (prefixHtml || '') + `<div class="section-title">${title}</div>` + 
                                 `<table style="border-bottom: 1px solid #86efac !important;"><thead>${thead}</thead><tbody><tr><td colspan="15" class="py-10 text-gray-400 text-center border-green-300">데이터가 없습니다.</td></tr></tbody></table>` + 
@@ -492,87 +491,51 @@
                 return `<div id="section-${sectionNum}" class="a4-page page-container flex flex-col justify-start" data-section="${sectionNum}">${emptyHtml}</div>`;
             }
 
-            let i = 0;
-            let pageIndex = 0;
+            let html = '';
+            if (prefixHtml) html += prefixHtml;
+            html += `<div class="section-title">${title}</div>`;
             
-            while (i < rows.length) {
-                let currentLimit = 19; 
-                if (sectionNum === 1) {
-                    if (pageIndex === 0) currentLimit = 12;      // 1항목 1페이지 12줄
-                    else currentLimit = 15;                      // 1항목 2페이지부터 15줄
-                } else {
-                    currentLimit = 19;                           // 2~6항목은 19줄 고정
-                }
-                
-                let displayTitle = (pageIndex === 0) ? title : title.replace('</span>', '</span> (계속)');
-                let pageHtml = '';
-                
-                if (pageIndex === 0 && prefixHtml) pageHtml += prefixHtml;
-                pageHtml += `<div class="section-title">${displayTitle}</div>`;
-                
-                let tableStyle = "border-bottom: 1px solid #86efac !important;";
-                if (sectionNum === 1) tableStyle += " table-layout: fixed; word-wrap: break-word; width: 100%;";
-                
-                let tableHtml = `<table style="${tableStyle}"><thead>${thead}</thead><tbody>`;
-                let rowsInChunk = 0;
-                
-                while (i < rows.length && rowsInChunk < currentLimit) {
-                    let r = rows[i];
-                    let rowspan = 1; let subRowspan = 1;
-                    let isNewGroup = false; let isNewSubGroup = false;
+            let tableStyle = "border-bottom: 1px solid #86efac !important;";
+            if (sectionNum === 1) tableStyle += " table-layout: fixed; word-wrap: break-word; width: 100%;";
+            
+            let tableHtml = `<table style="${tableStyle}"><thead>${thead}</thead><tbody>`;
+            
+            for (let i = 0; i < rows.length; i++) {
+                let r = rows[i];
+                let rowspan = 1; let subRowspan = 1;
+                let isNewGroup = false; let isNewSubGroup = false;
 
-                    if (isGrouped) {
-                        isNewGroup = (i === 0 || rows[i-1].mainKey !== r.mainKey || rowsInChunk === 0);
-                        if (isNewGroup) {
+                if (isGrouped) {
+                    isNewGroup = (i === 0 || rows[i-1].mainKey !== r.mainKey);
+                    if (isNewGroup) {
+                        let count = 0;
+                        for (let j = i; j < rows.length; j++) {
+                            if (rows[j].mainKey === r.mainKey) count++; else break;
+                        }
+                        rowspan = Math.max(1, count);
+                    }
+                    if (r.subKey) {
+                        isNewSubGroup = (i === 0 || rows[i-1].mainKey !== r.mainKey || rows[i-1].subKey !== r.subKey);
+                        if (isNewSubGroup) {
                             let count = 0;
-                            for (let j = i; j < rows.length && count < (currentLimit - rowsInChunk); j++) {
-                                if (rows[j].mainKey === r.mainKey) count++; else break;
+                            for (let j = i; j < rows.length; j++) {
+                                if (rows[j].mainKey === r.mainKey && rows[j].subKey === r.subKey) count++; else break;
                             }
-                            rowspan = Math.max(1, count);
+                            subRowspan = Math.max(1, count);
                         }
-                        if (r.subKey) {
-                            isNewSubGroup = (i === 0 || rows[i-1].mainKey !== r.mainKey || rows[i-1].subKey !== r.subKey || rowsInChunk === 0);
-                            if (isNewSubGroup) {
-                                let count = 0;
-                                for (let j = i; j < rows.length && count < (currentLimit - rowsInChunk); j++) {
-                                    if (rows[j].mainKey === r.mainKey && rows[j].subKey === r.subKey) count++; else break;
-                                }
-                                subRowspan = Math.max(1, count);
-                            }
-                        }
-                    }
-
-                    tableHtml += renderRow(r, isGrouped, isNewGroup, rowspan, isNewSubGroup, subRowspan);
-                    i++; rowsInChunk++;
-                }
-                tableHtml += `</tbody></table>`;
-                pageHtml += tableHtml;
-                
-                // 범례 등 하단 꼬리말(suffix)이 남은 공간에 들어갈 수 있는지 계산
-                if (i >= rows.length && suffixHtml) {
-                    let usedSpace = rowsInChunk;
-                    if (sectionNum === 1 && pageIndex === 0) usedSpace += 4; 
-                    
-                    if (usedSpace + suffixRowsCost <= currentLimit) {
-                        pageHtml += suffixHtml;
-                    } else {
-                        let secId = (pageIndex === 0) ? `id="section-${sectionNum}"` : `id="sec-${sectionNum}-${pageIndex}"`;
-                        htmlArr.push(`<div ${secId} class="a4-page page-container flex flex-col justify-start" data-section="${sectionNum}">${pageHtml}</div>`);
-                        let suffixPageHtml = `<div class="section-title">${title.replace('</span>', '</span> (계속)')}</div>` + suffixHtml;
-                        htmlArr.push(`<div class="a4-page page-container flex flex-col justify-start" data-section="${sectionNum}">${suffixPageHtml}</div>`);
-                        pageHtml = ''; 
                     }
                 }
 
-                if (pageHtml !== '') {
-                    let secId = (pageIndex === 0) ? `id="section-${sectionNum}"` : `id="sec-${sectionNum}-${pageIndex}"`;
-                    htmlArr.push(`<div ${secId} class="a4-page page-container flex flex-col justify-start" data-section="${sectionNum}">${pageHtml}</div>`);
-                }
-                
-                pageIndex++;
+                tableHtml += renderRow(r, isGrouped, isNewGroup, rowspan, isNewSubGroup, subRowspan);
             }
+            tableHtml += `</tbody></table>`;
+            html += tableHtml;
             
-            return htmlArr.join('');
+            if (suffixHtml) {
+                html += suffixHtml;
+            }
+
+            return `<div id="section-${sectionNum}" class="a4-page page-container flex flex-col justify-start" data-section="${sectionNum}">${html}</div>`;
         }
 
         function renderDashboard(data) {
@@ -647,7 +610,7 @@
             const sec1Legend = `<div class="prevent-break text-xs text-gray-700 mt-2 mb-4 space-y-1.5 bg-blue-50 p-4 rounded border border-blue-200"><p><span class="font-bold text-blue-700">※ 기하평균(GM):</span> 대수정규분포를 따르는 측정 데이터의 중심경향 대푯값입니다.</p><p><span class="font-bold text-blue-700">※ 노출배수:</span> 최대 측정치를 노출기준으로 나눈 비율입니다.</p><p><span class="font-bold text-blue-700">※ 법적 준수율:</span> 총 측정건수 중 노출기준을 초과하지 않은(준수한) 건수의 백분율(%)입니다.</p></div>`;
             
             // 1번 항목 렌더링 호출
-            reportHtml += renderSectionStrict(1, `<span>1</span> 작업환경측정 통계 분석(전수 분석)`, sec1Thead, sec1Rows, sec1Render, true, prefixHtml, sec1Legend, 4);
+            reportHtml += renderSectionStrict(1, `<span>1</span> 작업환경측정 통계 분석(전수 분석)`, sec1Thead, sec1Rows, sec1Render, true, prefixHtml, sec1Legend);
 
             // --- Section 2 ---
             const compTotalExc = {};
@@ -663,7 +626,7 @@
                 return `<tr><td class="border-green-300 break-keep">${d.company}</td><td class="border-green-300 break-keep">${d.location}</td>${agentTd}<td class="border-green-300">${d.prevValue === null ? '전회없음' : d.prevValue + ' ' + extractedUnit}</td><td class="text-red-600 font-bold border-green-300">${d.value} ${extractedUnit}</td><td class="border-green-300 break-keep">${limitText}</td></tr>`;
             };
             
-            reportHtml += renderSectionStrict(2, `<span>2</span> 노출기준 초과 현황 상세 리스트`, sec2Thead, exceedData, sec2Render, false, '', '', 0);
+            reportHtml += renderSectionStrict(2, `<span>2</span> 노출기준 초과 현황 상세 리스트`, sec2Thead, exceedData, sec2Render, false, '', '');
 
             // --- Section 3 ---
             reportHtml += `
@@ -702,7 +665,7 @@
 
             if (companyChunks.length === 0) {
                 let sec4Thead = `<tr><th rowspan="2" width="15%" class="align-middle text-gray-800">분류</th><th rowspan="2" width="20%" class="align-middle text-gray-800">유해인자</th><th colspan="2" width="12%" class="bg-green-200 border-green-400 text-gray-800 font-bold">Total</th></tr><tr><th class="border-green-400 text-xs font-bold text-gray-800 p-1">측정</th><th class="border-green-400 text-xs font-bold text-gray-800 p-1">초과</th></tr>`;
-                reportHtml += renderSectionStrict(4, `<span>4</span> 단위사업체별 작업환경측정 종합 현황`, sec4Thead, [], () => '', true, '', '', 0);
+                reportHtml += renderSectionStrict(4, `<span>4</span> 단위사업체별 작업환경측정 종합 현황`, sec4Thead, [], () => '', true, '', '');
             } else {
                 // 4개씩 나뉜 묶음(chunk) 단위로 표를 개별 렌더링 (1~4, 5~8, 9~12, 13~16, 17~20... 무한대로 자동 생성)
                 companyChunks.forEach((chunk, chunkIdx) => {
@@ -744,7 +707,7 @@
                     
                     // 첫 번째 묶음은 ID section-4 지정, 2번째부터는 고유 ID를 부여하여 메뉴 이동 및 HTML 충돌 방지
                     let currentSecNum = chunkIdx === 0 ? 4 : `4-${chunkIdx}`;
-                    reportHtml += renderSectionStrict(currentSecNum, titleStr, sec4Thead, sec4Rows, sec4Render, true, '', '', 0);
+                    reportHtml += renderSectionStrict(currentSecNum, titleStr, sec4Thead, sec4Rows, sec4Render, true, '', '');
                 });
             }
 
@@ -757,7 +720,7 @@
             const trafficLegend5 = `<div class="prevent-break text-xs text-gray-600 mt-2 mb-4 p-3 bg-green-50 border border-green-200 rounded text-left"><p><strong>※ 신호등 범례 (일반유해물질):</strong> <span class="bg-green-500 w-2.5 h-2.5 inline-block rounded-full"></span> 10% 미만 &nbsp; <span class="bg-yellow-400 w-2.5 h-2.5 inline-block rounded-full"></span> 10~50% 미만 &nbsp; <span class="bg-orange-400 w-2.5 h-2.5 inline-block rounded-full"></span> 50~100% 이하 &nbsp; <span class="bg-red-600 w-2.5 h-2.5 inline-block rounded-full"></span> 노출기준 초과</p><p class="mt-1"><strong>※ 신호등 범례 (소음):</strong> <span class="bg-green-500 w-2.5 h-2.5 inline-block rounded-full"></span> 80dB 미만 &nbsp; <span class="bg-yellow-400 w-2.5 h-2.5 inline-block rounded-full"></span> 80~85dB 미만 &nbsp; <span class="bg-orange-400 w-2.5 h-2.5 inline-block rounded-full"></span> 85~기준치 이하 &nbsp; <span class="bg-red-600 w-2.5 h-2.5 inline-block rounded-full"></span> 노출기준 초과</p><p class="mt-1"><strong>※ 신호등 범례 (고열):</strong> <span class="bg-green-500 w-2.5 h-2.5 inline-block rounded-full"></span> 23℃ 미만 &nbsp; <span class="bg-yellow-400 w-2.5 h-2.5 inline-block rounded-full"></span> 23~25℃ 미만 &nbsp; <span class="bg-orange-400 w-2.5 h-2.5 inline-block rounded-full"></span> 25~노출기준 미만 &nbsp; <span class="bg-red-600 w-2.5 h-2.5 inline-block rounded-full"></span> 노출기준 이상</p></div>`;
             const sec5Thead = `<tr><th width="20%">단위작업장소</th><th width="15%">분류</th><th width="22%">세부 유해인자명</th><th width="8%">측정건수</th><th width="8%">초과건수</th><th width="7%">신호등</th><th width="20%">비고</th></tr>`;
             
-            reportHtml += renderSectionStrict(5, `<span>5</span> 단위작업장소별 유해인자 측정 및 초과 현황`, sec5Thead, buildGroupRows(data, ['location', 'category', 'agent', 'limit']), groupRender5, true, '', trafficLegend5, 3);
+            reportHtml += renderSectionStrict(5, `<span>5</span> 단위작업장소별 유해인자 측정 및 초과 현황`, sec5Thead, buildGroupRows(data, ['location', 'category', 'agent', 'limit']), groupRender5, true, '', trafficLegend5);
 
             // --- Section 6 ---
             const sec6Data = data.filter(d => d.sheetType !== '소음');

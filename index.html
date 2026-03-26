@@ -482,51 +482,48 @@
             return rows;
         }
 
-        // 고정 행 분할 로직 제거: 표가 데이터 길이에 맞춰 하나의 테이블로 생성되며 인쇄 시 자연스럽게 다음 페이지로 넘어가도록 수정
+        // 고정 행 분할 로직 삭제: 브라우저 고유의 페이지 나눔 기능을 허용하고, 제목을 thead에 넣어 매 페이지 반복시킵니다.
+        // rowspan 버그 해결: rowspan을 해제하고 CSS 투명 테두리를 통해 완벽히 동일한 병합 효과를 연출합니다.
         function renderSectionStrict(sectionNum, title, thead, rows, renderRow, isGrouped, prefixHtml, suffixHtml) {
+            
+            // 제목을 표 내부의 thead에 삽입하여, 인쇄 시 페이지가 넘어가도 제목이 표 머리글과 함께 매번 반복되도록 구현
+            let titleRow = `<tr><th colspan="100" class="bg-white text-left p-0 pt-2 pb-4" style="border: none !important;"><div class="section-title" style="margin-top: 0; margin-bottom: 0.5rem; padding-bottom: 0.5rem; border-bottom: 2px solid #2563eb; font-size: 1.25rem; font-weight: bold;">${title}</div></th></tr>`;
+            let enhancedThead = titleRow + thead;
+
             if (rows.length === 0) {
-                let emptyHtml = (prefixHtml || '') + `<div class="section-title">${title}</div>` + 
-                                `<table style="border-bottom: 1px solid #86efac !important;"><thead>${thead}</thead><tbody><tr><td colspan="15" class="py-10 text-gray-400 text-center border-green-300">데이터가 없습니다.</td></tr></tbody></table>` + 
+                let emptyHtml = (prefixHtml || '') + 
+                                `<table style="border-bottom: 1px solid #86efac !important; width: 100%;">` +
+                                `<thead>${enhancedThead}</thead>` +
+                                `<tbody><tr><td colspan="15" class="py-10 text-gray-400 text-center border-green-300">데이터가 없습니다.</td></tr></tbody></table>` + 
                                 (suffixHtml || '');
                 return `<div id="section-${sectionNum}" class="a4-page page-container flex flex-col justify-start" data-section="${sectionNum}">${emptyHtml}</div>`;
             }
 
             let html = '';
             if (prefixHtml) html += prefixHtml;
-            html += `<div class="section-title">${title}</div>`;
             
-            let tableStyle = "border-bottom: 1px solid #86efac !important;";
-            if (sectionNum === 1) tableStyle += " table-layout: fixed; word-wrap: break-word; width: 100%;";
+            let tableStyle = "border-bottom: 1px solid #86efac !important; width: 100%;";
+            if (sectionNum === 1) tableStyle += " table-layout: fixed; word-wrap: break-word;";
             
-            let tableHtml = `<table style="${tableStyle}"><thead>${thead}</thead><tbody>`;
+            let tableHtml = `<table style="${tableStyle}"><thead>${enhancedThead}</thead><tbody>`;
             
             for (let i = 0; i < rows.length; i++) {
                 let r = rows[i];
-                let rowspan = 1; let subRowspan = 1;
-                let isNewGroup = false; let isNewSubGroup = false;
+                let isNewGroup = false, isLastGroupRow = false;
+                let isNewSubGroup = false, isLastSubGroupRow = false;
 
                 if (isGrouped) {
                     isNewGroup = (i === 0 || rows[i-1].mainKey !== r.mainKey);
-                    if (isNewGroup) {
-                        let count = 0;
-                        for (let j = i; j < rows.length; j++) {
-                            if (rows[j].mainKey === r.mainKey) count++; else break;
-                        }
-                        rowspan = Math.max(1, count);
-                    }
-                    if (r.subKey) {
+                    isLastGroupRow = (i === rows.length - 1 || rows[i+1].mainKey !== r.mainKey);
+                    
+                    if (r.subKey !== undefined) {
                         isNewSubGroup = (i === 0 || rows[i-1].mainKey !== r.mainKey || rows[i-1].subKey !== r.subKey);
-                        if (isNewSubGroup) {
-                            let count = 0;
-                            for (let j = i; j < rows.length; j++) {
-                                if (rows[j].mainKey === r.mainKey && rows[j].subKey === r.subKey) count++; else break;
-                            }
-                            subRowspan = Math.max(1, count);
-                        }
+                        isLastSubGroupRow = (i === rows.length - 1 || rows[i+1].mainKey !== r.mainKey || rows[i+1].subKey !== r.subKey);
                     }
                 }
 
-                tableHtml += renderRow(r, isGrouped, isNewGroup, rowspan, isNewSubGroup, subRowspan);
+                // 렌더링 엔진에 해당 행이 병합그룹의 처음인지, 마지막인지 정보를 전달하여 투명 테두리 효과 처리
+                tableHtml += renderRow(r, isGrouped, isNewGroup, isLastGroupRow, isNewSubGroup, isLastSubGroupRow);
             }
             tableHtml += `</tbody></table>`;
             html += tableHtml;
@@ -585,7 +582,8 @@
             sec1Rows.sort((a, b) => (sec1CatExc[b.first.category] - sec1CatExc[a.first.category]) || (getCategoryOrder(a.first.category) - getCategoryOrder(b.first.category)) || (b.stats.excCount - a.stats.excCount) || a.first.agent.localeCompare(b.first.agent));
             
             const sec1Thead = `<tr><th width="10%">분류</th><th width="15%">세부 인자명</th><th width="6%">측정 건수</th><th width="6%">초과 건수</th><th width="7%">최대값</th><th width="7%">최소값</th><th width="7%">기하평균</th><th width="8%">기하표준편차</th><th width="7%">노출배수</th><th width="9%">법적 준수율</th><th width="6%">신호등</th><th width="12%">노출기준(단위)</th></tr>`;
-            const sec1Render = (r, isG, isNG, rs) => {
+            
+            const sec1Render = (r, isG, isNG, isLastG) => {
                 let extractedUnit = r.first.rawLimit ? String(r.first.rawLimit).replace(/^[\d\.\,\s]+/g, '').trim() : '';
                 if (!extractedUnit) extractedUnit = (r.first.category === '물리적 인자') ? (r.first.agent.includes('고열') ? '℃' : 'dB(A)') : ((r.first.category === '분진' || r.first.category === '금속류' || r.first.category === '금속가공유') ? 'mg/㎥' : 'ppm');
                 
@@ -605,11 +603,17 @@
                 const agentTd = getAgentTdSec1(r.first.agent, 'text-left border-green-300 align-middle');
                 const limitText = r.first.rawLimit ? r.first.rawLimit : (r.first.limit === 9999 ? '기준없음' : r.first.limit);
                 
-                return `<tr>${isNG ? `<td rowspan="${rs}" class="font-bold border-green-300 bg-white align-middle break-keep">${r.mainKey}</td>` : ''}${agentTd}<td class="border-green-300">${r.stats.n}</td><td class="border-green-300 font-bold ${r.stats.excCount > 0 ? 'text-red-600' : ''}">${r.stats.excCount}</td><td class="border-green-300 ${parseFloat(r.stats.max) > limit ? 'text-red-600 font-bold' : ''}">${r.stats.max}</td><td class="border-green-300">${r.stats.min}</td><td class="border-green-300">${r.stats.gm}</td><td class="border-green-300">${r.stats.gsd}</td><td class="border-green-300 font-bold text-gray-700">${expMult}</td><td class="border-green-300 font-bold">${compRate}</td><td class="border-green-300"><span class="inline-block w-3.5 h-3.5 rounded-full ${lightCol} shadow-sm border border-gray-300"></span></td><td class="border-green-300 font-bold bg-green-50 break-keep">${limitText}</td></tr>`;
+                // rowspan 대신 CSS 시각적 병합(투명 테두리 처리)를 통해 페이지 잘림 완벽 방지
+                let groupTd = '';
+                if (isG) {
+                    let style1 = `border-left: 1px solid #86efac; border-right: 1px solid #86efac; border-top: ${isNG ? '1px solid #86efac' : 'none'}; border-bottom: ${isLastG ? '1px solid #86efac' : 'none'};`;
+                    groupTd = `<td class="bg-white align-middle break-keep ${isNG ? 'font-bold' : ''}" style="${style1}">${isNG ? r.mainKey : ''}</td>`;
+                }
+                
+                return `<tr>${groupTd}${agentTd}<td class="border-green-300">${r.stats.n}</td><td class="border-green-300 font-bold ${r.stats.excCount > 0 ? 'text-red-600' : ''}">${r.stats.excCount}</td><td class="border-green-300 ${parseFloat(r.stats.max) > limit ? 'text-red-600 font-bold' : ''}">${r.stats.max}</td><td class="border-green-300">${r.stats.min}</td><td class="border-green-300">${r.stats.gm}</td><td class="border-green-300">${r.stats.gsd}</td><td class="border-green-300 font-bold text-gray-700">${expMult}</td><td class="border-green-300 font-bold">${compRate}</td><td class="border-green-300"><span class="inline-block w-3.5 h-3.5 rounded-full ${lightCol} shadow-sm border border-gray-300"></span></td><td class="border-green-300 font-bold bg-green-50 break-keep">${limitText}</td></tr>`;
             };
             const sec1Legend = `<div class="prevent-break text-xs text-gray-700 mt-2 mb-4 space-y-1.5 bg-blue-50 p-4 rounded border border-blue-200"><p><span class="font-bold text-blue-700">※ 기하평균(GM):</span> 대수정규분포를 따르는 측정 데이터의 중심경향 대푯값입니다.</p><p><span class="font-bold text-blue-700">※ 노출배수:</span> 최대 측정치를 노출기준으로 나눈 비율입니다.</p><p><span class="font-bold text-blue-700">※ 법적 준수율:</span> 총 측정건수 중 노출기준을 초과하지 않은(준수한) 건수의 백분율(%)입니다.</p></div>`;
             
-            // 1번 항목 렌더링 호출
             reportHtml += renderSectionStrict(1, `<span>1</span> 작업환경측정 통계 분석(전수 분석)`, sec1Thead, sec1Rows, sec1Render, true, prefixHtml, sec1Legend);
 
             // --- Section 2 ---
@@ -631,7 +635,7 @@
             // --- Section 3 ---
             reportHtml += `
                 <div id="section-3" class="a4-page page-container flex flex-col justify-start" data-section="3">
-                    <div class="section-title mt-4"><span>3</span> 분류별 측정 분포 및 초과 현황</div>
+                    <div class="section-title mt-4 border-b-2 border-blue-600 pb-2 mb-4 font-bold text-gray-900 text-xl"><span>3</span> 분류별 측정 분포 및 초과 현황</div>
                     <p class="text-sm text-gray-600 mb-4">※ 산업안전보건법 시행규칙 [별표 21] 기준 7대 분류 적용 시각화</p>
                     <div class="grid grid-cols-1 gap-6 mb-4">
                         <div class="prevent-break bg-white p-4 border border-green-300 rounded-lg shadow-sm chart-container flex flex-col items-center">
@@ -656,7 +660,7 @@
             const companies = [...new Set(data.map(d => d.company))].sort();
             const sortedCats = Object.keys(categoryMap).sort((a,b) => getCategoryOrder(a) - getCategoryOrder(b));
             
-            // 사업체를 4개씩 묶기 위한 청크(chunk) 로직 (사업체가 20개, 100개든 상관없이 무한히 분할 처리됨)
+            // 사업체를 4개씩 묶기 위한 청크(chunk) 로직
             const chunkSize = 4;
             const companyChunks = [];
             for (let i = 0; i < companies.length; i += chunkSize) {
@@ -667,7 +671,6 @@
                 let sec4Thead = `<tr><th rowspan="2" width="15%" class="align-middle text-gray-800">분류</th><th rowspan="2" width="20%" class="align-middle text-gray-800">유해인자</th><th colspan="2" width="12%" class="bg-green-200 border-green-400 text-gray-800 font-bold">Total</th></tr><tr><th class="border-green-400 text-xs font-bold text-gray-800 p-1">측정</th><th class="border-green-400 text-xs font-bold text-gray-800 p-1">초과</th></tr>`;
                 reportHtml += renderSectionStrict(4, `<span>4</span> 단위사업체별 작업환경측정 종합 현황`, sec4Thead, [], () => '', true, '', '');
             } else {
-                // 4개씩 나뉜 묶음(chunk) 단위로 표를 개별 렌더링 (1~4, 5~8, 9~12, 13~16, 17~20... 무한대로 자동 생성)
                 companyChunks.forEach((chunk, chunkIdx) => {
                     let titleStr = `<span>4</span> 단위사업체별 작업환경측정 종합 현황`;
                     if (companyChunks.length > 1) {
@@ -690,32 +693,45 @@
                                 rowObj.totalN += n;
                                 rowObj.totalExc += exc;
                             });
-                            // 해당 4개 사업체 묶음에서 한 번도 측정되지 않은(0건) 데이터는 빈 칸 낭비를 막기 위해 표에서 제외
-                            if (rowObj.totalN > 0) {
-                                sec4Rows.push(rowObj);
-                            }
+                            if (rowObj.totalN > 0) sec4Rows.push(rowObj);
                         });
                     });
 
-                    const sec4Render = (r, isG, isNG, rs) => {
+                    const sec4Render = (r, isG, isNG, isLastG) => {
                         const agentTd = getAgentTd(r.agent, 'text-left border-green-300 bg-white align-middle');
-                        let trHtml = `<tr>${isNG ? `<td rowspan="${rs}" class="font-bold border-green-300 bg-white align-middle break-keep">${r.mainKey}</td>` : ''}${agentTd}`;
+                        
+                        let groupTd = '';
+                        if (isG) {
+                            let style1 = `border-left: 1px solid #86efac; border-right: 1px solid #86efac; border-top: ${isNG ? '1px solid #86efac' : 'none'}; border-bottom: ${isLastG ? '1px solid #86efac' : 'none'};`;
+                            groupTd = `<td class="bg-white align-middle break-keep ${isNG ? 'font-bold' : ''}" style="${style1}">${isNG ? r.mainKey : ''}</td>`;
+                        }
+                        
+                        let trHtml = `<tr>${groupTd}${agentTd}`;
                         r.companyData.forEach(cell => { trHtml += `<td class="border-green-300 bg-white">${cell.n > 0 ? cell.n : '-'}</td><td class="border-green-300 bg-white">${cell.exc > 0 ? `<span class="text-red-600 font-bold">${cell.exc}</span>` : (cell.n > 0 ? '0' : '-')}</td>`; });
                         trHtml += `<td class="border-green-300 bg-green-50 font-bold">${r.totalN > 0 ? r.totalN : '-'}</td><td class="border-green-300 bg-green-50 font-bold">${r.totalExc > 0 ? `<span class="text-red-600 font-bold">${r.totalExc}</span>` : (r.totalN > 0 ? '0' : '-')}</td></tr>`;
                         return trHtml;
                     };
                     
-                    // 첫 번째 묶음은 ID section-4 지정, 2번째부터는 고유 ID를 부여하여 메뉴 이동 및 HTML 충돌 방지
                     let currentSecNum = chunkIdx === 0 ? 4 : `4-${chunkIdx}`;
                     reportHtml += renderSectionStrict(currentSecNum, titleStr, sec4Thead, sec4Rows, sec4Render, true, '', '');
                 });
             }
 
             // --- Section 5 ---
-            const groupRender5 = (r, isG, isNG, rs, isNSG, subRS) => {
+            const groupRender5 = (r, isG, isNG, isLastG, isNSG, isLastSG) => {
                 let note = r.lightColor === 'bg-green-500' ? '-' : (r.lightColor === 'bg-yellow-400' ? '관찰 필요' : (r.lightColor === 'bg-orange-400' ? '개선 필요' : '개선 대상'));
                 const agentTd = getAgentTd(r.agent, 'text-left border-green-300 align-middle');
-                return `<tr>${isNG ? `<td rowspan="${rs}" class="font-bold bg-white border-green-300 align-middle break-keep">${r.mainKey}</td>` : ''}${isNSG ? `<td rowspan="${subRS}" class="border-green-300 bg-white align-middle break-keep">${r.subKey}</td>` : ''}${agentTd}<td class="border-green-300">${r.n}</td><td class="border-green-300 ${r.exc > 0 ? 'text-red-600 font-bold' : ''}">${r.exc}</td><td class="border-green-300"><span class="inline-block w-3.5 h-3.5 rounded-full ${r.lightColor} shadow-sm border border-gray-300"></span></td><td class="text-left text-xs border-green-300 font-bold ${r.lightColor === 'bg-red-600' ? 'text-red-600' : ''}">${note}</td></tr>`;
+                
+                let groupTd = '', subGroupTd = '';
+                if (isG) {
+                    let style1 = `border-left: 1px solid #86efac; border-right: 1px solid #86efac; border-top: ${isNG ? '1px solid #86efac' : 'none'}; border-bottom: ${isLastG ? '1px solid #86efac' : 'none'};`;
+                    groupTd = `<td class="bg-white align-middle break-keep ${isNG ? 'font-bold' : ''}" style="${style1}">${isNG ? r.mainKey : ''}</td>`;
+                    
+                    let style2 = `border-left: 1px solid #86efac; border-right: 1px solid #86efac; border-top: ${isNSG ? '1px solid #86efac' : 'none'}; border-bottom: ${isLastSG ? '1px solid #86efac' : 'none'};`;
+                    subGroupTd = `<td class="bg-white align-middle break-keep" style="${style2}">${isNSG ? r.subKey : ''}</td>`;
+                }
+                
+                return `<tr>${groupTd}${subGroupTd}${agentTd}<td class="border-green-300">${r.n}</td><td class="border-green-300 ${r.exc > 0 ? 'text-red-600 font-bold' : ''}">${r.exc}</td><td class="border-green-300"><span class="inline-block w-3.5 h-3.5 rounded-full ${r.lightColor} shadow-sm border border-gray-300"></span></td><td class="text-left text-xs border-green-300 font-bold ${r.lightColor === 'bg-red-600' ? 'text-red-600' : ''}">${note}</td></tr>`;
             };
             const trafficLegend5 = `<div class="prevent-break text-xs text-gray-600 mt-2 mb-4 p-3 bg-green-50 border border-green-200 rounded text-left"><p><strong>※ 신호등 범례 (일반유해물질):</strong> <span class="bg-green-500 w-2.5 h-2.5 inline-block rounded-full"></span> 10% 미만 &nbsp; <span class="bg-yellow-400 w-2.5 h-2.5 inline-block rounded-full"></span> 10~50% 미만 &nbsp; <span class="bg-orange-400 w-2.5 h-2.5 inline-block rounded-full"></span> 50~100% 이하 &nbsp; <span class="bg-red-600 w-2.5 h-2.5 inline-block rounded-full"></span> 노출기준 초과</p><p class="mt-1"><strong>※ 신호등 범례 (소음):</strong> <span class="bg-green-500 w-2.5 h-2.5 inline-block rounded-full"></span> 80dB 미만 &nbsp; <span class="bg-yellow-400 w-2.5 h-2.5 inline-block rounded-full"></span> 80~85dB 미만 &nbsp; <span class="bg-orange-400 w-2.5 h-2.5 inline-block rounded-full"></span> 85~기준치 이하 &nbsp; <span class="bg-red-600 w-2.5 h-2.5 inline-block rounded-full"></span> 노출기준 초과</p><p class="mt-1"><strong>※ 신호등 범례 (고열):</strong> <span class="bg-green-500 w-2.5 h-2.5 inline-block rounded-full"></span> 23℃ 미만 &nbsp; <span class="bg-yellow-400 w-2.5 h-2.5 inline-block rounded-full"></span> 23~25℃ 미만 &nbsp; <span class="bg-orange-400 w-2.5 h-2.5 inline-block rounded-full"></span> 25~노출기준 미만 &nbsp; <span class="bg-red-600 w-2.5 h-2.5 inline-block rounded-full"></span> 노출기준 이상</p></div>`;
             const sec5Thead = `<tr><th width="20%">단위작업장소</th><th width="15%">분류</th><th width="22%">세부 유해인자명</th><th width="8%">측정건수</th><th width="8%">초과건수</th><th width="7%">신호등</th><th width="20%">비고</th></tr>`;
@@ -725,13 +741,13 @@
             // --- Section 6 ---
             const sec6Data = data.filter(d => d.sheetType !== '소음');
 
-            const groupRender6 = (r, isG, isNG, rs, isNSG, subRS) => {
+            const groupRender6 = (r, isG, isNG, isLastG, isNSG, isLastSG) => {
                 let extractedUnit = r.rawLimit ? String(r.rawLimit).replace(/^[\d\.\,\s]+/g, '').trim().toLowerCase() : '';
                 
                 let exLv = '-', hzLv = '-', rkLv = '-';
                 let jud = '-';
                 let judColorClass = '';
-                let sec6LightColor = r.lightColor; // 6번 항목 전용 신호등 색상 변수
+                let sec6LightColor = r.lightColor; 
                 
                 if (r.cat !== '물리적 인자') {
                     exLv = r.lightColor === 'bg-green-500' ? 1 : (r.lightColor === 'bg-yellow-400' ? 2 : (r.lightColor === 'bg-orange-400' ? 3 : 4));
@@ -744,37 +760,42 @@
                     }
                     rkLv = exLv * hzLv;
 
-                    // 위험성 점수(rkLv)에 따른 판정 및 신호등 색상 동기화
                     if (rkLv >= 12) {
                         jud = '매우 높음';
                         judColorClass = 'text-red-600';
-                        sec6LightColor = 'bg-red-600'; // 빨간색
+                        sec6LightColor = 'bg-red-600';
                     } else if (rkLv >= 5) {
                         jud = '높음';
                         judColorClass = 'text-orange-500';
-                        sec6LightColor = 'bg-orange-400'; // 주황색
+                        sec6LightColor = 'bg-orange-400';
                     } else if (rkLv >= 3) {
                         jud = '보통';
                         judColorClass = 'text-yellow-600';
-                        sec6LightColor = 'bg-yellow-400'; // 노란색
+                        sec6LightColor = 'bg-yellow-400';
                     } else {
                         jud = '낮음';
                         judColorClass = 'text-green-600';
-                        sec6LightColor = 'bg-green-500'; // 녹색
+                        sec6LightColor = 'bg-green-500';
                     }
                 } else {
-                    // 물리적 인자(소음, 고열 등)는 판정란에 '-' 기록
                     jud = '-';
                     judColorClass = 'text-gray-700';
                     sec6LightColor = r.lightColor;
                 }
                 const agentTd = getAgentTd(r.agent, 'text-left border-green-300 align-middle');
                 
-                // r.lightColor 대신 6번 전용으로 연동된 sec6LightColor 삽입
-                return `<tr>${isNG ? `<td rowspan="${rs}" class="font-bold bg-white border-green-300 align-middle break-keep">${r.mainKey}</td>` : ''}${isNSG ? `<td rowspan="${subRS}" class="border-green-300 bg-white align-middle break-keep">${r.subKey}</td>` : ''}${agentTd}<td class="border-green-300">${r.n}</td><td class="border-green-300 ${r.exc > 0 ? 'text-red-600 font-bold' : ''}">${r.exc}</td><td class="border-green-300 text-gray-700">${exLv}</td><td class="border-green-300 text-gray-700">${hzLv}</td><td class="border-green-300 font-bold ${rkLv >= 12 ? 'text-red-600' : 'text-blue-600'}">${rkLv}</td><td class="border-green-300"><span class="inline-block w-3.5 h-3.5 rounded-full ${sec6LightColor} shadow-sm border border-gray-300"></span></td><td class="text-center text-xs border-green-300 font-bold ${judColorClass}">${jud}</td></tr>`;
+                let groupTd = '', subGroupTd = '';
+                if (isG) {
+                    let style1 = `border-left: 1px solid #86efac; border-right: 1px solid #86efac; border-top: ${isNG ? '1px solid #86efac' : 'none'}; border-bottom: ${isLastG ? '1px solid #86efac' : 'none'};`;
+                    groupTd = `<td class="bg-white align-middle break-keep ${isNG ? 'font-bold' : ''}" style="${style1}">${isNG ? r.mainKey : ''}</td>`;
+                    
+                    let style2 = `border-left: 1px solid #86efac; border-right: 1px solid #86efac; border-top: ${isNSG ? '1px solid #86efac' : 'none'}; border-bottom: ${isLastSG ? '1px solid #86efac' : 'none'};`;
+                    subGroupTd = `<td class="bg-white align-middle break-keep" style="${style2}">${isNSG ? r.subKey : ''}</td>`;
+                }
+                
+                return `<tr>${groupTd}${subGroupTd}${agentTd}<td class="border-green-300">${r.n}</td><td class="border-green-300 ${r.exc > 0 ? 'text-red-600 font-bold' : ''}">${r.exc}</td><td class="border-green-300 text-gray-700">${exLv}</td><td class="border-green-300 text-gray-700">${hzLv}</td><td class="border-green-300 font-bold ${rkLv >= 12 ? 'text-red-600' : 'text-blue-600'}">${rkLv}</td><td class="border-green-300"><span class="inline-block w-3.5 h-3.5 rounded-full ${sec6LightColor} shadow-sm border border-gray-300"></span></td><td class="text-center text-xs border-green-300 font-bold ${judColorClass}">${jud}</td></tr>`;
             };
             
-            // 새 페이지 상단에 들어갈 예정이므로 위쪽 여백과 테두리를 깔끔하게 정리하고 prevent-break를 적용하여 문단 끊김을 방지했습니다.
             const extra6 = `<div class="mt-4 text-left break-keep">
                 <!-- 1. CHARM 방법 -->
                 <div class="prevent-break">
@@ -854,13 +875,11 @@
             </div>`;
             const sec6Thead = `<tr><th width="14%">부서(팀)명</th><th width="10%">분류</th><th width="14%">세부 유해인자명</th><th width="6%">측정 건수</th><th width="6%">초과 건수</th><th width="7%">노출 수준</th><th width="7%">유해성</th><th width="7%">위험성</th><th width="6%">신호등</th><th width="23%">판정</th></tr>`;
             
-            // 표 렌더링을 먼저 수행합니다. (suffixHtml은 빈칸으로 두어 표 아래에 붙지 않게 함)
             reportHtml += renderSectionStrict(6, `<span>6</span> 작업환경측정 화학물질 위험성 평가`, sec6Thead, buildGroupRows(sec6Data, ['department', 'category', 'agent']), groupRender6, true, '', '');
             
-            // CHARM 부가 설명을 강제로 새 페이지(.page-container) 컨테이너에 담아 추가합니다.
             reportHtml += `
                 <div class="a4-page page-container flex flex-col justify-start" data-section="6">
-                    <div class="section-title"><span>6</span> 작업환경측정 화학물질 위험성 평가 (참고자료)</div>
+                    <div class="section-title border-b-2 border-blue-600 pb-2 mb-4 font-bold text-gray-900 text-xl"><span>6</span> 작업환경측정 화학물질 위험성 평가 (참고자료)</div>
                     ${extra6}
                 </div>
             `;
@@ -945,44 +964,23 @@
         
         function closeModal() { document.getElementById('selection-modal').classList.add('hidden'); }
         
-        // 새로 추가된 즉시 인쇄 기능 (좌측 사이드바 버튼용) - 브라우저 팝업 차단 방지
         function printReport() {
             const summary = document.getElementById('report-summary');
-            if(!summary || summary.innerText.includes('대기 중')) {
-                // 데이터가 없을 때는 아무 반응도 하지 않아 에러 팝업을 방지합니다.
-                return;
-            }
-
+            if(!summary || summary.innerText.includes('대기 중')) return;
             const allPages = document.querySelectorAll('.page-container');
-            allPages.forEach(page => {
-                page.classList.remove('no-print');
-                page.style.display = '';
-            });
-
-            // 딜레이 없이 동기적으로 바로 인쇄창 팝업
+            allPages.forEach(page => { page.classList.remove('no-print'); page.style.display = ''; });
             window.print();
         }
 
-        // 방법 1. 즉시 브라우저 인쇄창 호출 (우측 상단 모달용 고화질 네이티브 인쇄)
         function executeNativePrint() {
             const summary = document.getElementById('report-summary');
-            if(!summary || summary.innerText.includes('대기 중')) {
-                alert("먼저 데이터 분석을 실행하여 보고서를 완성해 주세요.");
-                return;
-            }
-
+            if(!summary || summary.innerText.includes('대기 중')) return alert("먼저 데이터 분석을 실행하여 보고서를 완성해 주세요.");
             const allPages = document.querySelectorAll('.page-container');
-            allPages.forEach(page => {
-                page.classList.remove('no-print');
-                page.style.display = '';
-            });
-
+            allPages.forEach(page => { page.classList.remove('no-print'); page.style.display = ''; });
             closeModal();
-            // 동기적으로 바로 인쇄창 팝업
             window.print();
         }
 
-        // 방법 2. 이미지 캡처형 PDF 강제 변환
         async function executePdfDownload() {
             closeModal();
             const selected = Array.from(document.querySelectorAll('.pdf-checkbox:checked')).map(cb => parseInt(cb.value));
@@ -1006,10 +1004,13 @@
         function saveAsCSV() {
             let csvContent = "\uFEFF"; 
             document.querySelectorAll('#report-content table').forEach(table => {
-                const title = table.previousElementSibling?.innerText || "Table";
+                const title = table.querySelector('.section-title')?.innerText || "Table";
                 csvContent += title + "\n";
                 table.querySelectorAll('tr').forEach(row => {
-                    csvContent += Array.from(row.querySelectorAll('th, td')).map(col => `"${col.innerText.replace(/\n/g, " ").replace(/"/g, '""').trim()}"`).join(',') + "\n";
+                    const isTitleRow = row.querySelector('th[colspan="100"]');
+                    if (!isTitleRow) {
+                        csvContent += Array.from(row.querySelectorAll('th, td')).map(col => `"${col.innerText.replace(/\n/g, " ").replace(/"/g, '""').trim()}"`).join(',') + "\n";
+                    }
                 });
                 csvContent += "\n";
             });

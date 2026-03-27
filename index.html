@@ -77,8 +77,8 @@
             /* 행(tr) 1개가 가로로 반토막 나는 것만 방지 */
             tr { page-break-inside: avoid !important; break-inside: avoid !important; page-break-after: auto !important; break-after: auto !important; }
             
-            /* 넓고 식별이 잘되는 표 간격 유지 */
-            th, td { word-break: keep-all !important; }
+            /* 넓고 식별이 잘되는 표 간격 유지, 긴 단어로 인한 표 우측 밀림(Overflow) 완벽 차단 */
+            th, td { word-break: keep-all !important; overflow-wrap: break-word !important; }
             
             h1, h2, h3, h4, h5, .section-title { page-break-after: avoid !important; break-after: avoid !important; margin-top: 3mm !important; margin-bottom: 2mm !important; padding-top: 0 !important; }
             .prevent-break { page-break-inside: avoid !important; break-inside: avoid !important; margin-bottom: 2mm !important; }
@@ -509,19 +509,14 @@
             if (prefixHtml) html += prefixHtml;
             
             if (rows.length === 0) {
-                // 1번 항목은 기하표준편차 폭을 줄인 만큼(3.5%) 표 전체 폭을 96.5%로 설정하여 우측 여백 확보
-                let emptyTableStyle = sectionNum === 1 ? "width: 96.5%; table-layout: fixed; word-wrap: break-word;" : "width: 100%;";
-                html += `<table style="${emptyTableStyle} border-bottom: 1px solid #86efac !important;">` +
+                html += `<table style="width: 100%; border-bottom: 1px solid #86efac !important;">` +
                         `<thead>${enhancedThead}</thead>` +
                         `<tbody><tr><td colspan="15" class="py-10 text-gray-400 text-center border border-green-300">데이터가 없습니다.</td></tr></tbody></table>`;
             } else {
-                // 1번 항목은 기하표준편차 열을 줄인 만큼(3.5%) 우측 여백을 남기기 위해 width: 96.5% 적용
-                let tableStyle = "border-bottom: 1px solid #86efac !important;";
-                if (sectionNum === 1) {
-                    tableStyle += " width: 96.5%; table-layout: fixed; word-wrap: break-word;";
-                } else {
-                    tableStyle += " width: 100%;";
-                }
+                // 1번 항목을 포함한 모든 표가 제목 줄과 딱 맞게 끝까지 채워지도록 width: 100% 적용
+                let tableStyle = "width: 100%; border-bottom: 1px solid #86efac !important;";
+                // 1번 항목은 강제 폭 고정(fixed) 및 단어 줄바꿈 허용으로 우측 여백 침범 방지
+                if (sectionNum === 1) tableStyle += " table-layout: fixed; word-break: break-word;";
                 
                 let tableHtml = `<table style="${tableStyle}"><thead>${enhancedThead}</thead><tbody>`;
                 
@@ -616,8 +611,8 @@
             sec1Rows.forEach(r => { sec1CatExc[r.first.category] = (sec1CatExc[r.first.category] || 0) + r.stats.excCount; });
             sec1Rows.sort((a, b) => (sec1CatExc[b.first.category] - sec1CatExc[a.first.category]) || (getCategoryOrder(a.first.category) - getCategoryOrder(b.first.category)) || (b.stats.excCount - a.stats.excCount) || a.first.agent.localeCompare(b.first.agent));
             
-            // 기하표준편차 폭을 7%에서 3.5%로 절반 줄이고, 줄어든 폭 만큼 표 전체를 96.5%로 설정하여 우측 여백을 확보
-            const sec1Thead = `<tr><th width="10%">분류</th><th width="16%">세부 인자명</th><th width="6%">측정 건수</th><th width="6%">초과 건수</th><th width="7%">최대값</th><th width="7%">최소값</th><th width="7%">기하평균</th><th width="3.5%">기하<br>표준편차</th><th width="7%">노출배수</th><th width="8%">법적 준수율</th><th width="6%">신호등</th><th width="13%">노출기준(단위)</th></tr>`;
+            // 기하표준편차, 법적 준수율 폭을 줄이고 세부인자명과 노출기준 칸을 넓혀 글씨가 예쁘게 들어가도록 % 비율 재조정 및 긴 제목 강제 줄바꿈(<br>) 적용
+            const sec1Thead = `<tr><th width="9%">분류</th><th width="16%">세부 인자명</th><th width="5.5%">측정<br>건수</th><th width="5.5%">초과<br>건수</th><th width="7%">최대값</th><th width="7%">최소값</th><th width="7%">기하<br>평균</th><th width="6%">기하<br>표준편차</th><th width="7%">노출<br>배수</th><th width="8%">법적<br>준수율</th><th width="6%">신호등</th><th width="16%">노출기준<br>(단위)</th></tr>`;
             
             const sec1Render = (r, isG, isNG, rs, isNSG, subRS, isLastG, isLastSG) => {
                 let extractedUnit = r.first.rawLimit ? String(r.first.rawLimit).replace(/^[\d\.\,\s]+/g, '').trim() : '';

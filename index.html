@@ -20,7 +20,7 @@
             margin: 20mm auto; 
             background: white; 
             box-shadow: 0 4px 6px rgba(0,0,0,0.1); 
-            padding: 15mm 15mm 25mm 15mm; 
+            padding: 15mm 30mm 25mm 30mm; /* 좌우 여백 30mm로 조정 */
             box-sizing: border-box; 
             position: relative; 
         }
@@ -28,7 +28,7 @@
         /* --- 완벽한 자연스러운 출력을 위한 인쇄 전용 CSS 최적화 --- */
         @page { 
             size: A4 portrait; 
-            margin: 15mm 15mm 20mm 15mm !important; /* 상 15mm, 우 15mm, 하 20mm, 좌 15mm (적절하고 안정적인 황금비율 여백) */
+            margin: 15mm 30mm 20mm 30mm !important; /* 상 15mm, 우 30mm, 하 20mm, 좌 30mm로 조정 */
         }
 
         @media print {

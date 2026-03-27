@@ -20,9 +20,15 @@
             margin: 20mm auto; 
             background: white; 
             box-shadow: 0 4px 6px rgba(0,0,0,0.1); 
-            padding: 15mm 30mm 25mm 30mm; /* 좌우 여백 30mm로 조정 */
+            padding: 15mm 30mm 25mm 30mm; /* 기본 좌우 여백 30mm */
             box-sizing: border-box; 
             position: relative; 
+        }
+
+        /* 1번 항목만 표가 넓으므로 좌우 여백을 10mm로 넓혀서 균형있게 출력되도록 강제 설정 */
+        .a4-page[data-section="1"] {
+            padding-left: 10mm !important;
+            padding-right: 10mm !important;
         }
 
         /* --- 완벽한 자연스러운 출력을 위한 인쇄 전용 CSS 최적화 --- */
@@ -47,11 +53,16 @@
                 width: 100% !important; max-width: 100% !important; height: auto !important; min-height: 0 !important; 
                 display: block !important; 
                 margin: 0 0 10mm 0 !important; 
-                padding: 0 25mm !important; /* ★ 여기서 무조건 좌우 25mm 여백을 강제 생성합니다! ★ */
+                padding: 0 30mm !important; /* 기본 좌우 30mm 여백 강제 생성 */
                 box-sizing: border-box !important;
                 box-shadow: none !important; border: none !important;
                 page-break-inside: auto !important; break-inside: auto !important;
                 page-break-after: auto !important; break-after: auto !important;
+            }
+            
+            /* ★ 1번 항목 인쇄 시 좌우 여백을 10mm로 적용하여 우측이 잘리거나 치우치는 현상 방지 ★ */
+            .page-container[data-section="1"] {
+                padding: 0 10mm !important;
             }
             
             /* 1~6 항목 대분류 시작 시에는 무조건 새 용지에서 시작 */
@@ -598,7 +609,8 @@
             sec1Rows.forEach(r => { sec1CatExc[r.first.category] = (sec1CatExc[r.first.category] || 0) + r.stats.excCount; });
             sec1Rows.sort((a, b) => (sec1CatExc[b.first.category] - sec1CatExc[a.first.category]) || (getCategoryOrder(a.first.category) - getCategoryOrder(b.first.category)) || (b.stats.excCount - a.stats.excCount) || a.first.agent.localeCompare(b.first.agent));
             
-            const sec1Thead = `<tr><th width="10%">분류</th><th width="15%">세부 인자명</th><th width="6%">측정 건수</th><th width="6%">초과 건수</th><th width="7%">최대값</th><th width="7%">최소값</th><th width="7%">기하평균</th><th width="8%">기하표준편차</th><th width="7%">노출배수</th><th width="9%">법적 준수율</th><th width="6%">신호등</th><th width="12%">노출기준(단위)</th></tr>`;
+            // 기하표준편차, 법적 준수율 폭을 줄이고 세부인자명과 노출기준 칸을 넓혀 글씨가 예쁘게 들어가도록 % 비율 재조정
+            const sec1Thead = `<tr><th width="10%">분류</th><th width="16%">세부 인자명</th><th width="6%">측정 건수</th><th width="6%">초과 건수</th><th width="7%">최대값</th><th width="7%">최소값</th><th width="7%">기하평균</th><th width="7%">기하표준편차</th><th width="7%">노출배수</th><th width="8%">법적 준수율</th><th width="6%">신호등</th><th width="13%">노출기준(단위)</th></tr>`;
             
             const sec1Render = (r, isG, isNG, rs, isNSG, subRS, isLastG, isLastSG) => {
                 let extractedUnit = r.first.rawLimit ? String(r.first.rawLimit).replace(/^[\d\.\,\s]+/g, '').trim() : '';

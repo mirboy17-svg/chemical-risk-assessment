@@ -20,18 +20,24 @@
             margin: 20mm auto; 
             background: white; 
             box-shadow: 0 4px 6px rgba(0,0,0,0.1); 
-            padding: 15mm 20mm 25mm 20mm; /* 화면상 좌우 여백 20mm 통일 */
+            padding: 15mm 20mm 25mm 20mm; /* 기본 화면 여백 20mm 통일 */
             box-sizing: border-box; 
             position: relative; 
         }
-
-        /* --- 완벽한 자연스러운 출력을 위한 인쇄 전용 CSS 최적화 --- */
-        @page { 
-            size: A4 portrait; 
-            margin: 15mm 20mm 20mm 20mm !important; /* 상 15mm, 우 20mm, 하 20mm, 좌 20mm (최적의 여백) */
+        
+        /* 1번 항목은 표가 넓으므로 화면상에서도 좌우 여백을 8mm로 확 줄여서 폭을 최대한 넓게 씀 */
+        .a4-page[data-section="1"] {
+            padding-left: 8mm;
+            padding-right: 8mm;
         }
 
+        /* --- 완벽한 자연스러운 출력을 위한 인쇄 전용 CSS 최적화 --- */
         @media print {
+            @page { 
+                size: A4 portrait; 
+                margin: 12mm 8mm 15mm 8mm !important; /* 브라우저 자체 물리적 여백을 8mm로 최소화 */
+            }
+
             * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; color-adjust: exact !important; }
             
             /* Flex 레이아웃 강제 해제 -> 브라우저 자연 페이지 분할 유도 */
@@ -42,32 +48,37 @@
                 width: 100% !important; max-width: 100% !important; margin: 0 !important; padding: 0 !important; display: block !important; overflow: visible !important; 
             }
             
-            /* 컨테이너 내부 패딩을 0으로 만들어, 여백 처리를 오직 @page margin에 맡김으로써 표 찌그러짐 방지 */
+            /* 컨테이너 내부 패딩을 조정하여 항목별 여백 차별화 */
             .a4-page, .page-container { 
                 width: 100% !important; max-width: 100% !important; height: auto !important; min-height: 0 !important; 
                 display: block !important; 
                 margin: 0 0 10mm 0 !important; 
-                padding: 0 !important; 
+                padding: 0 12mm !important; /* 기본 2~6번 항목은 패딩 12mm 추가 (브라우저 여백 8mm + 패딩 12mm = 총 20mm 확보) */
                 box-sizing: border-box !important;
                 box-shadow: none !important; border: none !important;
                 page-break-inside: auto !important; break-inside: auto !important;
                 page-break-after: auto !important; break-after: auto !important;
             }
             
+            /* ★ 1번 항목은 패딩을 0으로 만들어, 브라우저 여백(8mm)만 갖게 함. 파란색 선 끝까지 표가 시원하게 넓어짐! ★ */
+            .page-container[data-section="1"] {
+                padding: 0 !important;
+            }
+            
             /* 1~6 항목 대분류 시작 시에는 무조건 새 용지에서 시작 */
             .major-section { page-break-before: always !important; break-before: page !important; }
             #section-1 { page-break-before: avoid !important; break-before: avoid !important; }
 
-            /* 표가 넘어갈 때 Thead 영역(대제목 포함)을 새 페이지 상단에 무조건 반복 */
-            table { width: 100% !important; max-width: 100% !important; border-collapse: collapse !important; margin-bottom: 3mm !important; page-break-inside: auto !important; break-inside: auto !important; display: table !important; }
+            /* 표가 넘어갈 때 Thead 영역을 새 페이지 상단에 무조건 반복 */
+            table { width: 100% !important; max-width: none !important; border-collapse: collapse !important; margin-bottom: 3mm !important; page-break-inside: auto !important; break-inside: auto !important; display: table !important; }
             thead { display: table-header-group !important; } 
             tfoot { display: table-footer-group !important; }
             
             /* 행(tr) 1개가 가로로 반토막 나는 것만 방지 */
             tr { page-break-inside: avoid !important; break-inside: avoid !important; page-break-after: auto !important; break-after: auto !important; }
             
-            /* 넓고 식별이 잘되는 표 간격 유지, 자연스러운 줄바꿈 유도 */
-            th, td { word-break: keep-all !important; overflow-wrap: break-word !important; }
+            /* 찌그러짐을 유발하던 keep-all 삭제, 정상적인 단어 줄바꿈 허용으로 글자 겹침 완벽 차단 */
+            th, td { word-break: normal !important; overflow-wrap: break-word !important; }
             
             h1, h2, h3, h4, h5, .section-title { page-break-after: avoid !important; break-after: avoid !important; margin-top: 3mm !important; margin-bottom: 2mm !important; padding-top: 0 !important; }
             .prevent-break { page-break-inside: avoid !important; break-inside: avoid !important; margin-bottom: 2mm !important; }
@@ -503,9 +514,8 @@
                         `<thead>${enhancedThead}</thead>` +
                         `<tbody><tr><td colspan="15" class="py-10 text-gray-400 text-center border border-green-300">데이터가 없습니다.</td></tr></tbody></table>`;
             } else {
-                // 1번 항목을 포함한 모든 표가 제목 줄과 딱 맞게 끝까지 채워지도록 width: 100% 적용, 고정비율로 가독성 확보
+                // table-layout: fixed를 완벽하게 삭제하여 브라우저가 공간에 맞춰 글씨를 자연스럽게 늘리도록 허용
                 let tableStyle = "width: 100%; border-bottom: 1px solid #86efac !important;";
-                if (sectionNum === 1) tableStyle += " table-layout: fixed;";
                 
                 let tableHtml = `<table style="${tableStyle}"><thead>${enhancedThead}</thead><tbody>`;
                 
@@ -600,8 +610,8 @@
             sec1Rows.forEach(r => { sec1CatExc[r.first.category] = (sec1CatExc[r.first.category] || 0) + r.stats.excCount; });
             sec1Rows.sort((a, b) => (sec1CatExc[b.first.category] - sec1CatExc[a.first.category]) || (getCategoryOrder(a.first.category) - getCategoryOrder(b.first.category)) || (b.stats.excCount - a.stats.excCount) || a.first.agent.localeCompare(b.first.agent));
             
-            // 원래 100% 꽉 차는 예쁜 비율로 완벽 원복! (글자 줄바꿈 없이 자연스럽고 시원하게 유지)
-            const sec1Thead = `<tr><th width="10%">분류</th><th width="15%">세부 인자명</th><th width="6%">측정 건수</th><th width="6%">초과 건수</th><th width="7%">최대값</th><th width="7%">최소값</th><th width="7%">기하평균</th><th width="9%">기하표준편차</th><th width="7%">노출배수</th><th width="8%">법적 준수율</th><th width="6%">신호등</th><th width="12%">노출기준(단위)</th></tr>`;
+            // 1번 항목 헤더: 긴 글자들을 위해 적절히 강제 줄바꿈(<br>)을 섞어 너비 배분을 예쁘게 최적화 (찌그러짐 원천 차단)
+            const sec1Thead = `<tr><th width="10%">분류</th><th width="17%">세부 인자명</th><th width="5.5%">측정<br>건수</th><th width="5.5%">초과<br>건수</th><th width="7%">최대값</th><th width="7%">최소값</th><th width="7%">기하<br>평균</th><th width="7%">기하<br>표준편차</th><th width="7%">노출<br>배수</th><th width="9%">법적<br>준수율</th><th width="6%">신호등</th><th width="12%">노출기준<br>(단위)</th></tr>`;
             
             const sec1Render = (r, isG, isNG, rs, isNSG, subRS, isLastG, isLastSG) => {
                 let extractedUnit = r.first.rawLimit ? String(r.first.rawLimit).replace(/^[\d\.\,\s]+/g, '').trim() : '';

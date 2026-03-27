@@ -28,7 +28,7 @@
         /* --- 완벽한 자연스러운 출력을 위한 인쇄 전용 CSS 최적화 --- */
         @page { 
             size: A4 portrait; 
-            margin: 15mm 30mm 20mm 30mm !important; /* 상 15mm, 우 30mm, 하 20mm, 좌 30mm로 조정 */
+            margin: 12mm 5mm 15mm 5mm !important; /* 물리적 여백은 최소화하여 브라우저별 차이를 줄입니다. */
         }
 
         @media print {
@@ -42,11 +42,14 @@
                 width: 100% !important; max-width: 100% !important; margin: 0 !important; padding: 0 !important; display: block !important; overflow: visible !important; 
             }
             
-            /* 컨테이너에서 여백을 0으로 만들어 하단 빈 공간 낭비를 완벽히 차단 */
+            /* 컨테이너 내부에서 무조건 좌우 여백을 확보하도록 강제 패딩 적용! */
             .a4-page, .page-container { 
                 width: 100% !important; max-width: 100% !important; height: auto !important; min-height: 0 !important; 
                 display: block !important; 
-                margin: 0 !important; padding: 0 !important; box-shadow: none !important; border: none !important;
+                margin: 0 0 10mm 0 !important; 
+                padding: 0 25mm !important; /* ★ 여기서 무조건 좌우 25mm 여백을 강제 생성합니다! ★ */
+                box-sizing: border-box !important;
+                box-shadow: none !important; border: none !important;
                 page-break-inside: auto !important; break-inside: auto !important;
                 page-break-after: auto !important; break-after: auto !important;
             }

@@ -107,6 +107,44 @@
 </head>
 <body class="flex min-h-screen">
 
+    <!-- 로그인 오버레이 화면 시작 -->
+    <div id="login-overlay" class="fixed inset-0 bg-gray-100 z-[99999] flex flex-col justify-center items-center print:hidden">
+        <div class="bg-white p-8 rounded-lg shadow-xl w-96 max-w-[90%] border border-green-300">
+            <div class="text-center mb-6">
+                <div class="bg-green-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-3">
+                    <svg class="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>
+                </div>
+                <h2 class="text-xl font-bold text-gray-800">작업환경측정 분석 보고서</h2>
+                <p class="text-sm text-gray-500 mt-1">대시보드 접속을 위해 비밀번호를 입력해주세요.</p>
+            </div>
+            <div class="space-y-4">
+                <div>
+                    <input type="password" id="login-password" placeholder="비밀번호 입력" class="w-full px-4 py-3 rounded border border-gray-300 focus:outline-none focus:ring-2 focus:ring-green-500 transition text-center text-lg tracking-widest" onkeypress="if(event.key === 'Enter') checkLogin()">
+                </div>
+                <button onclick="checkLogin()" class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 rounded shadow transition text-lg">접속하기</button>
+                <p id="login-error" class="text-red-500 text-sm text-center hidden font-bold">비밀번호가 일치하지 않습니다.</p>
+            </div>
+        </div>
+        
+        <!-- 시스템 오류 및 사용 문의 -->
+        <div class="mt-8 text-center text-xs text-gray-500 leading-relaxed">
+            <p class="font-bold text-gray-600 mb-1">시스템 오류 및 사용 문의</p>
+            <p>대한산업보건협회 경남지역본부 환경위생국 | 산업위생관리기술사 정재용</p>
+            <div class="flex items-center justify-center gap-3 mt-1">
+                <span class="flex items-center text-gray-500 hover:text-gray-700 transition">
+                    <svg class="w-3.5 h-3.5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"></path></svg>
+                    055-295-2461
+                </span>
+                <span class="text-gray-300">|</span>
+                <span class="flex items-center text-gray-500 hover:text-gray-700 transition">
+                    <svg class="w-3.5 h-3.5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path></svg>
+                    aniag000@kiha21.or.kr
+                </span>
+            </div>
+        </div>
+    </div>
+    <!-- 로그인 오버레이 화면 끝 -->
+
     <div id="loading-overlay">
         <div class="loader mb-4"></div>
         <h2 id="loading-title" class="text-xl font-bold text-gray-800">데이터를 분석 중입니다...</h2>
@@ -203,42 +241,56 @@
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path></svg>
                 출력 (인쇄)
             </button>
+            
+            <!-- 로그아웃 버튼 -->
+            <button onclick="logout()" class="w-full mt-2 bg-gray-500 hover:bg-gray-600 text-white font-bold py-2.5 rounded shadow-sm transition flex items-center justify-center text-[0.85rem] gap-2">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg>
+                로그아웃
+            </button>
         </div>
     </div>
 
     <!-- 출력 방식 선택 모달 -->
     <div id="selection-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50 flex justify-center items-center">
-        <div class="bg-white rounded-lg p-6 w-[32rem] shadow-xl relative">
-            <h3 class="text-lg font-bold mb-2 text-gray-800 border-b pb-2">보고서 출력 및 저장 방식 선택</h3>
-            <p class="text-sm text-gray-600 mb-5">원하시는 출력 또는 저장 방식을 선택해 주세요.</p>
+        <div class="bg-white rounded-lg p-6 w-[34rem] shadow-xl relative max-h-[95vh] overflow-y-auto">
+            <h3 class="text-lg font-bold mb-2 text-gray-800 border-b pb-2">보고서 출력 설정</h3>
+            <p class="text-sm text-gray-600 mb-4">출력할 항목을 선택하고 원하는 방식을 클릭해 주세요.</p>
 
-            <div class="mb-5 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+            <!-- 공통 출력 항목 선택 -->
+            <div class="mb-5 p-4 bg-gray-50 border border-gray-200 rounded-lg">
+                <h4 class="font-bold text-gray-800 mb-3 flex items-center text-sm">
+                    <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"></path></svg>
+                    출력할 보고서 항목 선택
+                </h4>
+                <div class="grid grid-cols-2 gap-x-2 gap-y-2 text-xs text-gray-700">
+                    <label class="flex items-center cursor-pointer hover:bg-gray-100 p-1.5 rounded border border-transparent hover:border-gray-200 transition"><input type="checkbox" value="1" class="pdf-checkbox mr-2 w-3.5 h-3.5 text-blue-600 rounded border-gray-300 focus:ring-blue-500" checked> 1. 작업환경측정 통계</label>
+                    <label class="flex items-center cursor-pointer hover:bg-gray-100 p-1.5 rounded border border-transparent hover:border-gray-200 transition"><input type="checkbox" value="2" class="pdf-checkbox mr-2 w-3.5 h-3.5 text-blue-600 rounded border-gray-300 focus:ring-blue-500" checked> 2. 노출기준 초과 현황</label>
+                    <label class="flex items-center cursor-pointer hover:bg-gray-100 p-1.5 rounded border border-transparent hover:border-gray-200 transition"><input type="checkbox" value="3" class="pdf-checkbox mr-2 w-3.5 h-3.5 text-blue-600 rounded border-gray-300 focus:ring-blue-500" checked> 3. 분류별 측정 분포</label>
+                    <label class="flex items-center cursor-pointer hover:bg-gray-100 p-1.5 rounded border border-transparent hover:border-gray-200 transition"><input type="checkbox" value="4" class="pdf-checkbox mr-2 w-3.5 h-3.5 text-blue-600 rounded border-gray-300 focus:ring-blue-500" checked> 4. 단위사업체별 현황</label>
+                    <label class="flex items-center cursor-pointer hover:bg-gray-100 p-1.5 rounded border border-transparent hover:border-gray-200 transition"><input type="checkbox" value="5" class="pdf-checkbox mr-2 w-3.5 h-3.5 text-blue-600 rounded border-gray-300 focus:ring-blue-500" checked> 5. 단위작업장소별 현황</label>
+                    <label class="flex items-center cursor-pointer hover:bg-gray-100 p-1.5 rounded border border-transparent hover:border-gray-200 transition"><input type="checkbox" value="6" class="pdf-checkbox mr-2 w-3.5 h-3.5 text-blue-600 rounded border-gray-300 focus:ring-blue-500" checked> 6. 화학물질 위험성평가</label>
+                </div>
+            </div>
+
+            <div class="mb-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
                 <h4 class="font-bold text-blue-800 mb-1 flex items-center">
                     <svg class="w-5 h-5 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path></svg>
-                    방법 1. 인쇄창 열기 (고화질 PDF 저장 권장)
+                    방법 1. 기본 인쇄창 열기 (고화질 PDF 저장 권장)
                 </h4>
-                <p class="text-xs text-blue-600 mb-3 break-keep">표가 잘리지 않고 가장 깔끔하게 출력 및 저장됩니다.<br>대상 프린터에서 <strong>'PDF로 저장'</strong>을 선택해 파일로 다운로드할 수도 있습니다.</p>
+                <p class="text-xs text-blue-600 mb-3 break-keep">위에서 선택한 항목만 인쇄됩니다.<br>대상 프린터에서 <strong>'PDF로 저장'</strong>을 선택하면 파일로 저장됩니다.</p>
                 <button onclick="executeNativePrint()" class="w-full py-2.5 bg-blue-600 text-white rounded font-bold shadow hover:bg-blue-700 transition">
-                    인쇄창 열기 (단축키: Ctrl+P)
+                    선택 항목 인쇄 (Ctrl+P)
                 </button>
             </div>
 
-            <div class="p-4 bg-gray-50 border border-gray-200 rounded-lg">
-                <h4 class="font-bold text-gray-800 mb-1 flex items-center">
+            <div class="p-4 bg-red-50 border border-red-200 rounded-lg">
+                <h4 class="font-bold text-red-800 mb-1 flex items-center">
                     <svg class="w-5 h-5 mr-1.5 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
                     방법 2. 이미지형 PDF 변환 다운로드
                 </h4>
-                <p class="text-xs text-gray-500 mb-3 break-keep">화면을 캡처하여 강제로 PDF로 변환합니다. (페이지 분할 시 표 중간이 잘릴 수 있습니다.)</p>
-                <div class="space-y-2 mb-4 text-xs text-gray-700 grid grid-cols-2 gap-x-2 gap-y-1">
-                    <label class="flex items-center cursor-pointer hover:bg-gray-100 p-1 rounded"><input type="checkbox" value="1" class="pdf-checkbox mr-2 w-3 h-3 text-red-600 rounded border-gray-300" checked> 1. 작업환경측정 통계</label>
-                    <label class="flex items-center cursor-pointer hover:bg-gray-100 p-1 rounded"><input type="checkbox" value="2" class="pdf-checkbox mr-2 w-3 h-3 text-red-600 rounded border-gray-300" checked> 2. 노출기준 초과 현황</label>
-                    <label class="flex items-center cursor-pointer hover:bg-gray-100 p-1 rounded"><input type="checkbox" value="3" class="pdf-checkbox mr-2 w-3 h-3 text-red-600 rounded border-gray-300" checked> 3. 분류별 측정 분포</label>
-                    <label class="flex items-center cursor-pointer hover:bg-gray-100 p-1 rounded"><input type="checkbox" value="4" class="pdf-checkbox mr-2 w-3 h-3 text-red-600 rounded border-gray-300" checked> 4. 단위사업체별 현황</label>
-                    <label class="flex items-center cursor-pointer hover:bg-gray-100 p-1 rounded"><input type="checkbox" value="5" class="pdf-checkbox mr-2 w-3 h-3 text-red-600 rounded border-gray-300" checked> 5. 단위작업장소별 현황</label>
-                    <label class="flex items-center cursor-pointer hover:bg-gray-100 p-1 rounded"><input type="checkbox" value="6" class="pdf-checkbox mr-2 w-3 h-3 text-red-600 rounded border-gray-300" checked> 6. 화학물질 위험성평가</label>
-                </div>
+                <p class="text-xs text-red-600 mb-3 break-keep">화면을 캡처하여 강제로 PDF로 변환합니다. (페이지 분할 시 표 중간이 잘릴 수 있으므로 가급적 방법 1을 권장합니다.)</p>
                 <button id="modal-pdf-btn" onclick="executePdfDownload()" class="w-full py-2 bg-red-600 text-white rounded font-bold shadow hover:bg-red-700 transition">
-                    이미지형 PDF 강제 변환
+                    선택 항목 강제 PDF 변환
                 </button>
             </div>
             
@@ -249,6 +301,67 @@
     </div>
 
     <script>
+        // --- 로그인 관리 로직 ---
+        const APP_PASSWORD = "1234"; // ★여기에 원하시는 비밀번호를 설정하세요★
+
+        document.addEventListener('DOMContentLoaded', () => {
+            if(sessionStorage.getItem('isLoggedIn') === 'true') {
+                document.getElementById('login-overlay').style.display = 'none';
+            } else {
+                document.getElementById('login-password').focus();
+            }
+
+            // 인쇄 단축키(Ctrl+P) 가로채기 -> 항목 선택 모달 띄우기
+            window.addEventListener('keydown', function(e) {
+                if ((e.ctrlKey || e.metaKey) && e.key === 'p') {
+                    e.preventDefault();
+                    const summary = document.getElementById('report-summary');
+                    if(summary && !summary.innerText.includes('대기 중')) openModal('print');
+                }
+            });
+        });
+
+        function checkLogin() {
+            const pwd = document.getElementById('login-password').value;
+            if(pwd === APP_PASSWORD) {
+                sessionStorage.setItem('isLoggedIn', 'true');
+                document.getElementById('login-overlay').style.display = 'none';
+            } else {
+                const err = document.getElementById('login-error');
+                err.classList.remove('hidden');
+                document.getElementById('login-password').value = '';
+                document.getElementById('login-password').focus();
+            }
+        }
+        
+        function logout() {
+            if(confirm('로그아웃 하시겠습니까?\n화면이 초기화되고 로그인 화면으로 돌아갑니다.')) {
+                sessionStorage.removeItem('isLoggedIn');
+                
+                // 초기화 로직 실행
+                globalRawData = [];
+                document.getElementById('noise-url').value = '';
+                document.getElementById('chemical-url').value = '';
+                document.getElementById('input-start-date').value = '';
+                document.getElementById('input-end-date').value = '';
+                document.getElementById('input-total-days').value = '0';
+                document.getElementById('top-status-msg').innerText = '※ 시트 주소와 측정 기간을 입력하고 분석을 실행해 주세요.';
+                document.getElementById('report-content').innerHTML = `
+                    <div class="a4-page page-container flex flex-col justify-center items-center text-gray-400" data-section="0">
+                        <svg class="w-16 h-16 mb-4 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+                        <p class="text-lg font-medium">데이터 분석을 기다리고 있습니다.</p>
+                        <p class="text-sm">상단에 시트 주소를 입력하고 [데이터 분석 실행]을 눌러주세요.</p>
+                    </div>`;
+
+                // 로그인 창 띄우기
+                document.getElementById('login-password').value = '';
+                document.getElementById('login-error').classList.add('hidden');
+                document.getElementById('login-overlay').style.display = 'flex';
+                document.getElementById('login-password').focus();
+            }
+        }
+        // -----------------------
+
         let pieChartInstance = null;
         let barChartInstance = null;
         let globalRawData = []; 
@@ -491,11 +604,12 @@
                     const ratio = (maxVal / first.limit) * 100;
                     if (ratio > 100) lightColor = 'bg-red-600'; else if (ratio >= 50) lightColor = 'bg-orange-400'; else if (ratio >= 10) lightColor = 'bg-yellow-400'; else lightColor = 'bg-green-500';
                 }
-                rows.push({ mainKey: first[groupKeys[0]], subKey: first.category, cat: first.category, agent: first.agent, n: group.length, exc: excCount, lightColor: lightColor, limit: first.limit, rawLimit: first.rawLimit });
+                // 5번, 6번 항목 사업체명 추가를 위해 company 속성을 데이터셋에 병합 및 안전한 그룹 식별자(groupId) 생성
+                rows.push({ groupId: first.company + '|' + first[groupKeys[0]], mainKey: first[groupKeys[0]], subKey: first.category, cat: first.category, agent: first.agent, n: group.length, exc: excCount, lightColor: lightColor, limit: first.limit, rawLimit: first.rawLimit, company: first.company });
             }
-            const mainTotal = {};
-            rows.forEach(r => { mainTotal[r.mainKey] = (mainTotal[r.mainKey] || 0) + r.exc; });
-            rows.sort((a,b) => (mainTotal[b.mainKey] - mainTotal[a.mainKey]) || a.mainKey.localeCompare(b.mainKey) || (getCategoryOrder(a.cat) - getCategoryOrder(b.cat)) || (b.exc - a.exc) || a.agent.localeCompare(b.agent));
+            
+            // 4, 5, 6번 항목 정렬 기준 변경: 단위사업체명(company) 우선 정렬
+            rows.sort((a,b) => a.company.localeCompare(b.company) || a.mainKey.localeCompare(b.mainKey) || (getCategoryOrder(a.cat) - getCategoryOrder(b.cat)) || (b.exc - a.exc) || a.agent.localeCompare(b.agent));
             return rows;
         }
 
@@ -525,28 +639,32 @@
                     let isNewGroup = false; let isNewSubGroup = false;
                     let isLastInGroup = false; let isLastInSubGroup = false;
 
+                    // 다른 사업체에서 동일한 부서명을 사용할 경우 표가 잘못 병합되는 현상을 막기 위한 안전장치
+                    const getGroupId = (row) => row.groupId || row.mainKey;
+                    const getSubGroupId = (row) => getGroupId(row) + '|' + row.subKey;
+
                     // 병합된 것처럼 보이지만 실제로는 모든 행이 1줄짜리로 개별 존재하여 "하단 빈 공간 낭비를 100% 없애는" 로직
                     if (isGrouped) {
-                        isNewGroup = (i === 0 || rows[i-1].mainKey !== r.mainKey);
+                        isNewGroup = (i === 0 || getGroupId(rows[i-1]) !== getGroupId(r));
                         if (isNewGroup) {
                             let count = 0;
                             for (let j = i; j < rows.length; j++) {
-                                if (rows[j].mainKey === r.mainKey) count++; else break;
+                                if (getGroupId(rows[j]) === getGroupId(r)) count++; else break;
                             }
                             rowspan = count;
                         }
-                        isLastInGroup = (i === rows.length - 1 || rows[i+1].mainKey !== r.mainKey);
+                        isLastInGroup = (i === rows.length - 1 || getGroupId(rows[i+1]) !== getGroupId(r));
 
                         if (r.subKey !== undefined) {
-                            isNewSubGroup = (i === 0 || rows[i-1].mainKey !== r.mainKey || rows[i-1].subKey !== r.subKey);
+                            isNewSubGroup = (i === 0 || getSubGroupId(rows[i-1]) !== getSubGroupId(r));
                             if (isNewSubGroup) {
                                 let count = 0;
                                 for (let j = i; j < rows.length; j++) {
-                                    if (rows[j].mainKey === r.mainKey && rows[j].subKey === r.subKey) count++; else break;
+                                    if (getSubGroupId(rows[j]) === getSubGroupId(r)) count++; else break;
                                 }
                                 subRowspan = count;
                             }
-                            isLastInSubGroup = (i === rows.length - 1 || rows[i+1].mainKey !== r.mainKey || rows[i+1].subKey !== r.subKey);
+                            isLastInSubGroup = (i === rows.length - 1 || getSubGroupId(rows[i+1]) !== getSubGroupId(r));
                         }
                     }
 
@@ -756,12 +874,15 @@
                 let note = r.lightColor === 'bg-green-500' ? '-' : (r.lightColor === 'bg-yellow-400' ? '관찰 필요' : (r.lightColor === 'bg-orange-400' ? '개선 필요' : '개선 대상'));
                 const agentTd = getAgentTd(r.agent, 'text-left border-green-300 align-middle');
                 
-                let groupTd = '', subGroupTd = '';
+                let groupTd = '', companyTd = '', subGroupTd = '';
                 if (isG) {
                     let style1 = '';
                     style1 += isNG ? 'border-top: 1px solid #86efac !important; ' : 'border-top: none !important; ';
                     style1 += isLastG ? 'border-bottom: 1px solid #86efac !important; ' : 'border-bottom: none !important; ';
-                    groupTd = `<td class="border-green-300 bg-white align-middle break-keep ${isNG ? 'font-bold' : ''}" style="${style1}">${isNG ? r.mainKey : ''}</td>`;
+                    
+                    // 직관성을 위해 순서 교체: 단위사업체명 -> 단위작업장소
+                    companyTd = `<td class="border-green-300 bg-white align-middle break-keep ${isNG ? 'font-bold' : ''}" style="${style1}">${isNG ? r.company : ''}</td>`;
+                    groupTd = `<td class="border-green-300 bg-white align-middle break-keep" style="${style1}">${isNG ? r.mainKey : ''}</td>`;
                     
                     let style2 = '';
                     style2 += isNSG ? 'border-top: 1px solid #86efac !important; ' : 'border-top: none !important; ';
@@ -769,15 +890,18 @@
                     subGroupTd = `<td class="border-green-300 bg-white align-middle break-keep" style="${style2}">${isNSG ? r.subKey : ''}</td>`;
                 }
                 
-                return `<tr>${groupTd}${subGroupTd}${agentTd}<td class="border-green-300">${r.n}</td><td class="border-green-300 ${r.exc > 0 ? 'text-red-600 font-bold' : ''}">${r.exc}</td><td class="border-green-300"><span class="inline-block w-3.5 h-3.5 rounded-full ${r.lightColor} shadow-sm border border-gray-300"></span></td><td class="text-left text-xs border-green-300 font-bold ${r.lightColor === 'bg-red-600' ? 'text-red-600' : ''}">${note}</td></tr>`;
+                return `<tr>${companyTd}${groupTd}${subGroupTd}${agentTd}<td class="border-green-300">${r.n}</td><td class="border-green-300 ${r.exc > 0 ? 'text-red-600 font-bold' : ''}">${r.exc}</td><td class="border-green-300"><span class="inline-block w-3.5 h-3.5 rounded-full ${r.lightColor} shadow-sm border border-gray-300"></span></td><td class="text-left text-xs border-green-300 font-bold ${r.lightColor === 'bg-red-600' ? 'text-red-600' : ''}">${note}</td></tr>`;
             };
             const trafficLegend5 = `<div class="prevent-break text-xs text-gray-600 mt-2 mb-4 p-3 bg-gray-50 border border-gray-200 rounded text-left"><p><strong>※ 신호등 범례 (일반유해물질):</strong> <span class="bg-green-500 w-2.5 h-2.5 inline-block rounded-full"></span> 10% 미만 &nbsp; <span class="bg-yellow-400 w-2.5 h-2.5 inline-block rounded-full"></span> 10~50% 미만 &nbsp; <span class="bg-orange-400 w-2.5 h-2.5 inline-block rounded-full"></span> 50~100% 이하 &nbsp; <span class="bg-red-600 w-2.5 h-2.5 inline-block rounded-full"></span> 노출기준 초과</p><p class="mt-1"><strong>※ 신호등 범례 (소음):</strong> <span class="bg-green-500 w-2.5 h-2.5 inline-block rounded-full"></span> 80dB 미만 &nbsp; <span class="bg-yellow-400 w-2.5 h-2.5 inline-block rounded-full"></span> 80~85dB 미만 &nbsp; <span class="bg-orange-400 w-2.5 h-2.5 inline-block rounded-full"></span> 85~기준치 이하 &nbsp; <span class="bg-red-600 w-2.5 h-2.5 inline-block rounded-full"></span> 노출기준 초과</p><p class="mt-1"><strong>※ 신호등 범례 (고열):</strong> <span class="bg-green-500 w-2.5 h-2.5 inline-block rounded-full"></span> 23℃ 미만 &nbsp; <span class="bg-yellow-400 w-2.5 h-2.5 inline-block rounded-full"></span> 23~25℃ 미만 &nbsp; <span class="bg-orange-400 w-2.5 h-2.5 inline-block rounded-full"></span> 25~노출기준 미만 &nbsp; <span class="bg-red-600 w-2.5 h-2.5 inline-block rounded-full"></span> 노출기준 이상</p></div>`;
-            const sec5Thead = `<tr><th width="20%">단위작업장소</th><th width="15%">분류</th><th width="22%">세부 유해인자명</th><th width="8%">측정건수</th><th width="8%">초과건수</th><th width="7%">신호등</th><th width="20%">비고</th></tr>`;
+            
+            // 직관성을 위해 머리글 순서 교체: 단위사업체명 -> 단위작업장소
+            const sec5Thead = `<tr><th width="15%">단위사업체명</th><th width="15%">단위작업장소</th><th width="12%">분류</th><th width="20%">세부 유해인자명</th><th width="8%">측정건수</th><th width="8%">초과건수</th><th width="7%">신호등</th><th width="15%">비고</th></tr>`;
             
             reportHtml += renderSectionStrict(5, `<span>5</span> 단위작업장소별 유해인자 측정 및 초과 현황`, sec5Thead, buildGroupRows(data, ['location', 'category', 'agent', 'limit']), groupRender5, true, '', trafficLegend5);
 
             // --- Section 6 ---
-            const sec6Data = data.filter(d => d.sheetType !== '소음');
+            // 화학물질 위험성 평가이므로 물리적 인자(고열, 소음 등)는 표에서 완전히 제외합니다.
+            const sec6Data = data.filter(d => d.category !== '물리적 인자');
 
             const groupRender6 = (r, isG, isNG, rs, isNSG, subRS, isLastG, isLastSG) => {
                 let extractedUnit = r.rawLimit ? String(r.rawLimit).replace(/^[\d\.\,\s]+/g, '').trim().toLowerCase() : '';
@@ -820,22 +944,34 @@
                     judColorClass = 'text-gray-700';
                     sec6LightColor = r.lightColor;
                 }
-                const agentTd = getAgentTd(r.agent, 'text-left border-green-300 align-middle');
                 
-                let groupTd = '', subGroupTd = '';
+                // 세부 유해인자명 글자 크기 0.75rem 고정 (가로폭 공간 확보)
+                let formattedAgent = r.agent;
+                if (formattedAgent.length > 14) {
+                    let halfIndex = Math.ceil(formattedAgent.length / 2);
+                    formattedAgent = formattedAgent.substring(0, halfIndex) + '<br>' + formattedAgent.substring(halfIndex);
+                }
+                const sec6AgentTd = `<td class="text-left border-green-300 align-middle" style="font-size: 0.75rem; letter-spacing: -0.05em; word-break: keep-all;">${formattedAgent}</td>`;
+                
+                let groupTd = '', companyTd = '', subGroupTd = '';
                 if (isG) {
-                    let style1 = '';
+                    // 좌측 항목들의 글자 크기를 0.75rem으로 줄이고 자간을 좁혀 공간을 확보합니다.
+                    let style1 = 'font-size: 0.75rem; letter-spacing: -0.05em; ';
                     style1 += isNG ? 'border-top: 1px solid #86efac !important; ' : 'border-top: none !important; ';
                     style1 += isLastG ? 'border-bottom: 1px solid #86efac !important; ' : 'border-bottom: none !important; ';
-                    groupTd = `<td class="border-green-300 bg-white align-middle break-keep ${isNG ? 'font-bold' : ''}" style="${style1}">${isNG ? r.mainKey : ''}</td>`;
                     
-                    let style2 = '';
+                    // 직관성을 위해 순서 교체: 단위사업체명 -> 부서(팀)명
+                    companyTd = `<td class="border-green-300 bg-white align-middle break-keep ${isNG ? 'font-bold' : ''}" style="${style1}">${isNG ? r.company : ''}</td>`;
+                    groupTd = `<td class="border-green-300 bg-white align-middle break-keep" style="${style1}">${isNG ? r.mainKey : ''}</td>`;
+                    
+                    let style2 = 'font-size: 0.75rem; letter-spacing: -0.05em; ';
                     style2 += isNSG ? 'border-top: 1px solid #86efac !important; ' : 'border-top: none !important; ';
                     style2 += isLastSG ? 'border-bottom: 1px solid #86efac !important; ' : 'border-bottom: none !important; ';
                     subGroupTd = `<td class="border-green-300 bg-white align-middle break-keep" style="${style2}">${isNSG ? r.subKey : ''}</td>`;
                 }
                 
-                return `<tr>${groupTd}${subGroupTd}${agentTd}<td class="border-green-300">${r.n}</td><td class="border-green-300 ${r.exc > 0 ? 'text-red-600 font-bold' : ''}">${r.exc}</td><td class="border-green-300 text-gray-700">${exLv}</td><td class="border-green-300 text-gray-700">${hzLv}</td><td class="border-green-300 font-bold ${rkLv >= 12 ? 'text-red-600' : 'text-blue-600'}">${rkLv}</td><td class="border-green-300"><span class="inline-block w-3.5 h-3.5 rounded-full ${sec6LightColor} shadow-sm border border-gray-300"></span></td><td class="text-center text-xs border-green-300 font-bold ${judColorClass}">${jud}</td></tr>`;
+                // 위험성(rkLv) 글자를 파란색(text-blue-600)으로 변경
+                return `<tr>${companyTd}${groupTd}${subGroupTd}${sec6AgentTd}<td class="border-green-300">${r.n}</td><td class="border-green-300 ${r.exc > 0 ? 'text-red-600 font-bold' : ''}">${r.exc}</td><td class="border-green-300 text-gray-800">${exLv}</td><td class="border-green-300 text-gray-800">${hzLv}</td><td class="border-green-300 font-bold text-blue-600">${rkLv}</td><td class="border-green-300"><span class="inline-block w-3.5 h-3.5 rounded-full ${sec6LightColor} shadow-sm border border-gray-300"></span></td><td class="text-center text-xs border-green-300 font-bold ${judColorClass}">${jud}</td></tr>`;
             };
             
             const extra6 = `<div class="mt-4 text-left break-keep">
@@ -915,7 +1051,11 @@
                     </div>
                 </div>
             </div>`;
-            const sec6Thead = `<tr><th width="14%">부서(팀)명</th><th width="10%">분류</th><th width="14%">세부 유해인자명</th><th width="6%">측정 건수</th><th width="6%">초과 건수</th><th width="7%">노출 수준</th><th width="7%">유해성</th><th width="7%">위험성</th><th width="6%">신호등</th><th width="23%">판정</th></tr>`;
+            
+            // 세부 유해인자명 글자크기 0.75rem 고정 적용, 판정의 가로폭 극대화(36%)
+            // 직관성을 위해 머리글 순서 교체: 단위사업체명 -> 부서(팀)명
+            // 위험성 헤더 서식 글자색을 파란색(#2563eb)으로 지정
+            const sec6Thead = `<tr><th width="6%" style="font-size:0.75rem; letter-spacing:-0.05em;">단위사업체명</th><th width="6%" style="font-size:0.75rem; letter-spacing:-0.05em;">부서(팀)명</th><th width="5%" style="font-size:0.7rem; letter-spacing:-0.05em;">분류</th><th width="9%" style="font-size:0.75rem; letter-spacing:-0.05em;">세부 유해인자명</th><th width="5%">측정<br>건수</th><th width="5%">초과<br>건수</th><th width="8%">노출<br>수준</th><th width="8%">유해성</th><th width="8%" style="color: #2563eb;">위험성</th><th width="4%">신호등</th><th width="36%">판정</th></tr>`;
             
             reportHtml += renderSectionStrict(6, `<span>6</span> 작업환경측정 화학물질 위험성 평가`, sec6Thead, buildGroupRows(sec6Data, ['department', 'category', 'agent']), groupRender6, true, '', '');
             
@@ -1008,19 +1148,40 @@
         
         function printReport() {
             const summary = document.getElementById('report-summary');
-            if(!summary || summary.innerText.includes('대기 중')) return;
-            const allPages = document.querySelectorAll('.page-container');
-            allPages.forEach(page => { page.classList.remove('no-print'); page.style.display = ''; });
-            window.print();
+            if(!summary || summary.innerText.includes('대기 중')) return alert("먼저 데이터 분석을 실행하여 보고서를 완성해 주세요.");
+            openModal('print'); // 즉시 인쇄 대신 항목 선택 모달 열기
         }
 
         function executeNativePrint() {
             const summary = document.getElementById('report-summary');
             if(!summary || summary.innerText.includes('대기 중')) return alert("먼저 데이터 분석을 실행하여 보고서를 완성해 주세요.");
+            
+            const selected = Array.from(document.querySelectorAll('.pdf-checkbox:checked')).map(cb => parseInt(cb.value));
+            if(selected.length === 0) return alert("출력할 항목을 하나 이상 선택해주세요.");
+
             const allPages = document.querySelectorAll('.page-container');
-            allPages.forEach(page => { page.classList.remove('no-print'); page.style.display = ''; });
+            
+            // 선택되지 않은 항목은 화면과 인쇄에서 일시적으로 숨김
+            allPages.forEach(page => { 
+                const section = parseInt(page.getAttribute('data-section'));
+                if (section === 0 || !selected.includes(section)) {
+                    page.classList.add('no-print');
+                } else {
+                    page.classList.remove('no-print'); 
+                }
+            });
+            
             closeModal();
             window.print();
+            
+            // 인쇄 대화상자 종료 후 원래 화면으로 모두 복구
+            setTimeout(() => {
+                allPages.forEach(page => { 
+                    if (parseInt(page.getAttribute('data-section')) !== 0) {
+                        page.classList.remove('no-print');
+                    }
+                });
+            }, 1000);
         }
 
         async function executePdfDownload() {

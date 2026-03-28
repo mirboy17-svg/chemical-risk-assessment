@@ -945,18 +945,18 @@
                     sec6LightColor = r.lightColor;
                 }
                 
-                // 세부 유해인자명 글자 크기 0.75rem 고정 (가로폭 공간 확보)
+                // 세부 유해인자명 글자 크기 원래대로 복구 (0.85rem 상속)
                 let formattedAgent = r.agent;
-                if (formattedAgent.length > 14) {
+                if (formattedAgent.length > 18) {
                     let halfIndex = Math.ceil(formattedAgent.length / 2);
                     formattedAgent = formattedAgent.substring(0, halfIndex) + '<br>' + formattedAgent.substring(halfIndex);
                 }
-                const sec6AgentTd = `<td class="text-left border-green-300 align-middle" style="font-size: 0.75rem; letter-spacing: -0.05em; word-break: keep-all;">${formattedAgent}</td>`;
+                const sec6AgentTd = `<td class="text-left border-green-300 align-middle" style="letter-spacing: -0.05em; word-break: keep-all;">${formattedAgent}</td>`;
                 
                 let groupTd = '', companyTd = '', subGroupTd = '';
                 if (isG) {
-                    // 좌측 항목들의 글자 크기를 0.75rem으로 줄이고 자간을 좁혀 공간을 확보합니다.
-                    let style1 = 'font-size: 0.75rem; letter-spacing: -0.05em; ';
+                    // 좌측 항목들의 글자 크기를 원래 테이블 기본값으로 돌리고 자간만 좁게 유지합니다.
+                    let style1 = 'letter-spacing: -0.05em; ';
                     style1 += isNG ? 'border-top: 1px solid #86efac !important; ' : 'border-top: none !important; ';
                     style1 += isLastG ? 'border-bottom: 1px solid #86efac !important; ' : 'border-bottom: none !important; ';
                     
@@ -964,13 +964,13 @@
                     companyTd = `<td class="border-green-300 bg-white align-middle break-keep ${isNG ? 'font-bold' : ''}" style="${style1}">${isNG ? r.company : ''}</td>`;
                     groupTd = `<td class="border-green-300 bg-white align-middle break-keep" style="${style1}">${isNG ? r.mainKey : ''}</td>`;
                     
-                    let style2 = 'font-size: 0.75rem; letter-spacing: -0.05em; ';
+                    let style2 = 'letter-spacing: -0.05em; ';
                     style2 += isNSG ? 'border-top: 1px solid #86efac !important; ' : 'border-top: none !important; ';
                     style2 += isLastSG ? 'border-bottom: 1px solid #86efac !important; ' : 'border-bottom: none !important; ';
                     subGroupTd = `<td class="border-green-300 bg-white align-middle break-keep" style="${style2}">${isNSG ? r.subKey : ''}</td>`;
                 }
                 
-                // 위험성(rkLv) 글자를 파란색(text-blue-600)으로 변경
+                // 위험성(rkLv) 글자를 파란색(text-blue-600)으로 유지
                 return `<tr>${companyTd}${groupTd}${subGroupTd}${sec6AgentTd}<td class="border-green-300">${r.n}</td><td class="border-green-300 ${r.exc > 0 ? 'text-red-600 font-bold' : ''}">${r.exc}</td><td class="border-green-300 text-gray-800">${exLv}</td><td class="border-green-300 text-gray-800">${hzLv}</td><td class="border-green-300 font-bold text-blue-600">${rkLv}</td><td class="border-green-300"><span class="inline-block w-3.5 h-3.5 rounded-full ${sec6LightColor} shadow-sm border border-gray-300"></span></td><td class="text-center text-xs border-green-300 font-bold ${judColorClass}">${jud}</td></tr>`;
             };
             
@@ -1052,10 +1052,8 @@
                 </div>
             </div>`;
             
-            // 세부 유해인자명 글자크기 0.75rem 고정 적용, 판정의 가로폭 극대화(36%)
-            // 직관성을 위해 머리글 순서 교체: 단위사업체명 -> 부서(팀)명
-            // 위험성 헤더 서식 글자색을 파란색(#2563eb)으로 지정
-            const sec6Thead = `<tr><th width="6%" style="font-size:0.75rem; letter-spacing:-0.05em;">단위사업체명</th><th width="6%" style="font-size:0.75rem; letter-spacing:-0.05em;">부서(팀)명</th><th width="5%" style="font-size:0.7rem; letter-spacing:-0.05em;">분류</th><th width="9%" style="font-size:0.75rem; letter-spacing:-0.05em;">세부 유해인자명</th><th width="5%">측정<br>건수</th><th width="5%">초과<br>건수</th><th width="8%">노출<br>수준</th><th width="8%">유해성</th><th width="8%" style="color: #2563eb;">위험성</th><th width="4%">신호등</th><th width="36%">판정</th></tr>`;
+            // 첨부된 이미지와 완벽하게 동일하도록 우측 평가 항목들의 헤더를 세로로 배치(측<br>정<br>...)하고 비율 재조정
+            const sec6Thead = `<tr><th width="13%">단위사업체명</th><th width="12%">부서(팀)명</th><th width="11%">분류</th><th width="24%">세부 유해인자명</th><th width="4.5%" style="padding:0.5rem 0.1rem; line-height:1.2; font-size:0.8rem;">측<br>정<br>건<br>수</th><th width="4.5%" style="padding:0.5rem 0.1rem; line-height:1.2; font-size:0.8rem;">초<br>과<br>건<br>수</th><th width="4.5%" style="padding:0.5rem 0.1rem; line-height:1.2; font-size:0.8rem;">노<br>출<br>수<br>준</th><th width="4.5%" style="padding:0.5rem 0.1rem; line-height:1.2; font-size:0.8rem;">유<br>해<br>성</th><th width="4.5%" style="color: #2563eb; padding:0.5rem 0.1rem; line-height:1.2; font-size:0.8rem;">위<br>험<br>성</th><th width="4.5%" style="padding:0.5rem 0.1rem; line-height:1.2; font-size:0.8rem;">신<br>호<br>등</th><th width="13%">판정</th></tr>`;
             
             reportHtml += renderSectionStrict(6, `<span>6</span> 작업환경측정 화학물질 위험성 평가`, sec6Thead, buildGroupRows(sec6Data, ['department', 'category', 'agent']), groupRender6, true, '', '');
             

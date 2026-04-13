@@ -472,6 +472,10 @@
                 const limitStr = limitKey && row[limitKey] ? String(row[limitKey]).trim() : '';
                 const limit = parseFloat(limitStr);
                 const valStr = valKey && row[valKey] ? String(row[valKey]).trim() : '';
+                
+                // ★ '횟수조정' 문구가 포함된 데이터인지 판별 (공백 제거 후 확인)
+                const isAdj = valStr.replace(/\s+/g, '').includes('횟수조정');
+
                 let value = parseFloat(valStr);
                 
                 if (valStr.toUpperCase().includes('N.D') || valStr.includes('불검출') || valStr.includes('ND') || valStr.includes('<')) value = 0; 
@@ -502,9 +506,10 @@
                     isExceed: value > (isNaN(limit) ? 9999 : limit),
                     sheetType: defaultType,
                     hasData: valStr !== '',
+                    isAdj: isAdj, // 플래그 저장
                     date: rowDate
                 };
-            }).filter(d => d.hasData && d.agent !== '미상');
+            }).filter(d => d.hasData && d.agent !== '미상' && !d.isAdj); // ★ isAdj가 true인(횟수조정) 항목은 분석 데이터에서 제외
         }
 
         function calculateStats(values, limit) {

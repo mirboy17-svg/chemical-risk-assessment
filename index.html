@@ -156,7 +156,7 @@
             <div class="max-w-[1400px] mx-auto flex flex-col gap-4">
                 <div class="flex justify-between items-center">
                     <div>
-                        <h1 class="text-xl font-bold text-gray-800">작업환경측정 위험성평가 및 분석 보고서</h1>
+                        <h1 id="main-report-title" class="text-xl font-bold text-gray-800">작업환경측정 위험성평가 및 분석 보고서</h1>
                         <p class="text-xs text-gray-500" id="top-status-msg">※ 시트 주소와 측정 기간을 입력하고 분석을 실행해 주세요.</p>
                     </div>
                     <div class="flex gap-2">
@@ -164,33 +164,40 @@
                             <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
                             엑셀(CSV) 저장
                         </button>
-                        <button onclick="openModal('pdf')" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded shadow flex items-center transition text-sm font-bold">
-                            <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
-                            보고서 출력 / 다운로드
+                        <button onclick="executeNativePrint()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded shadow flex items-center transition text-sm font-bold">
+                            <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path></svg>
+                            선택 항목 출력 (인쇄)
                         </button>
                     </div>
                 </div>
                 
-                <div class="flex flex-wrap items-center gap-4 bg-gray-50 p-3 rounded-lg border border-gray-200">
-                    <div class="flex items-center gap-2">
-                        <span class="text-xs font-bold text-gray-600 border-r pr-2">구글 시트 링크</span>
-                        <input type="url" id="noise-url" placeholder="소음 시트 주소..." class="text-xs py-1.5 px-3 border rounded w-48 focus:ring-2 focus:ring-blue-500 outline-none">
-                        <input type="url" id="chemical-url" placeholder="소음제외 시트 주소..." class="text-xs py-1.5 px-3 border rounded w-48 focus:ring-2 focus:ring-green-500 outline-none">
-                    </div>
-
-                    <div class="flex items-center gap-2 ml-auto">
-                        <span class="text-xs font-bold text-gray-600 border-r pr-2">측정 기간 설정</span>
-                        <input type="date" id="input-start-date" class="text-xs py-1.5 px-2 border rounded outline-none focus:ring-2 focus:ring-blue-400">
-                        <span class="text-gray-400">~</span>
-                        <input type="date" id="input-end-date" class="text-xs py-1.5 px-2 border rounded outline-none focus:ring-2 focus:ring-blue-400">
-                        <div class="flex items-center bg-white border rounded px-2 py-1.5">
-                            <span class="text-xs text-gray-500 mr-1">총</span>
-                            <input type="number" id="input-total-days" value="0" class="text-xs font-bold w-10 text-center outline-none">
-                            <span class="text-xs text-gray-500 ml-1">일</span>
+                <div class="flex flex-col gap-3 bg-gray-50 p-3 rounded-lg border border-gray-200">
+                    <div class="flex flex-wrap items-center gap-4">
+                        <div class="flex items-center gap-2">
+                            <span class="text-xs font-bold text-gray-600 border-r pr-2 w-20 text-right">구글 시트 링크</span>
+                            <input type="url" id="noise-url" placeholder="소음 시트 주소..." class="text-xs py-1.5 px-3 border rounded w-48 focus:ring-2 focus:ring-blue-500 outline-none">
+                            <input type="url" id="chemical-url" placeholder="소음제외 시트 주소..." class="text-xs py-1.5 px-3 border rounded w-48 focus:ring-2 focus:ring-green-500 outline-none">
                         </div>
-                        <button onclick="executeAnalysis()" class="bg-gray-800 hover:bg-gray-900 text-white px-6 py-1.5 rounded shadow text-sm font-bold transition ml-2">
-                            데이터 분석 실행
-                        </button>
+                    </div>
+                    <div class="flex flex-wrap items-center gap-4">
+                        <div class="flex items-center gap-2">
+                            <span class="text-xs font-bold text-gray-600 border-r pr-2 w-20 text-right">사업장명</span>
+                            <input type="text" id="input-company-name" placeholder="사업장명 입력 (예: 오성테크)" class="text-xs py-1.5 px-3 border rounded w-96 focus:ring-2 focus:ring-purple-500 outline-none">
+                        </div>
+                        <div class="flex items-center gap-2 ml-auto">
+                            <span class="text-xs font-bold text-gray-600 border-r pr-2">측정 기간 설정</span>
+                            <input type="date" id="input-start-date" class="text-xs py-1.5 px-2 border rounded outline-none focus:ring-2 focus:ring-blue-400">
+                            <span class="text-gray-400">~</span>
+                            <input type="date" id="input-end-date" class="text-xs py-1.5 px-2 border rounded outline-none focus:ring-2 focus:ring-blue-400">
+                            <div class="flex items-center bg-white border rounded px-2 py-1.5">
+                                <span class="text-xs text-gray-500 mr-1">총</span>
+                                <input type="number" id="input-total-days" value="0" class="text-xs font-bold w-10 text-center outline-none">
+                                <span class="text-xs text-gray-500 ml-1">일</span>
+                            </div>
+                            <button onclick="executeAnalysis()" class="bg-gray-800 hover:bg-gray-900 text-white px-6 py-1.5 rounded shadow text-sm font-bold transition ml-2">
+                                데이터 분석 실행
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -326,9 +333,15 @@
                 globalRawData = [];
                 document.getElementById('noise-url').value = '';
                 document.getElementById('chemical-url').value = '';
+                document.getElementById('input-company-name').value = '';
                 document.getElementById('input-start-date').value = '';
                 document.getElementById('input-end-date').value = '';
                 document.getElementById('input-total-days').value = '0';
+                
+                const titleEl = document.getElementById('main-report-title');
+                titleEl.innerHTML = '작업환경측정 위험성평가 및 분석 보고서';
+                titleEl.removeAttribute('data-filename');
+                
                 document.getElementById('top-status-msg').innerText = '※ 시트 주소와 측정 기간을 입력하고 분석을 실행해 주세요.';
                 document.getElementById('report-content').innerHTML = `
                     <div class="a4-page page-container flex flex-col justify-center items-center text-gray-400" data-section="0">
@@ -682,22 +695,50 @@
             const startDateRaw = document.getElementById('input-start-date').value;
             const endDateRaw = document.getElementById('input-end-date').value;
             const totalDays = document.getElementById('input-total-days').value;
+            const companyName = document.getElementById('input-company-name').value.trim();
             
             let periodText = '측정 기간 정보 없음';
+            
+            // 상/하반기 자동 산출 로직 (사업장명이 있을 때만 부제목 생성)
+            let subTitle = '';
+            
+            if (companyName) {
+                if (startDateRaw) {
+                    const d = new Date(startDateRaw);
+                    const fullYear = d.getFullYear(); // 4자리 연도 (ex: 2026)
+                    const month = d.getMonth() + 1;
+                    const half = month <= 6 ? '상반기' : '하반기';
+                    subTitle = `${fullYear}년 ${half} ${companyName}`;
+                } else {
+                    subTitle = `${companyName}`;
+                }
+            }
+            
             if (startDateRaw && endDateRaw) {
                 const formatDate = (ds) => {
-                    const d = new Date(ds);
-                    return `${d.getFullYear()}년 ${String(d.getMonth() + 1).padStart(2, '0')}월 ${String(d.getDate()).padStart(2, '0')}일`;
+                    const dateObj = new Date(ds);
+                    return `${dateObj.getFullYear()}년 ${String(dateObj.getMonth() + 1).padStart(2, '0')}월 ${String(dateObj.getDate()).padStart(2, '0')}일`;
                 };
                 periodText = `측정 기간: ${formatDate(startDateRaw)} ~ ${formatDate(endDateRaw)} (총 ${totalDays}일)`;
             }
+            
+            // 상단 고정 헤더 제목 업데이트 (메인 제목 + 보조 뱃지)
+            const mainTitle = '작업환경측정 위험성평가 및 분석 보고서';
+            const topHeaderTitle = subTitle ? `${mainTitle} <span class="text-sm font-normal text-blue-700 bg-blue-50 px-2.5 py-1 rounded-md ml-2 border border-blue-200 align-middle">${subTitle}</span>` : mainTitle;
+            const titleEl = document.getElementById('main-report-title');
+            titleEl.innerHTML = topHeaderTitle;
+            // CSV 파일 저장을 위한 숨겨진 속성 세팅
+            titleEl.setAttribute('data-filename', subTitle ? `${subTitle}_작업환경측정_보고서` : '작업환경측정_보고서');
 
             let reportHtml = '';
 
             // --- Section 1 ---
+            const subTitleHtml = subTitle ? `<h2 class="text-[1.65rem] font-bold text-blue-800 mb-4 tracking-tight">${subTitle}</h2>` : '';
+            
             const prefixHtml = `
                 <div class="text-center mb-6 mt-2">
-                    <h1 class="text-3xl font-bold mb-2">작업환경측정 위험성평가 및 분석 보고서</h1>
+                    <h1 class="text-3xl font-extrabold text-gray-900 mb-2">${mainTitle}</h1>
+                    ${subTitleHtml}
                     <p class="text-gray-500 text-sm mb-1" id="report-summary">${periodText}</p>
                     <p class="text-gray-600">총 측정 건수: ${totalCount.toLocaleString()}건 | 기준 초과: <span class="text-red-600 font-bold">${totalExceed.toLocaleString()}건</span></p>
                 </div>
@@ -1112,9 +1153,15 @@
                 globalRawData = [];
                 document.getElementById('noise-url').value = '';
                 document.getElementById('chemical-url').value = '';
+                document.getElementById('input-company-name').value = '';
                 document.getElementById('input-start-date').value = '';
                 document.getElementById('input-end-date').value = '';
                 document.getElementById('input-total-days').value = '0';
+                
+                const titleEl = document.getElementById('main-report-title');
+                titleEl.innerHTML = '작업환경측정 위험성평가 및 분석 보고서';
+                titleEl.removeAttribute('data-filename');
+                
                 document.getElementById('top-status-msg').innerText = '※ 시트 주소와 측정 기간을 입력하고 분석을 실행해 주세요.';
                 
                 document.getElementById('report-content').innerHTML = `
@@ -1126,15 +1173,6 @@
             }
         }
 
-        function openModal(mode) { 
-            const summary = document.getElementById('report-summary');
-            if(!summary || summary.innerText.includes('대기 중')) return alert("먼저 데이터 분석을 실행하여 보고서를 완성해 주세요.");
-            
-            document.getElementById('selection-modal').classList.remove('hidden'); 
-        }
-        
-        function closeModal() { document.getElementById('selection-modal').classList.add('hidden'); }
-        
         function printReport() {
             const summary = document.getElementById('report-summary');
             if(!summary || summary.innerText.includes('대기 중')) return alert("먼저 데이터 분석을 실행하여 보고서를 완성해 주세요.");
@@ -1194,8 +1232,10 @@
                 csvContent += "\n";
             });
             const link = document.createElement("a");
+            const titleEl = document.getElementById('main-report-title');
+            const reportTitle = (titleEl.getAttribute('data-filename') || titleEl.innerText).replace(/\s+/g, '_');
             link.setAttribute("href", URL.createObjectURL(new Blob([csvContent], { type: 'text/csv;charset=utf-8;' })));
-            link.setAttribute("download", "작업환경측정_데이터.csv");
+            link.setAttribute("download", `${reportTitle}_데이터.csv`);
             link.click();
         }
     </script>

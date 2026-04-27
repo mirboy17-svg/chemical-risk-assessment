@@ -44,6 +44,8 @@
             html, body { background: white !important; margin: 0 !important; padding: 0 !important; width: 100% !important; height: auto !important; display: block !important; overflow: visible !important; }
             .no-print { display: none !important; }
             
+            .hide-in-print { display: none !important; }
+            
             #main-wrapper, #report-content { 
                 width: 100% !important; max-width: 100% !important; margin: 0 !important; padding: 0 !important; display: block !important; overflow: visible !important; 
             }
@@ -95,7 +97,7 @@
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
     </style>
 </head>
-<body class="flex min-h-screen">
+<body class="flex min-h-screen relative overflow-x-hidden">
 
     <!-- 로그인 오버레이 -->
     <div id="login-overlay" class="fixed inset-0 bg-gray-100 z-[99999] flex flex-col justify-center items-center print:hidden">
@@ -140,24 +142,103 @@
         <p id="loading-desc" class="text-gray-600 mt-2">구글 스프레드시트 데이터를 전수 조사 및 통계 산출 중입니다.</p>
     </div>
 
-    <!-- 우측 메인 영역 -->
-    <div id="main-wrapper" class="flex-1 w-full lg:pl-72 print:pl-0 print:block print:w-full">
+    <!-- 사이드바 배경 오버레이 -->
+    <div id="sidebar-overlay" class="fixed inset-0 bg-black bg-opacity-50 z-40 hidden transition-opacity print:hidden" onclick="toggleSidebar()"></div>
+
+    <!-- 좌측 슬라이드 메뉴 (Drawer) -->
+    <div id="sidebar" class="w-80 fixed left-0 top-0 h-screen bg-white shadow-2xl border-r border-gray-200 flex flex-col z-50 no-print transition-transform duration-300 -translate-x-full">
+        <div class="p-5 border-b border-gray-200 bg-gray-50 flex justify-between items-center">
+            <div>
+                <h2 class="font-bold text-gray-800 text-lg flex items-center">
+                    <svg class="w-5 h-5 mr-2 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h7"></path></svg>
+                    보고서 메뉴
+                </h2>
+                <p class="text-[0.7rem] text-gray-500 mt-1 tracking-tight">※ 체크된 항목만 출력(인쇄)됩니다.</p>
+            </div>
+            <button onclick="toggleSidebar()" class="text-gray-400 hover:text-gray-800 focus:outline-none">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+            </button>
+        </div>
         
-        <div class="no-print sticky top-0 bg-white border-b border-gray-200 p-4 shadow-md z-40">
+        <div class="flex-1 overflow-y-auto p-4 space-y-1">
+            <div class="flex items-center px-2 hover:bg-blue-50 rounded transition">
+                <input type="checkbox" value="1" class="print-checkbox w-4 h-4 text-blue-600 rounded border-gray-300 cursor-pointer" checked>
+                <a href="#section-1" onclick="toggleSidebar()" class="block py-2.5 px-3 flex-1 text-sm font-bold text-gray-700 hover:text-blue-600">1. 작업환경측정 통계 분석</a>
+            </div>
+            <div class="flex items-center px-2 hover:bg-blue-50 rounded transition">
+                <input type="checkbox" value="2" class="print-checkbox w-4 h-4 text-blue-600 rounded border-gray-300 cursor-pointer" checked>
+                <a href="#section-2" onclick="toggleSidebar()" class="block py-2.5 px-3 flex-1 text-sm font-bold text-gray-700 hover:text-blue-600">2. 노출기준 초과 현황 리스트</a>
+            </div>
+            <div class="flex items-center px-2 hover:bg-blue-50 rounded transition">
+                <input type="checkbox" value="3" class="print-checkbox w-4 h-4 text-blue-600 rounded border-gray-300 cursor-pointer" checked>
+                <a href="#section-3" onclick="toggleSidebar()" class="block py-2.5 px-3 flex-1 text-sm font-bold text-gray-700 hover:text-blue-600">3. 분류별 측정 분포 및 초과 현황</a>
+            </div>
+            <div class="flex items-center px-2 hover:bg-blue-50 rounded transition">
+                <input type="checkbox" value="4" class="print-checkbox w-4 h-4 text-blue-600 rounded border-gray-300 cursor-pointer" checked>
+                <a href="#section-4" onclick="toggleSidebar()" class="block py-2.5 px-3 flex-1 text-sm font-bold text-gray-700 hover:text-blue-600">4. 단위사업체별 종합 현황</a>
+            </div>
+            <div class="flex items-center px-2 hover:bg-blue-50 rounded transition">
+                <input type="checkbox" value="5" class="print-checkbox w-4 h-4 text-blue-600 rounded border-gray-300 cursor-pointer" checked>
+                <a href="#section-5" onclick="toggleSidebar()" class="block py-2.5 px-3 flex-1 text-sm font-bold text-gray-700 hover:text-blue-600">5. 단위작업장소별 측정 현황</a>
+            </div>
+            <div class="flex items-center px-2 hover:bg-blue-50 rounded transition">
+                <input type="checkbox" value="6" class="print-checkbox w-4 h-4 text-blue-600 rounded border-gray-300 cursor-pointer" checked>
+                <a href="#section-6" onclick="toggleSidebar()" class="block py-2.5 px-3 flex-1 text-sm font-bold text-gray-700 hover:text-blue-600">6. 화학물질 위험성 평가</a>
+            </div>
+            <div class="flex items-center px-2 hover:bg-blue-50 rounded transition">
+                <input type="checkbox" value="7" class="print-checkbox w-4 h-4 text-blue-600 rounded border-gray-300 cursor-pointer" checked>
+                <a href="#section-7" onclick="toggleSidebar()" class="block py-2.5 px-3 flex-1 text-sm font-bold text-gray-700 hover:text-blue-600">7. 단위사업체별 종합 보고서</a>
+            </div>
+        </div>
+
+        <div class="p-5 border-t border-gray-200 bg-gray-50">
+            <h3 class="text-xs font-bold text-gray-500 mb-3 flex items-center">
+                <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4"></path></svg>
+                데이터 관리
+            </h3>
+            
+            <div class="flex gap-2 mb-2">
+                <button onclick="resetAnalysis(); toggleSidebar();" class="flex-1 bg-red-50 border border-red-200 hover:bg-red-100 text-red-600 py-2 rounded shadow-sm text-xs font-bold transition">초기화</button>
+            </div>
+
+            <button onclick="openModal('print'); toggleSidebar();" class="w-full mt-3 bg-blue-600 hover:bg-blue-700 text-white font-bold py-3.5 rounded shadow-md transition flex items-center justify-center text-[0.95rem] gap-2">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path></svg>
+                출력 (인쇄)
+            </button>
+            
+            <button onclick="logout()" class="w-full mt-2 bg-gray-500 hover:bg-gray-600 text-white font-bold py-2.5 rounded shadow-sm transition flex items-center justify-center text-[0.85rem] gap-2">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg>
+                로그아웃
+            </button>
+        </div>
+    </div>
+
+    <!-- 우측 메인 영역 (사이드바 숨김으로 전체 넓이 사용) -->
+    <div id="main-wrapper" class="flex-1 w-full print:block print:w-full transition-all duration-300">
+        
+        <div class="no-print sticky top-0 bg-white border-b border-gray-200 p-4 shadow-md z-30">
             <div class="max-w-[1400px] mx-auto flex flex-col gap-4">
                 <div class="flex justify-between items-center">
-                    <div>
-                        <h1 id="main-report-title" class="text-xl font-bold text-gray-800">작업환경측정 위험성평가 및 분석 보고서</h1>
-                        <p class="text-xs text-gray-500" id="top-status-msg">※ 시트 주소와 측정 기간을 입력하고 분석을 실행해 주세요.</p>
+                    <div class="flex items-center">
+                        <!-- ★ 좌측 상단 보고서 메뉴 햄버거 버튼 -->
+                        <button onclick="toggleSidebar()" class="mr-4 p-2 bg-gray-100 hover:bg-gray-200 rounded text-gray-700 transition shadow-sm border border-gray-300 flex items-center">
+                            <svg class="w-6 h-6 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
+                            <span class="text-sm font-bold">메뉴</span>
+                        </button>
+                        
+                        <div>
+                            <h1 id="main-report-title" class="text-xl font-bold text-gray-800">작업환경측정 위험성평가 및 분석 보고서</h1>
+                            <p class="text-xs text-gray-500" id="top-status-msg">※ 시트 주소와 측정 기간을 입력하고 분석을 실행해 주세요.</p>
+                        </div>
                     </div>
                     <div class="flex gap-2">
                         <button onclick="saveAsCSV()" class="bg-green-600 hover:bg-green-700 text-white px-3 py-2 rounded shadow flex items-center transition text-sm font-bold">
                             <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
                             엑셀(CSV) 저장
                         </button>
-                        <button onclick="executeNativePrint()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded shadow flex items-center transition text-sm font-bold">
+                        <button onclick="openModal('print')" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded shadow flex items-center transition text-sm font-bold">
                             <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path></svg>
-                            선택 항목 출력 (인쇄)
+                            선택 항목 출력
                         </button>
                     </div>
                 </div>
@@ -203,67 +284,39 @@
         </div>
     </div>
 
-    <!-- 좌측 고정 사이드바 메뉴창 -->
-    <div class="w-72 fixed left-0 top-0 h-screen bg-white shadow-2xl border-r border-gray-200 flex flex-col z-50 no-print hidden lg:flex">
-        <div class="p-5 border-b border-gray-200 bg-gray-50">
-            <h2 class="font-bold text-gray-800 text-lg flex items-center">
-                <svg class="w-5 h-5 mr-2 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h7"></path></svg>
-                보고서 메뉴
-            </h2>
-            <p class="text-[0.7rem] text-gray-500 mt-2 tracking-tight">※ 체크된 항목만 출력(인쇄)됩니다.</p>
-        </div>
-        
-        <div class="flex-1 overflow-y-auto p-4 space-y-1">
-            <div class="flex items-center px-2 hover:bg-blue-50 rounded transition">
-                <input type="checkbox" value="1" class="print-checkbox w-4 h-4 text-blue-600 rounded border-gray-300 cursor-pointer" checked>
-                <a href="#section-1" class="block py-2.5 px-3 flex-1 text-sm font-bold text-gray-700 hover:text-blue-600">1. 작업환경측정 통계 분석</a>
-            </div>
-            <div class="flex items-center px-2 hover:bg-blue-50 rounded transition">
-                <input type="checkbox" value="2" class="print-checkbox w-4 h-4 text-blue-600 rounded border-gray-300 cursor-pointer" checked>
-                <a href="#section-2" class="block py-2.5 px-3 flex-1 text-sm font-bold text-gray-700 hover:text-blue-600">2. 노출기준 초과 현황 리스트</a>
-            </div>
-            <div class="flex items-center px-2 hover:bg-blue-50 rounded transition">
-                <input type="checkbox" value="3" class="print-checkbox w-4 h-4 text-blue-600 rounded border-gray-300 cursor-pointer" checked>
-                <a href="#section-3" class="block py-2.5 px-3 flex-1 text-sm font-bold text-gray-700 hover:text-blue-600">3. 분류별 측정 분포 및 초과 현황</a>
-            </div>
-            <div class="flex items-center px-2 hover:bg-blue-50 rounded transition">
-                <input type="checkbox" value="4" class="print-checkbox w-4 h-4 text-blue-600 rounded border-gray-300 cursor-pointer" checked>
-                <a href="#section-4" class="block py-2.5 px-3 flex-1 text-sm font-bold text-gray-700 hover:text-blue-600">4. 단위사업체별 종합 현황</a>
-            </div>
-            <div class="flex items-center px-2 hover:bg-blue-50 rounded transition">
-                <input type="checkbox" value="5" class="print-checkbox w-4 h-4 text-blue-600 rounded border-gray-300 cursor-pointer" checked>
-                <a href="#section-5" class="block py-2.5 px-3 flex-1 text-sm font-bold text-gray-700 hover:text-blue-600">5. 단위작업장소별 측정 현황</a>
-            </div>
-            <div class="flex items-center px-2 hover:bg-blue-50 rounded transition">
-                <input type="checkbox" value="6" class="print-checkbox w-4 h-4 text-blue-600 rounded border-gray-300 cursor-pointer" checked>
-                <a href="#section-6" class="block py-2.5 px-3 flex-1 text-sm font-bold text-gray-700 hover:text-blue-600">6. 화학물질 위험성 평가</a>
-            </div>
-            <!-- ★ 7번 항목 추가 -->
-            <div class="flex items-center px-2 hover:bg-blue-50 rounded transition">
-                <input type="checkbox" value="7" class="print-checkbox w-4 h-4 text-blue-600 rounded border-gray-300 cursor-pointer" checked>
-                <a href="#section-7" class="block py-2.5 px-3 flex-1 text-sm font-bold text-gray-700 hover:text-blue-600">7. 단위사업체별 종합 보고서</a>
-            </div>
-        </div>
+    <!-- 출력 방식 선택 모달 -->
+    <div id="selection-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50 flex justify-center items-center">
+        <div class="bg-white rounded-lg p-6 w-[34rem] shadow-xl relative max-h-[95vh] overflow-y-auto">
+            <h3 class="text-lg font-bold mb-2 text-gray-800 border-b pb-2">보고서 출력 설정</h3>
+            <p class="text-sm text-gray-600 mb-4">출력할 항목을 선택하고 인쇄 버튼을 눌러주세요.</p>
 
-        <div class="p-5 border-t border-gray-200 bg-gray-50">
-            <h3 class="text-xs font-bold text-gray-500 mb-3 flex items-center">
-                <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4"></path></svg>
-                데이터 관리
-            </h3>
-            
-            <div class="flex gap-2 mb-2">
-                <button onclick="resetAnalysis()" class="flex-1 bg-red-50 border border-red-200 hover:bg-red-100 text-red-600 py-2 rounded shadow-sm text-xs font-bold transition">초기화</button>
+            <div class="mb-5 p-4 bg-gray-50 border border-gray-200 rounded-lg">
+                <h4 class="font-bold text-gray-800 mb-3 flex items-center text-sm">
+                    <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"></path></svg>
+                    출력할 보고서 항목 선택
+                </h4>
+                <div class="grid grid-cols-2 gap-x-2 gap-y-2 text-xs text-gray-700">
+                    <label class="flex items-center cursor-pointer hover:bg-gray-100 p-1.5 rounded border border-transparent hover:border-gray-200 transition"><input type="checkbox" value="1" class="pdf-checkbox mr-2 w-3.5 h-3.5 text-blue-600 rounded border-gray-300 focus:ring-blue-500" checked> 1. 작업환경측정 통계</label>
+                    <label class="flex items-center cursor-pointer hover:bg-gray-100 p-1.5 rounded border border-transparent hover:border-gray-200 transition"><input type="checkbox" value="2" class="pdf-checkbox mr-2 w-3.5 h-3.5 text-blue-600 rounded border-gray-300 focus:ring-blue-500" checked> 2. 노출기준 초과 현황</label>
+                    <label class="flex items-center cursor-pointer hover:bg-gray-100 p-1.5 rounded border border-transparent hover:border-gray-200 transition"><input type="checkbox" value="3" class="pdf-checkbox mr-2 w-3.5 h-3.5 text-blue-600 rounded border-gray-300 focus:ring-blue-500" checked> 3. 분류별 측정 분포</label>
+                    <label class="flex items-center cursor-pointer hover:bg-gray-100 p-1.5 rounded border border-transparent hover:border-gray-200 transition"><input type="checkbox" value="4" class="pdf-checkbox mr-2 w-3.5 h-3.5 text-blue-600 rounded border-gray-300 focus:ring-blue-500" checked> 4. 단위사업체별 종합 현황</label>
+                    <label class="flex items-center cursor-pointer hover:bg-gray-100 p-1.5 rounded border border-transparent hover:border-gray-200 transition"><input type="checkbox" value="5" class="pdf-checkbox mr-2 w-3.5 h-3.5 text-blue-600 rounded border-gray-300 focus:ring-blue-500" checked> 5. 단위작업장소별 측정 현황</label>
+                    <label class="flex items-center cursor-pointer hover:bg-gray-100 p-1.5 rounded border border-transparent hover:border-gray-200 transition"><input type="checkbox" value="6" class="pdf-checkbox mr-2 w-3.5 h-3.5 text-blue-600 rounded border-gray-300 focus:ring-blue-500" checked> 6. 화학물질 위험성 평가</label>
+                    <label class="flex items-center cursor-pointer hover:bg-gray-100 p-1.5 rounded border border-transparent hover:border-gray-200 transition col-span-2"><input type="checkbox" value="7" class="pdf-checkbox mr-2 w-3.5 h-3.5 text-blue-600 rounded border-gray-300 focus:ring-blue-500" checked> 7. 단위사업체별 종합 보고서 (개별 인쇄용)</label>
+                </div>
             </div>
 
-            <button onclick="executeNativePrint()" title="인쇄 대화상자 열기 (단축키: Ctrl + P)" class="w-full mt-3 bg-blue-600 hover:bg-blue-700 text-white font-bold py-3.5 rounded shadow-md transition flex items-center justify-center text-[0.95rem] gap-2">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path></svg>
-                출력 (인쇄)
-            </button>
+            <div class="mb-2">
+                <button onclick="executeNativePrint()" class="w-full py-3 bg-blue-600 text-white rounded font-bold shadow hover:bg-blue-700 transition flex items-center justify-center">
+                    <svg class="w-5 h-5 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path></svg>
+                    선택 항목 인쇄 (PDF 저장 가능)
+                </button>
+                <p class="text-xs text-center text-gray-500 mt-2">※ 프린터 선택 창에서 'PDF로 저장'을 선택하면 고화질 PDF 파일로 보관할 수 있습니다.</p>
+            </div>
             
-            <button onclick="logout()" class="w-full mt-2 bg-gray-500 hover:bg-gray-600 text-white font-bold py-2.5 rounded shadow-sm transition flex items-center justify-center text-[0.85rem] gap-2">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg>
-                로그아웃
-            </button>
+            <div class="mt-4 flex justify-end border-t pt-3 border-gray-100">
+                <button onclick="closeModal()" class="px-5 py-2 bg-gray-200 text-gray-800 rounded font-bold hover:bg-gray-300 transition">닫기</button>
+            </div>
         </div>
     </div>
 
@@ -281,7 +334,22 @@
                 if ((e.ctrlKey || e.metaKey) && e.key === 'p') {
                     e.preventDefault();
                     const summary = document.getElementById('report-summary');
-                    if(summary && !summary.innerText.includes('대기 중')) executeNativePrint();
+                    if(summary && !summary.innerText.includes('대기 중')) openModal('print');
+                }
+            });
+            
+            // 사이드바 외부 클릭 시 닫기
+            document.addEventListener('click', function(event) {
+                const sidebar = document.getElementById('sidebar');
+                const overlay = document.getElementById('sidebar-overlay');
+                const toggleBtn = document.querySelector('button[onclick="toggleSidebar()"]');
+                
+                if (sidebar && !sidebar.classList.contains('-translate-x-full') && 
+                    !sidebar.contains(event.target) && 
+                    event.target !== toggleBtn && 
+                    !toggleBtn.contains(event.target) &&
+                    event.target !== overlay) {
+                    toggleSidebar();
                 }
             });
         });
@@ -327,6 +395,27 @@
                 document.getElementById('login-overlay').style.display = 'flex';
                 document.getElementById('login-password').focus();
             }
+        }
+
+        // 사이드바 토글 함수
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('sidebar-overlay');
+            if (sidebar.classList.contains('-translate-x-full')) {
+                sidebar.classList.remove('-translate-x-full');
+                overlay.classList.remove('hidden');
+            } else {
+                sidebar.classList.add('-translate-x-full');
+                overlay.classList.add('hidden');
+            }
+        }
+
+        function openModal(type) {
+            document.getElementById('selection-modal').classList.remove('hidden');
+        }
+
+        function closeModal() {
+            document.getElementById('selection-modal').classList.add('hidden');
         }
 
         let allChartInstances = [];
@@ -555,7 +644,6 @@
             }
         }
 
-        // ★ 스프레드시트에 등장한 "순서" 그대로 유지하도록 companies 배열을 전달받아 정렬에 사용합니다.
         function buildGroupRows(data, groupKeys, companyArray) {
             const groupBy = (array, keys) => array.reduce((res, obj) => {
                 const key = keys.map(k => obj[k]).join('|');
@@ -656,22 +744,22 @@
                 html += `
                     <div class="prevent-break bg-white p-4 border border-green-300 rounded-xl shadow-lg flex flex-col items-center flex-1">
                         <h3 class="text-[1rem] font-bold text-center mb-3 bg-gradient-to-r from-green-50 to-green-100 w-full py-2 rounded-lg border border-green-200">1) 측정항목 분포도</h3>
-                        <div id="chart_${prefix}_1" class="w-full relative flex-1" style="min-height: 280px; margin: 0 auto;"></div>
+                        <div id="chart_${prefix}_1" class="w-full relative flex-1" style="min-height: 350px; margin: 0 auto;"></div>
                     </div>
                     <div class="prevent-break bg-white p-4 border border-green-300 rounded-xl shadow-lg flex flex-col items-center flex-1">
                         <h3 class="text-[1rem] font-bold text-center mb-3 bg-gradient-to-r from-green-50 to-green-100 w-full py-2 rounded-lg border border-green-200">2) 총 측정건수 대비 분류별 초과 비율</h3>
-                        <div id="chart_${prefix}_2" class="w-full relative flex-1" style="min-height: 280px; margin: 0 auto;"></div>
+                        <div id="chart_${prefix}_2" class="w-full relative flex-1" style="min-height: 350px; margin: 0 auto;"></div>
                     </div>
                 `;
             } else {
                 html += `
                     <div class="prevent-break bg-white p-4 border border-green-300 rounded-xl shadow-lg flex flex-col items-center flex-1">
                         <h3 class="text-[1rem] font-bold text-center mb-3 bg-gradient-to-r from-green-50 to-green-100 w-full py-2 rounded-lg border border-green-200">3) 분류별 최대 노출 분포 (Max치, 노출기준=100%)</h3>
-                        <div id="chart_${prefix}_3" class="w-full relative flex-1" style="min-height: 280px; margin: 0 auto;"></div>
+                        <div id="chart_${prefix}_3" class="w-full relative flex-1" style="min-height: 350px; margin: 0 auto;"></div>
                     </div>
                     <div class="prevent-break bg-white p-4 border border-green-300 rounded-xl shadow-lg flex flex-col items-center flex-1">
                         <h3 class="text-[1rem] font-bold text-center mb-3 bg-gradient-to-r from-green-50 to-green-100 w-full py-2 rounded-lg border border-green-200">4) 소음 발생수준별 분포도</h3>
-                        <div id="chart_${prefix}_4" class="w-full relative flex-1" style="min-height: 280px; margin: 0 auto;"></div>
+                        <div id="chart_${prefix}_4" class="w-full relative flex-1" style="min-height: 350px; margin: 0 auto;"></div>
                     </div>
                 `;
             }
@@ -719,7 +807,7 @@
             titleEl.innerHTML = topHeaderTitle;
             titleEl.setAttribute('data-filename', subTitle ? `${subTitle}_작업환경측정_보고서` : '작업환경측정_보고서');
 
-            // ★ 스프레드시트상의 원래 순서를 보장합니다 (Set으로 중복만 제거, Sort하지 않음)
+            // ★ 스프레드시트 원본 순서대로 사업체 배열 생성
             const companies = [...new Set(data.map(d => d.company))];
 
             let reportHtml = '';
@@ -787,7 +875,7 @@
             
             reportHtml += renderSectionStrict(1, `<span>1</span> 작업환경측정 통계 분석(전수 분석)`, sec1Thead, sec1Rows, sec1Render, true, prefixHtml, sec1Legend);
 
-            // --- Section 2 (통합 표) ---
+            // --- Section 2 ---
             exceedData.sort((a, b) => {
                 let compA = companies.indexOf(a.company);
                 let compB = companies.indexOf(b.company);
@@ -806,33 +894,50 @@
             
             reportHtml += renderSectionStrict(2, `<span>2</span> 노출기준 초과 현황 상세 리스트`, sec2Thead, exceedData, sec2Render, false, '', '');
 
-            // --- Section 3 (2x2 그리드, 글로벌 통합 4차트, 3D 디자인) ---
-            reportHtml += `
-                <div id="section-3" class="a4-page page-container flex flex-col justify-start major-section" data-section="3">
-                    <div class="section-title mt-4 border-b-2 border-green-600 pb-2 mb-4 font-bold text-gray-900 text-xl"><span>3</span> 분류별 측정 분포 및 초과 현황</div>
-                    <p class="text-sm text-gray-600 mb-3">※ 산업안전보건법 시행규칙 기준 분류 및 측정결과 시각화</p>
-                    <div class="grid grid-cols-2 gap-5 flex-1 mb-2">
-                        <div class="prevent-break bg-white p-3 border border-green-300 rounded-xl shadow-md flex flex-col items-center">
-                            <h3 class="text-[0.95rem] font-bold text-center mb-2 bg-gradient-to-r from-green-50 to-green-100 w-full py-1.5 rounded border border-green-200">1) 측정항목 분포도</h3>
-                            <div id="chart_global_1" class="w-full relative flex-1" style="min-height: 250px;"></div>
+            const createSection3ChartPageGlobal = (title, prefix, pagePart, isFirst) => {
+                let html = `<div class="a4-page page-container flex flex-col justify-start ${isFirst ? 'major-section' : ''}" data-section="3">`;
+                if (isFirst) {
+                    html += `<div class="section-title mt-4 border-b-2 border-green-600 pb-2 mb-4 font-bold text-gray-900 text-xl"><span>3</span> 분류별 측정 분포 및 초과 현황</div>`;
+                    html += `<p class="text-sm text-gray-600 mb-3">※ 산업안전보건법 시행규칙 기준 분류 및 측정결과 시각화</p>`;
+                }
+                html += `<h2 class="text-lg font-bold text-gray-800 mb-3 ml-1 border-b border-gray-200 pb-1">${title}</h2>`;
+                
+                // ★ 1x2 그리드 배열 적용
+                html += `<div class="grid grid-cols-1 gap-6 flex-1 mb-2">`;
+                
+                if (pagePart === 1) {
+                    html += `
+                        <div class="prevent-break bg-white p-4 border border-green-300 rounded-xl shadow-lg flex flex-col items-center flex-1">
+                            <h3 class="text-[1rem] font-bold text-center mb-3 bg-gradient-to-r from-green-50 to-green-100 w-full py-2 rounded-lg border border-green-200">1) 측정항목 분포도</h3>
+                            <div id="chart_${prefix}_1" class="w-full relative flex-1" style="min-height: 350px; margin: 0 auto;"></div>
                         </div>
-                        <div class="prevent-break bg-white p-3 border border-green-300 rounded-xl shadow-md flex flex-col items-center">
-                            <h3 class="text-[0.95rem] font-bold text-center mb-2 bg-gradient-to-r from-green-50 to-green-100 w-full py-1.5 rounded border border-green-200">2) 총 측정건수 대비 분류별 초과 비율</h3>
-                            <div id="chart_global_2" class="w-full relative flex-1" style="min-height: 250px;"></div>
+                        <div class="prevent-break bg-white p-4 border border-green-300 rounded-xl shadow-lg flex flex-col items-center flex-1">
+                            <h3 class="text-[1rem] font-bold text-center mb-3 bg-gradient-to-r from-green-50 to-green-100 w-full py-2 rounded-lg border border-green-200">2) 총 측정건수 대비 분류별 초과 비율</h3>
+                            <div id="chart_${prefix}_2" class="w-full relative flex-1" style="min-height: 350px; margin: 0 auto;"></div>
                         </div>
-                        <div class="prevent-break bg-white p-3 border border-green-300 rounded-xl shadow-md flex flex-col items-center">
-                            <h3 class="text-[0.95rem] font-bold text-center mb-2 bg-gradient-to-r from-green-50 to-green-100 w-full py-1.5 rounded border border-green-200">3) 분류별 최대 노출 분포 (Max치, 노출기준=100%)</h3>
-                            <div id="chart_global_3" class="w-full relative flex-1" style="min-height: 250px;"></div>
+                    `;
+                } else {
+                    html += `
+                        <div class="prevent-break bg-white p-4 border border-green-300 rounded-xl shadow-lg flex flex-col items-center flex-1">
+                            <h3 class="text-[1rem] font-bold text-center mb-3 bg-gradient-to-r from-green-50 to-green-100 w-full py-2 rounded-lg border border-green-200">3) 분류별 최대 노출 분포 (Max치, 노출기준=100%)</h3>
+                            <div id="chart_${prefix}_3" class="w-full relative flex-1" style="min-height: 350px; margin: 0 auto;"></div>
                         </div>
-                        <div class="prevent-break bg-white p-3 border border-green-300 rounded-xl shadow-md flex flex-col items-center">
-                            <h3 class="text-[0.95rem] font-bold text-center mb-2 bg-gradient-to-r from-green-50 to-green-100 w-full py-1.5 rounded border border-green-200">4) 소음 발생수준별 분포도</h3>
-                            <div id="chart_global_4" class="w-full relative flex-1" style="min-height: 250px;"></div>
+                        <div class="prevent-break bg-white p-4 border border-green-300 rounded-xl shadow-lg flex flex-col items-center flex-1">
+                            <h3 class="text-[1rem] font-bold text-center mb-3 bg-gradient-to-r from-green-50 to-green-100 w-full py-2 rounded-lg border border-green-200">4) 소음 발생수준별 분포도</h3>
+                            <div id="chart_${prefix}_4" class="w-full relative flex-1" style="min-height: 350px; margin: 0 auto;"></div>
                         </div>
-                    </div>
-                </div>
-            `;
+                    `;
+                }
+                html += `</div></div>`;
+                return html;
+            };
 
-            // --- Section 4 (통합 표 - 청크 단위) ---
+            let sec3Html = '';
+            sec3Html += createSection3ChartPageGlobal('가. 전 공정 측정현황 (1/2)', 'global', 1, true);
+            sec3Html += createSection3ChartPageGlobal('가. 전 공정 측정현황 (2/2)', 'global', 2, false);
+            reportHtml += sec3Html;
+
+            // --- Section 4 ---
             const categoryMap = {}; 
             data.forEach(d => { 
                 if (!categoryMap[d.category]) categoryMap[d.category] = new Set(); 
@@ -897,7 +1002,7 @@
                 });
             }
 
-            // --- Section 5 (통합 표) ---
+            // --- Section 5 ---
             const groupRender5 = (r, isG, isNG, rs, isNSG, subRS) => {
                 let note = r.lightColor === 'bg-green-500' ? '-' : (r.lightColor === 'bg-yellow-400' ? '관찰 필요' : (r.lightColor === 'bg-orange-400' ? '개선 필요' : '개선 대상'));
                 const agentTd = getAgentTd(r.agent, 'text-left border-green-300 align-middle');
@@ -921,7 +1026,7 @@
             
             reportHtml += renderSectionStrict(5, `<span>5</span> 단위작업장소별 유해인자 측정 및 초과 현황`, sec5Thead, buildGroupRows(data, ['location', 'category', 'agent', 'limit'], companies), groupRender5, true, '', trafficLegend5);
 
-            // --- Section 6 (통합 표) ---
+            // --- Section 6 ---
             const sec6Data = data.filter(d => d.category !== '물리적 인자');
             const sec6Thead = `<tr><th width="13%">단위사업체명</th><th width="12%">부서(팀)명</th><th width="11%">분류</th><th width="24%">세부 유해인자명</th><th width="4.5%" style="padding:0.5rem 0.1rem; line-height:1.2; font-size:0.8rem;">측<br>정<br>건<br>수</th><th width="4.5%" style="padding:0.5rem 0.1rem; line-height:1.2; font-size:0.8rem;">초<br>과<br>건<br>수</th><th width="4.5%" style="padding:0.5rem 0.1rem; line-height:1.2; font-size:0.8rem;">노<br>출<br>수<br>준</th><th width="4.5%" style="padding:0.5rem 0.1rem; line-height:1.2; font-size:0.8rem;">유<br>해<br>성</th><th width="4.5%" style="color: #2563eb; padding:0.5rem 0.1rem; line-height:1.2; font-size:0.8rem;">위<br>험<br>성</th><th width="4.5%" style="padding:0.5rem 0.1rem; line-height:1.2; font-size:0.8rem;">신<br>호<br>등</th><th width="13%">판정</th></tr>`;
             
@@ -1052,14 +1157,13 @@
 
             reportHtml += renderSectionStrict(6, `<span>6</span> 작업환경측정 화학물질 위험성 평가`, sec6Thead, buildGroupRows(sec6Data, ['department', 'category', 'agent'], companies), groupRender6, true, '', extra6);
 
-            // --- Section 7 (단위사업체별 종합 보고서 - 개별 페이지 분리) ---
+            // --- Section 7 (단위사업체별 종합 보고서) ---
             let sec7Html = '';
             companies.forEach((comp, idx) => {
                 const compData = data.filter(d => d.company === comp);
                 const compExcData = compData.filter(d => d.isExceed);
                 const compSec6Data = compData.filter(d => d.category !== '물리적 인자');
 
-                // 7.1 종합현황
                 let compSec4Rows = [];
                 sortedCats.forEach(cat => {
                     Array.from(categoryMap[cat]).sort().forEach(agent => {
@@ -1083,17 +1187,47 @@
                 };
                 sec7Html += renderSectionStrict(7, `<span>7</span> 단위사업체별 종합 보고서 - ${comp} (종합 현황)`, sec7_1_Thead, compSec4Rows, sec7_1_Render, true, '', '');
 
-                // 7.2 초과현황
                 sec7Html += renderSectionStrict(7, `<span>7</span> 단위사업체별 종합 보고서 - ${comp} (초과 현황 리스트)`, sec2Thead, compExcData, sec2Render, false, '', '');
 
-                // 7.3 그래프 (2페이지)
+                const createSection7ChartPage = (title, prefix, pagePart) => {
+                    let html = `<div class="a4-page page-container flex flex-col justify-start major-section" data-section="7">`;
+                    html += `<div class="section-title mt-4 border-b-2 border-green-600 pb-2 mb-4 font-bold text-gray-900 text-xl">${title}</div>`;
+                    
+                    // ★ 1x2 그리드 배열 적용
+                    html += `<div class="grid grid-cols-1 gap-6 flex-1 mb-2">`;
+                    
+                    if (pagePart === 1) {
+                        html += `
+                            <div class="prevent-break bg-white p-4 border border-green-300 rounded-xl shadow-lg flex flex-col items-center flex-1">
+                                <h3 class="text-[1rem] font-bold text-center mb-3 bg-gradient-to-r from-green-50 to-green-100 w-full py-2 rounded-lg border border-green-200">1) 측정항목 분포도</h3>
+                                <div id="chart_${prefix}_1" class="w-full relative flex-1" style="min-height: 350px; margin: 0 auto;"></div>
+                            </div>
+                            <div class="prevent-break bg-white p-4 border border-green-300 rounded-xl shadow-lg flex flex-col items-center flex-1">
+                                <h3 class="text-[1rem] font-bold text-center mb-3 bg-gradient-to-r from-green-50 to-green-100 w-full py-2 rounded-lg border border-green-200">2) 총 측정건수 대비 분류별 초과 비율</h3>
+                                <div id="chart_${prefix}_2" class="w-full relative flex-1" style="min-height: 350px; margin: 0 auto;"></div>
+                            </div>
+                        `;
+                    } else {
+                        html += `
+                            <div class="prevent-break bg-white p-4 border border-green-300 rounded-xl shadow-lg flex flex-col items-center flex-1">
+                                <h3 class="text-[1rem] font-bold text-center mb-3 bg-gradient-to-r from-green-50 to-green-100 w-full py-2 rounded-lg border border-green-200">3) 분류별 최대 노출 분포 (Max치, 노출기준=100%)</h3>
+                                <div id="chart_${prefix}_3" class="w-full relative flex-1" style="min-height: 350px; margin: 0 auto;"></div>
+                            </div>
+                            <div class="prevent-break bg-white p-4 border border-green-300 rounded-xl shadow-lg flex flex-col items-center flex-1">
+                                <h3 class="text-[1rem] font-bold text-center mb-3 bg-gradient-to-r from-green-50 to-green-100 w-full py-2 rounded-lg border border-green-200">4) 소음 발생수준별 분포도</h3>
+                                <div id="chart_${prefix}_4" class="w-full relative flex-1" style="min-height: 350px; margin: 0 auto;"></div>
+                            </div>
+                        `;
+                    }
+                    html += `</div></div>`;
+                    return html;
+                };
+
                 sec7Html += createSection7ChartPage(`<span>7</span> 단위사업체별 종합 보고서 - ${comp} (측정 분포 및 초과 현황 1/2)`, `sec7_${idx}`, 1);
                 sec7Html += createSection7ChartPage(`<span>7</span> 단위사업체별 종합 보고서 - ${comp} (측정 분포 및 초과 현황 2/2)`, `sec7_${idx}`, 2);
 
-                // 7.4 측정현황
                 sec7Html += renderSectionStrict(7, `<span>7</span> 단위사업체별 종합 보고서 - ${comp} (단위작업장소별 측정 현황)`, sec5Thead, buildGroupRows(compData, ['location', 'category', 'agent', 'limit'], companies), groupRender5, true, '', trafficLegend5);
 
-                // 7.5 위험성평가
                 sec7Html += renderSectionStrict(7, `<span>7</span> 단위사업체별 종합 보고서 - ${comp} (화학물질 위험성 평가)`, sec6Thead, buildGroupRows(compSec6Data, ['department', 'category', 'agent'], companies), groupRender6, true, '', '');
             });
             reportHtml += sec7Html;

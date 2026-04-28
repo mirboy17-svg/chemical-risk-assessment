@@ -1383,7 +1383,7 @@
             }
 
             // 2. Chart 2
-            const bar2Labels = ['전체'].concat(cats.filter(c => stats[c].t > 0));
+            const bar2Labels = cats.filter(c => stats[c].t > 0);
             const bar2DataHC = bar2Labels.map(c => stats[c].t > 0 ? parseFloat(((stats[c].e / stats[c].t) * 100).toFixed(1)) : 0);
             
             const ctx2 = document.getElementById(`chart_${prefix}_2`);

@@ -739,7 +739,7 @@
             return rows;
         }
 
-        function renderSectionStrict(sectionNum, title, thead, rows, renderRow, isGrouped, prefixHtml, suffixHtml) {
+        function renderSectionStrict(sectionNum, title, thead, rows, renderRow, isGrouped, prefixHtml, suffixHtml, emptyMsg = "데이터가 없습니다.") {
             let titleRow = `<tr><th colspan="100" class="bg-white text-left p-0 pt-3 pb-3 print:bg-white print:border-none" style="border: none !important; background-color: white !important;"><div class="section-title" style="margin-top: 0; margin-bottom: 0; padding-bottom: 0.2rem; border-bottom: 2px solid #16a34a; font-size: 1.25rem; font-weight: bold;">${title}</div></th></tr>`;
             let enhancedThead = titleRow + thead;
 
@@ -749,7 +749,7 @@
             if (rows.length === 0) {
                 html += `<table style="width: 100%; border-bottom: 1px solid #86efac !important;">` +
                         `<thead>${enhancedThead}</thead>` +
-                        `<tbody><tr><td colspan="15" class="py-10 text-gray-400 text-center border border-green-300">데이터가 없습니다.</td></tr></tbody></table>`;
+                        `<tbody><tr><td colspan="15" class="py-10 text-gray-400 text-center border border-green-300">${emptyMsg}</td></tr></tbody></table>`;
             } else {
                 let tableStyle = "width: 100%; border-bottom: 1px solid #86efac !important;";
                 
@@ -929,7 +929,7 @@
                 return `<tr><td class="border-green-300 break-keep">${d.company}</td><td class="border-green-300 break-keep">${d.location}</td>${agentTd}<td class="border-green-300">${d.prevValue === null ? '전회없음' : d.prevValue + ' ' + extractedUnit}</td><td class="text-red-600 font-bold border-green-300">${d.value} ${extractedUnit}</td><td class="border-green-300 break-keep">${limitText}</td></tr>`;
             };
             
-            reportHtml += renderSectionStrict(2, `<span class="sec-num-badge-2" style="${num2?'':'display:none;'}">${num2}</span> 노출기준 초과 현황 상세 리스트`, sec2Thead, exceedData, sec2Render, false, '', '');
+            reportHtml += renderSectionStrict(2, `<span class="sec-num-badge-2" style="${num2?'':'display:none;'}">${num2}</span> 노출기준 초과 현황 상세 리스트`, sec2Thead, exceedData, sec2Render, false, '', '', '노출기준 초과 유해인자가 없습니다.');
 
             const createSection3ChartPageGlobal = (title, prefix, pagePart, isFirst) => {
                 let html = `<div class="a4-page page-container flex flex-col justify-start ${isFirst ? 'major-section' : ''}" data-section="3">`;
@@ -996,22 +996,35 @@
                     if (companyChunks.length > 1) {
                         let startNum = chunkIdx * chunkSize + 1;
                         let endNum = chunkIdx * chunkSize + chunk.length;
-                        titleStr += ` <span style="font-size:0.85rem; font-weight:normal; color:#4b5563; background:#e5e7eb; padding:2px 8px; border-radius:12px; margin-left:8px;">사업체 ${startNum}~${endNum}</span>`;
+                        // ★ 사업체가 1개만 남았을 경우 '사업체 N~N' 대신 '사업체 N'으로 깔끔하게 표시
+                        let badgeText = startNum === endNum ? `사업체 ${startNum}` : `사업체 ${startNum}~${endNum}`;
+                        titleStr += ` <span style="font-size:0.85rem; font-weight:normal; color:#4b5563; background:#e5e7eb; padding:2px 8px; border-radius:12px; margin-left:8px;">${badgeText}</span>`;
                     }
 
-                    let sec4Thead = `<tr><th rowspan="2" width="15%" class="align-middle text-gray-800 border border-green-300">분류</th><th rowspan="2" width="20%" class="align-middle text-gray-800 border border-green-300">유해인자</th>${chunk.map(c => `<th colspan="2" class="text-gray-800 break-keep border border-green-300">${c}</th>`).join('')}<th colspan="2" width="12%" class="bg-green-200 border-green-400 text-gray-800 font-bold border border-green-300">Total</th></tr><tr>${chunk.map(() => `<th class="bg-green-50 text-xs text-gray-700 p-1 border border-green-300">측정</th><th class="bg-green-50 text-xs text-gray-700 p-1 border border-green-300">초과</th>`).join('')}<th class="border-green-400 text-xs font-bold text-gray-800 p-1 border border-green-300">측정</th><th class="border-green-400 text-xs font-bold text-gray-800 p-1 border border-green-300">초과</th></tr>`;
+                    // ★ 항상 4개의 사업체 틀(레이아웃)을 유지하도록 빈 공란(null) 채우기
+                    let paddedChunk = [...chunk];
+                    while (paddedChunk.length < chunkSize) {
+                        paddedChunk.push(null);
+                    }
+
+                    // 빈 공란은 헤더 제목도 비워둠
+                    let sec4Thead = `<tr><th rowspan="2" width="15%" class="align-middle text-gray-800 border border-green-300">분류</th><th rowspan="2" width="20%" class="align-middle text-gray-800 border border-green-300">유해인자</th>${paddedChunk.map(c => `<th colspan="2" class="text-gray-800 break-keep border border-green-300">${c ? c : ''}</th>`).join('')}<th colspan="2" width="12%" class="bg-green-200 border-green-400 text-gray-800 font-bold border border-green-300">Total</th></tr><tr>${paddedChunk.map(() => `<th class="bg-green-50 text-xs text-gray-700 p-1 border border-green-300">측정</th><th class="bg-green-50 text-xs text-gray-700 p-1 border border-green-300">초과</th>`).join('')}<th class="border-green-400 text-xs font-bold text-gray-800 p-1 border border-green-300">측정</th><th class="border-green-400 text-xs font-bold text-gray-800 p-1 border border-green-300">초과</th></tr>`;
                     
                     let sec4Rows = [];
                     sortedCats.forEach(cat => {
                         Array.from(categoryMap[cat]).sort().forEach(agent => {
                             let rowObj = { mainKey: cat, agent: agent, companyData: [], totalN: 0, totalExc: 0 };
-                            chunk.forEach(comp => {
-                                const filtered = data.filter(d => d.company === comp && d.category === cat && d.agent === agent);
-                                const n = filtered.length;
-                                const exc = filtered.filter(d => d.isExceed).length;
-                                rowObj.companyData.push({ n, exc });
-                                rowObj.totalN += n;
-                                rowObj.totalExc += exc;
+                            paddedChunk.forEach(comp => {
+                                if (comp) {
+                                    const filtered = data.filter(d => d.company === comp && d.category === cat && d.agent === agent);
+                                    const n = filtered.length;
+                                    const exc = filtered.filter(d => d.isExceed).length;
+                                    rowObj.companyData.push({ n, exc, isReal: true });
+                                    rowObj.totalN += n;
+                                    rowObj.totalExc += exc;
+                                } else {
+                                    rowObj.companyData.push({ n: 0, exc: 0, isReal: false }); // 빈 공란 데이터 처리
+                                }
                             });
                             if (rowObj.totalN > 0) sec4Rows.push(rowObj);
                         });
@@ -1028,7 +1041,14 @@
                         }
                         
                         let trHtml = `<tr>${groupTd}${agentTd}`;
-                        r.companyData.forEach(cell => { trHtml += `<td class="border-green-300 bg-white">${cell.n > 0 ? cell.n : '-'}</td><td class="border-green-300 bg-white">${cell.exc > 0 ? `<span class="text-red-600 font-bold">${cell.exc}</span>` : (cell.n > 0 ? '0' : '-')}</td>`; });
+                        r.companyData.forEach(cell => { 
+                            if (cell.isReal) {
+                                trHtml += `<td class="border-green-300 bg-white">${cell.n > 0 ? cell.n : '-'}</td><td class="border-green-300 bg-white">${cell.exc > 0 ? `<span class="text-red-600 font-bold">${cell.exc}</span>` : (cell.n > 0 ? '0' : '-')}</td>`; 
+                            } else {
+                                // 존재하지 않는 가짜 셀인 경우 데이터나 '-' 대신 완전한 공란으로 출력
+                                trHtml += `<td class="border-green-300 bg-white"></td><td class="border-green-300 bg-white"></td>`;
+                            }
+                        });
                         trHtml += `<td class="border-green-300 bg-green-50 font-bold">${r.totalN > 0 ? r.totalN : '-'}</td><td class="border-green-300 bg-green-50 font-bold">${r.totalExc > 0 ? `<span class="text-red-600 font-bold">${r.totalExc}</span>` : (r.totalN > 0 ? '0' : '-')}</td></tr>`;
                         return trHtml;
                     };
@@ -1232,7 +1252,7 @@
                 };
                 sec7Html += renderSectionStrict(7, `<span class="sec-num-badge-7" style="${num7?'':'display:none;'}">${num7}</span> 단위사업체별 종합 보고서 - ${comp} (종합 현황)`, sec7_1_Thead, compSec4Rows, sec7_1_Render, true, '', '');
 
-                sec7Html += renderSectionStrict(7, `<span class="sec-num-badge-7" style="${num7?'':'display:none;'}">${num7}</span> 단위사업체별 종합 보고서 - ${comp} (초과 현황 리스트)`, sec2Thead, compExcData, sec2Render, false, '', '');
+                sec7Html += renderSectionStrict(7, `<span class="sec-num-badge-7" style="${num7?'':'display:none;'}">${num7}</span> 단위사업체별 종합 보고서 - ${comp} (초과 현황 리스트)`, sec2Thead, compExcData, sec2Render, false, '', '', '노출기준 초과 유해인자가 없습니다.');
 
                 const createSection7ChartPage = (title, prefix, pagePart) => {
                     let html = `<div class="a4-page page-container flex flex-col justify-start major-section" data-section="7">`;

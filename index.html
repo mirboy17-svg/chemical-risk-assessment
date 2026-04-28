@@ -939,6 +939,7 @@
                 }
                 html += `<h2 class="text-lg font-bold text-gray-800 mb-3 ml-1 border-b border-gray-200 pb-1">${title}</h2>`;
                 
+                // ★ 1x2 그리드 (세로)
                 html += `<div class="grid grid-cols-1 gap-6 flex-1 mb-2">`;
                 
                 if (pagePart === 1) {
@@ -1344,30 +1345,34 @@
             const cats = ['소음', '고열', '분진', '금속가공유', '금속류', '유기화합물', '산 및 알칼리류', '허가 대상 유해물질', '가스 상태 물질류', '기타'];
 
             const pie1DataHC = [];
-            const expertColors = ['#1d4ed8', '#b91c1c', '#047857', '#6d28d9', '#c2410c', '#be185d', '#0f766e', '#4d7c0f', '#a16207', '#475569'];
+            // ★ 기존의 강한 원색을 연하고 식별이 편한 파스텔톤 팔레트로 교체 (Tailwind 300 series 기반)
+            const pastelColors = ['#93c5fd', '#fca5a5', '#86efac', '#c4b5fd', '#fdba74', '#fde047', '#5eead4', '#f9a8d4', '#a5b4fc', '#cbd5e1'];
 
             cats.forEach((c, idx) => {
                 if (stats[c].t > 0) {
-                    pie1DataHC.push({ name: `${c}`, y: stats[c].t, color: expertColors[idx] });
+                    pie1DataHC.push({ name: `${c}`, y: stats[c].t, color: pastelColors[idx], sliced: true }); // 분할 효과
                 }
             });
 
             let isPie1Empty = false;
             if (pie1DataHC.length === 0) {
                 isPie1Empty = true;
-                pie1DataHC.push({ name: '데이터 없음', y: 1, color: '#e5e7eb', dataLabels: { format: '<b>{point.name}</b>' } });
+                pie1DataHC.push({ name: '데이터 없음', y: 1, color: '#e5e7eb', dataLabels: { format: '<b>{point.name}</b>' }, sliced: false });
             }
 
             // 1. Chart 1
             const ctx1 = document.getElementById(`chart_${prefix}_1`);
             if(ctx1) {
                 const chart1 = Highcharts.chart(`chart_${prefix}_1`, {
-                    chart: { type: 'pie', options3d: { enabled: true, alpha: 55, beta: 0 }, backgroundColor: 'transparent', margin: [0, 0, 0, 0], spacingTop: 10, spacingBottom: 10 },
+                    chart: { type: 'pie', options3d: { enabled: true, alpha: 45, beta: 0 }, backgroundColor: 'transparent', margin: [0, 0, 0, 0], spacingTop: 10, spacingBottom: 10 },
                     title: { text: null },
                     tooltip: { pointFormat: isPie1Empty ? '<b>{point.name}</b>' : '{series.name}: <b>{point.y}건 ({point.percentage:.1f}%)</b>' },
                     plotOptions: {
                         pie: {
-                            allowPointSelect: true, cursor: 'pointer', depth: 40,
+                            innerSize: '35%',
+                            depth: 45,
+                            slicedOffset: 8,
+                            allowPointSelect: true, cursor: 'pointer',
                             dataLabels: { enabled: true, format: isPie1Empty ? '<b>{point.name}</b>' : '<b>{point.name}</b><br>{point.y}건 ({point.percentage:.1f}%)', style: { fontSize: '11px', textOutline: 'none', color: '#1f2937' } }
                         }
                     },
@@ -1431,24 +1436,27 @@
             let pie4DataHC = [];
             if(nT > 0) {
                 pie4DataHC = [
-                    { name: `A.초과`, y: noiseStats.A, color: '#ef4444' },
-                    { name: `B.85~기준이하`, y: noiseStats.B, color: '#f97316' },
-                    { name: `C.80이상~85미만`, y: noiseStats.C, color: '#eab308' },
-                    { name: `D.80미만`, y: noiseStats.D, color: '#22c55e' }
+                    { name: `A.초과`, y: noiseStats.A, color: '#ef4444', sliced: true },
+                    { name: `B.85~기준이하`, y: noiseStats.B, color: '#f97316', sliced: true },
+                    { name: `C.80이상~85미만`, y: noiseStats.C, color: '#eab308', sliced: true },
+                    { name: `D.80미만`, y: noiseStats.D, color: '#22c55e', sliced: true }
                 ];
             } else {
-                pie4DataHC = [{ name: '소음 데이터 없음', y: 1, color: '#e5e7eb', dataLabels: { format: '<b>{point.name}</b>' } }];
+                pie4DataHC = [{ name: '소음 데이터 없음', y: 1, color: '#e5e7eb', dataLabels: { format: '<b>{point.name}</b>' }, sliced: false }];
             }
             
             const ctx4 = document.getElementById(`chart_${prefix}_4`);
             if(ctx4) {
                 const chart4 = Highcharts.chart(`chart_${prefix}_4`, {
-                    chart: { type: 'pie', options3d: { enabled: true, alpha: 55, beta: 0 }, backgroundColor: 'transparent', margin: [0, 0, 0, 0], spacingTop: 10, spacingBottom: 10 },
+                    chart: { type: 'pie', options3d: { enabled: true, alpha: 45, beta: 0 }, backgroundColor: 'transparent', margin: [0, 0, 0, 0], spacingTop: 10, spacingBottom: 10 },
                     title: { text: null },
                     tooltip: { pointFormat: nT > 0 ? '{series.name}: <b>{point.y}건 ({point.percentage:.1f}%)</b>' : '<b>{point.name}</b>' },
                     plotOptions: {
                         pie: {
-                            allowPointSelect: true, cursor: 'pointer', depth: 40,
+                            innerSize: '35%',
+                            depth: 45,
+                            slicedOffset: 8,
+                            allowPointSelect: true, cursor: 'pointer',
                             dataLabels: { enabled: true, format: nT > 0 ? '<b>{point.name}</b><br>{point.y}건 ({point.percentage:.1f}%)' : '<b>{point.name}</b>', style: { fontSize: '11px', textOutline: 'none', color: '#1f2937' } }
                         }
                     },

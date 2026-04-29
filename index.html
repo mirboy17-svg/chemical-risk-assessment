@@ -1383,33 +1383,42 @@
             }
 
             // 2. Chart 2
+            // ★ '전체' 항목 제외, 세부 유해인자 분류만 추출
             const bar2Labels = cats.filter(c => stats[c].t > 0);
-            const bar2DataHC = bar2Labels.map(c => stats[c].t > 0 ? parseFloat(((stats[c].e / stats[c].t) * 100).toFixed(1)) : 0);
+            
+            // ★ 초과 시 빨간색, 0%일 때 녹색 부여
+            const bar2DataHC = bar2Labels.map(c => {
+                const val = stats[c].t > 0 ? parseFloat(((stats[c].e / stats[c].t) * 100).toFixed(1)) : 0;
+                return { y: val, color: val > 0 ? '#ef4444' : '#22c55e' };
+            });
             
             const ctx2 = document.getElementById(`chart_${prefix}_2`);
             if(ctx2) {
+                const maxY = Math.max(...bar2DataHC.map(d => d.y), 10); // 0%일 때도 그래프 틀이 유지되도록 최소 max 지정
                 const chart2 = Highcharts.chart(`chart_${prefix}_2`, {
                     chart: { type: 'column', options3d: { enabled: true, alpha: 10, beta: 20, depth: 50, viewDistance: 25 }, backgroundColor: 'transparent', marginTop: 30 },
                     title: { text: null },
                     xAxis: { categories: bar2Labels, labels: { style: { fontWeight: 'bold' } } },
-                    yAxis: { title: { text: null } },
+                    yAxis: { title: { text: null }, min: 0, max: maxY * 1.2 }, // ★ min: 0 강제 부여 (0% 막대가 바닥에 붙도록 함)
                     tooltip: { pointFormat: '초과 비율: <b>{point.y}%</b>' },
                     plotOptions: {
                         column: {
-                            depth: 40, color: '#dc2626',
+                            depth: 40,
                             dataLabels: { enabled: true, format: '{y}%', style: { fontSize: '11px', textOutline: 'none', color: '#1f2937' } }
                         }
                     },
                     credits: { enabled: false },
-                    series: [{ name: '초과 비율', data: bar2DataHC.length > 0 ? bar2DataHC : [0] }]
+                    legend: { enabled: false },
+                    series: [{ name: '초과 비율', data: bar2DataHC.length > 0 ? bar2DataHC : [{y:0, color:'#22c55e'}] }]
                 });
                 allChartInstances.push(chart2);
             }
 
             // 3. Chart 3
+            // ★ 100% 초과 시 빨간색, 이하일 때 녹색 부여
             const bar3DataHC = bar2Labels.map(c => {
                 const val = parseFloat(stats[c].max.toFixed(1));
-                return { y: val, color: val > 100 ? '#ef4444' : '#10b981' };
+                return { y: val, color: val > 100 ? '#ef4444' : '#22c55e' };
             });
             const ctx3 = document.getElementById(`chart_${prefix}_3`);
             if(ctx3) {
@@ -1417,7 +1426,7 @@
                     chart: { type: 'column', options3d: { enabled: true, alpha: 10, beta: 20, depth: 50, viewDistance: 25 }, backgroundColor: 'transparent', marginTop: 30 },
                     title: { text: null },
                     xAxis: { categories: bar2Labels, labels: { style: { fontWeight: 'bold' } } },
-                    yAxis: { title: { text: null }, max: Math.max(...bar3DataHC.map(d=>d.y), 100) * 1.2 },
+                    yAxis: { title: { text: null }, min: 0, max: Math.max(...bar3DataHC.map(d=>d.y), 100) * 1.2 }, // ★ min: 0 강제 부여
                     tooltip: { pointFormat: '최대 노출치: <b>{point.y}%</b>' },
                     plotOptions: {
                         column: {
@@ -1426,7 +1435,8 @@
                         }
                     },
                     credits: { enabled: false },
-                    series: [{ name: '최대 노출치', data: bar3DataHC.length > 0 ? bar3DataHC : [{y:0}] }]
+                    legend: { enabled: false },
+                    series: [{ name: '최대 노출치', data: bar3DataHC.length > 0 ? bar3DataHC : [{y:0, color:'#22c55e'}] }]
                 });
                 allChartInstances.push(chart3);
             }

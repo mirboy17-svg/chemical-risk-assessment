@@ -142,7 +142,7 @@
                     <svg class="w-5 h-5 mr-2 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h7"></path></svg>
                     보고서 메뉴
                 </h2>
-                <p class="text-[0.7rem] text-gray-500 mt-1 tracking-tight">※ 숫자를 수정하거나 자유롭게 삭제할 수 있습니다.</p>
+                <p class="text-[0.7rem] text-gray-500 mt-1 tracking-tight">※ 숫자를 수정하여 맞춤형 제목을 만드세요.</p>
             </div>
             <button onclick="toggleSidebar()" class="text-gray-400 hover:text-gray-800 focus:outline-none lg:hidden">
                 <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
@@ -150,61 +150,40 @@
         </div>
         
         <div class="flex-1 overflow-y-auto p-4 space-y-1">
-            <div class="flex items-center px-2 py-1 hover:bg-blue-50 rounded transition group" id="menu-item-1">
+            <div class="flex items-center px-2 py-1 hover:bg-blue-50 rounded transition">
                 <input type="checkbox" value="1" class="print-checkbox w-4 h-4 text-blue-600 rounded border-gray-300 cursor-pointer mr-2" checked>
                 <input type="text" id="menu-num-1" value="1" oninput="updateSectionNumber(1, this.value)" class="w-8 text-center text-sm font-bold bg-white border border-gray-300 rounded focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none py-0.5">
                 <a href="#section-1" onclick="if(window.innerWidth < 1024) toggleSidebar()" class="block py-1.5 px-2 flex-1 text-sm font-bold text-gray-700 hover:text-blue-600 truncate">작업환경측정 통계 분석</a>
-                <button onclick="deleteSection(1)" class="opacity-0 group-hover:opacity-100 text-gray-400 hover:text-red-500 transition focus:outline-none ml-1" title="항목 삭제">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
-                </button>
             </div>
-            <div class="flex items-center px-2 py-1 hover:bg-blue-50 rounded transition group" id="menu-item-2">
+            <div class="flex items-center px-2 py-1 hover:bg-blue-50 rounded transition">
                 <input type="checkbox" value="2" class="print-checkbox w-4 h-4 text-blue-600 rounded border-gray-300 cursor-pointer mr-2" checked>
                 <input type="text" id="menu-num-2" value="2" oninput="updateSectionNumber(2, this.value)" class="w-8 text-center text-sm font-bold bg-white border border-gray-300 rounded focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none py-0.5">
                 <a href="#section-2" onclick="if(window.innerWidth < 1024) toggleSidebar()" class="block py-1.5 px-2 flex-1 text-sm font-bold text-gray-700 hover:text-blue-600 truncate">노출기준 초과 현황 리스트</a>
-                <button onclick="deleteSection(2)" class="opacity-0 group-hover:opacity-100 text-gray-400 hover:text-red-500 transition focus:outline-none ml-1" title="항목 삭제">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
-                </button>
             </div>
-            <div class="flex items-center px-2 py-1 hover:bg-blue-50 rounded transition group" id="menu-item-3">
+            <div class="flex items-center px-2 py-1 hover:bg-blue-50 rounded transition">
                 <input type="checkbox" value="3" class="print-checkbox w-4 h-4 text-blue-600 rounded border-gray-300 cursor-pointer mr-2" checked>
                 <input type="text" id="menu-num-3" value="3" oninput="updateSectionNumber(3, this.value)" class="w-8 text-center text-sm font-bold bg-white border border-gray-300 rounded focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none py-0.5">
                 <a href="#section-3" onclick="if(window.innerWidth < 1024) toggleSidebar()" class="block py-1.5 px-2 flex-1 text-sm font-bold text-gray-700 hover:text-blue-600 truncate">분류별 측정 분포 및 초과 현황</a>
-                <button onclick="deleteSection(3)" class="opacity-0 group-hover:opacity-100 text-gray-400 hover:text-red-500 transition focus:outline-none ml-1" title="항목 삭제">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
-                </button>
             </div>
-            <div class="flex items-center px-2 py-1 hover:bg-blue-50 rounded transition group" id="menu-item-4">
+            <div class="flex items-center px-2 py-1 hover:bg-blue-50 rounded transition">
                 <input type="checkbox" value="4" class="print-checkbox w-4 h-4 text-blue-600 rounded border-gray-300 cursor-pointer mr-2" checked>
                 <input type="text" id="menu-num-4" value="4" oninput="updateSectionNumber(4, this.value)" class="w-8 text-center text-sm font-bold bg-white border border-gray-300 rounded focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none py-0.5">
                 <a href="#section-4" onclick="if(window.innerWidth < 1024) toggleSidebar()" class="block py-1.5 px-2 flex-1 text-sm font-bold text-gray-700 hover:text-blue-600 truncate">단위사업체별 종합 현황</a>
-                <button onclick="deleteSection(4)" class="opacity-0 group-hover:opacity-100 text-gray-400 hover:text-red-500 transition focus:outline-none ml-1" title="항목 삭제">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
-                </button>
             </div>
-            <div class="flex items-center px-2 py-1 hover:bg-blue-50 rounded transition group" id="menu-item-5">
+            <div class="flex items-center px-2 py-1 hover:bg-blue-50 rounded transition">
                 <input type="checkbox" value="5" class="print-checkbox w-4 h-4 text-blue-600 rounded border-gray-300 cursor-pointer mr-2" checked>
                 <input type="text" id="menu-num-5" value="5" oninput="updateSectionNumber(5, this.value)" class="w-8 text-center text-sm font-bold bg-white border border-gray-300 rounded focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none py-0.5">
                 <a href="#section-5" onclick="if(window.innerWidth < 1024) toggleSidebar()" class="block py-1.5 px-2 flex-1 text-sm font-bold text-gray-700 hover:text-blue-600 truncate">단위작업장소별 측정 현황</a>
-                <button onclick="deleteSection(5)" class="opacity-0 group-hover:opacity-100 text-gray-400 hover:text-red-500 transition focus:outline-none ml-1" title="항목 삭제">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
-                </button>
             </div>
-            <div class="flex items-center px-2 py-1 hover:bg-blue-50 rounded transition group" id="menu-item-6">
+            <div class="flex items-center px-2 py-1 hover:bg-blue-50 rounded transition">
                 <input type="checkbox" value="6" class="print-checkbox w-4 h-4 text-blue-600 rounded border-gray-300 cursor-pointer mr-2" checked>
                 <input type="text" id="menu-num-6" value="6" oninput="updateSectionNumber(6, this.value)" class="w-8 text-center text-sm font-bold bg-white border border-gray-300 rounded focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none py-0.5">
                 <a href="#section-6" onclick="if(window.innerWidth < 1024) toggleSidebar()" class="block py-1.5 px-2 flex-1 text-sm font-bold text-gray-700 hover:text-blue-600 truncate">화학물질 위험성 평가</a>
-                <button onclick="deleteSection(6)" class="opacity-0 group-hover:opacity-100 text-gray-400 hover:text-red-500 transition focus:outline-none ml-1" title="항목 삭제">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
-                </button>
             </div>
-            <div class="flex items-center px-2 py-1 hover:bg-blue-50 rounded transition group" id="menu-item-7">
+            <div class="flex items-center px-2 py-1 hover:bg-blue-50 rounded transition">
                 <input type="checkbox" value="7" class="print-checkbox w-4 h-4 text-blue-600 rounded border-gray-300 cursor-pointer mr-2" checked>
                 <input type="text" id="menu-num-7" value="7" oninput="updateSectionNumber(7, this.value)" class="w-8 text-center text-sm font-bold bg-white border border-gray-300 rounded focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none py-0.5">
                 <a href="#section-7" onclick="if(window.innerWidth < 1024) toggleSidebar()" class="block py-1.5 px-2 flex-1 text-sm font-bold text-gray-700 hover:text-blue-600 truncate">단위사업체별 종합 보고서</a>
-                <button onclick="deleteSection(7)" class="opacity-0 group-hover:opacity-100 text-gray-400 hover:text-red-500 transition focus:outline-none ml-1" title="항목 삭제">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
-                </button>
             </div>
         </div>
 
@@ -338,40 +317,6 @@
 
     <script>
         const APP_PASSWORD = "1234";
-
-        let deletedSections = [];
-
-        function hideDeletedSections() {
-            const allPages = document.querySelectorAll('.page-container');
-            allPages.forEach(page => {
-                const section = parseInt(page.getAttribute('data-section'));
-                if (deletedSections.includes(section)) {
-                    page.style.display = 'none';
-                }
-            });
-        }
-
-        function deleteSection(secIdx) {
-            if(confirm('해당 보고서 항목을 메뉴와 화면에서 삭제하시겠습니까?\\n(초기화 버튼 클릭 시 다시 복구됩니다)')) {
-                deletedSections.push(parseInt(secIdx));
-
-                const menuItem = document.getElementById('menu-item-' + secIdx);
-                if(menuItem) {
-                    menuItem.style.display = 'none';
-                    const cb = menuItem.querySelector('.print-checkbox');
-                    if(cb) cb.checked = false;
-                }
-
-                const modalItem = document.getElementById('modal-item-' + secIdx);
-                if(modalItem) {
-                    modalItem.style.display = 'none';
-                    const pcb = modalItem.querySelector('.pdf-checkbox');
-                    if(pcb) pcb.checked = false;
-                }
-
-                hideDeletedSections();
-            }
-        }
 
         function updateSectionNumber(secIdx, val) {
             const modalNum = document.getElementById('modal-num-' + secIdx);
@@ -837,6 +782,7 @@
             titleEl.innerHTML = topHeaderTitle;
             titleEl.setAttribute('data-filename', subTitle ? `${subTitle}_작업환경측정_보고서` : '작업환경측정_보고서');
 
+            // ★ 스프레드시트 원본 순서 유지
             const companies = [...new Set(data.map(d => d.company))];
 
             let reportHtml = '';
@@ -935,33 +881,32 @@
                 let html = `<div class="a4-page page-container flex flex-col justify-start ${isFirst ? 'major-section' : ''}" data-section="3">`;
                 if (isFirst) {
                     html += `<div class="section-title mt-4 border-b-2 border-green-600 pb-2 mb-4 font-bold text-gray-900 text-xl"><span class="sec-num-badge-3" style="${num3?'':'display:none;'}">${num3}</span> 분류별 측정 분포 및 초과 현황</div>`;
-                    html += `<p class="text-sm text-gray-600 mb-3">※ 산업안전보건법 시행규칙 기준 분류 및 측정결과 시각화</p>`;
                 }
                 html += `<h2 class="text-lg font-bold text-gray-800 mb-3 ml-1 border-b border-gray-200 pb-1">${title}</h2>`;
                 
-                // ★ 1x2 그리드 (세로)
-                html += `<div class="grid grid-cols-1 gap-6 flex-1 mb-2">`;
+                // ★ flex 컨테이너와 명시적 고정 높이(height)를 사용하여 차트 사라짐 버그 완벽 차단
+                html += `<div class="flex flex-col gap-6 w-full mb-2">`;
                 
                 if (pagePart === 1) {
                     html += `
-                        <div class="prevent-break bg-white p-4 border border-green-300 rounded-xl shadow-lg flex flex-col items-center flex-1">
-                            <h3 class="text-[1rem] font-bold text-center mb-3 bg-gradient-to-r from-green-50 to-green-100 w-full py-2 rounded-lg border border-green-200">1) 측정항목 분포도</h3>
-                            <div id="chart_${prefix}_1" class="w-full relative flex-1" style="min-height: 320px; margin: 0 auto;"></div>
+                        <div class="prevent-break bg-white p-4 border border-green-300 rounded-xl shadow-lg flex flex-col items-center w-full">
+                            <h3 class="text-[1rem] font-bold text-center mb-3 bg-gradient-to-r from-green-50 to-green-100 w-full py-2 rounded-lg border border-green-200">1) 측정항목 분포도 <span id="title_${prefix}_1" class="ml-1"></span></h3>
+                            <div id="chart_${prefix}_1" style="height: 340px; width: 100%;"></div>
                         </div>
-                        <div class="prevent-break bg-white p-4 border border-green-300 rounded-xl shadow-lg flex flex-col items-center flex-1">
-                            <h3 class="text-[1rem] font-bold text-center mb-3 bg-gradient-to-r from-green-50 to-green-100 w-full py-2 rounded-lg border border-green-200">2) 총 측정건수 대비 분류별 초과 비율</h3>
-                            <div id="chart_${prefix}_2" class="w-full relative flex-1" style="min-height: 320px; margin: 0 auto;"></div>
+                        <div class="prevent-break bg-white p-4 border border-green-300 rounded-xl shadow-lg flex flex-col items-center w-full">
+                            <h3 class="text-[1rem] font-bold text-center mb-3 bg-gradient-to-r from-green-50 to-green-100 w-full py-2 rounded-lg border border-green-200">2) 총 측정건수 대비 분류별 초과 건수 <span id="title_${prefix}_2" class="ml-1"></span></h3>
+                            <div id="chart_${prefix}_2" style="height: 340px; width: 100%;"></div>
                         </div>
                     `;
                 } else {
                     html += `
-                        <div class="prevent-break bg-white p-4 border border-green-300 rounded-xl shadow-lg flex flex-col items-center flex-1">
-                            <h3 class="text-[1rem] font-bold text-center mb-3 bg-gradient-to-r from-green-50 to-green-100 w-full py-2 rounded-lg border border-green-200">3) 분류별 최대 노출 분포 (Max치, 노출기준=100%)</h3>
-                            <div id="chart_${prefix}_3" class="w-full relative flex-1" style="min-height: 320px; margin: 0 auto;"></div>
+                        <div class="prevent-break bg-white p-4 border border-green-300 rounded-xl shadow-lg flex flex-col items-center w-full">
+                            <h3 class="text-[1rem] font-bold text-center mb-3 bg-gradient-to-r from-green-50 to-green-100 w-full py-2 rounded-lg border border-green-200">3) 분류별 최대 노출 분포(노출기준=100%)</h3>
+                            <div id="chart_${prefix}_3" style="height: 340px; width: 100%;"></div>
                         </div>
-                        <div class="prevent-break bg-white p-4 border border-green-300 rounded-xl shadow-lg flex flex-col items-center flex-1">
-                            <h3 class="text-[1rem] font-bold text-center mb-3 bg-gradient-to-r from-green-50 to-green-100 w-full py-2 rounded-lg border border-green-200">4) 소음 발생수준별 분포도</h3>
-                            <div id="chart_${prefix}_4" class="w-full relative flex-1" style="min-height: 320px; margin: 0 auto;"></div>
+                        <div class="prevent-break bg-white p-4 border border-green-300 rounded-xl shadow-lg flex flex-col items-center w-full">
+                            <h3 class="text-[1rem] font-bold text-center mb-3 bg-gradient-to-r from-green-50 to-green-100 w-full py-2 rounded-lg border border-green-200">4) 소음 발생수준별 분포도 <span id="title_${prefix}_4" class="ml-1"></span></h3>
+                            <div id="chart_${prefix}_4" style="height: 340px; width: 100%;"></div>
                         </div>
                     `;
                 }
@@ -997,18 +942,15 @@
                     if (companyChunks.length > 1) {
                         let startNum = chunkIdx * chunkSize + 1;
                         let endNum = chunkIdx * chunkSize + chunk.length;
-                        // ★ 사업체가 1개만 남았을 경우 '사업체 N~N' 대신 '사업체 N'으로 깔끔하게 표시
                         let badgeText = startNum === endNum ? `사업체 ${startNum}` : `사업체 ${startNum}~${endNum}`;
                         titleStr += ` <span style="font-size:0.85rem; font-weight:normal; color:#4b5563; background:#e5e7eb; padding:2px 8px; border-radius:12px; margin-left:8px;">${badgeText}</span>`;
                     }
 
-                    // ★ 항상 4개의 사업체 틀(레이아웃)을 유지하도록 빈 공란(null) 채우기
                     let paddedChunk = [...chunk];
                     while (paddedChunk.length < chunkSize) {
                         paddedChunk.push(null);
                     }
 
-                    // 빈 공란은 헤더 제목도 비워둠
                     let sec4Thead = `<tr><th rowspan="2" width="15%" class="align-middle text-gray-800 border border-green-300">분류</th><th rowspan="2" width="20%" class="align-middle text-gray-800 border border-green-300">유해인자</th>${paddedChunk.map(c => `<th colspan="2" class="text-gray-800 break-keep border border-green-300">${c ? c : ''}</th>`).join('')}<th colspan="2" width="12%" class="bg-green-200 border-green-400 text-gray-800 font-bold border border-green-300">Total</th></tr><tr>${paddedChunk.map(() => `<th class="bg-green-50 text-xs text-gray-700 p-1 border border-green-300">측정</th><th class="bg-green-50 text-xs text-gray-700 p-1 border border-green-300">초과</th>`).join('')}<th class="border-green-400 text-xs font-bold text-gray-800 p-1 border border-green-300">측정</th><th class="border-green-400 text-xs font-bold text-gray-800 p-1 border border-green-300">초과</th></tr>`;
                     
                     let sec4Rows = [];
@@ -1024,7 +966,7 @@
                                     rowObj.totalN += n;
                                     rowObj.totalExc += exc;
                                 } else {
-                                    rowObj.companyData.push({ n: 0, exc: 0, isReal: false }); // 빈 공란 데이터 처리
+                                    rowObj.companyData.push({ n: 0, exc: 0, isReal: false }); 
                                 }
                             });
                             if (rowObj.totalN > 0) sec4Rows.push(rowObj);
@@ -1046,7 +988,6 @@
                             if (cell.isReal) {
                                 trHtml += `<td class="border-green-300 bg-white">${cell.n > 0 ? cell.n : '-'}</td><td class="border-green-300 bg-white">${cell.exc > 0 ? `<span class="text-red-600 font-bold">${cell.exc}</span>` : (cell.n > 0 ? '0' : '-')}</td>`; 
                             } else {
-                                // 존재하지 않는 가짜 셀인 경우 데이터나 '-' 대신 완전한 공란으로 출력
                                 trHtml += `<td class="border-green-300 bg-white"></td><td class="border-green-300 bg-white"></td>`;
                             }
                         });
@@ -1077,7 +1018,7 @@
                 
                 return `<tr>${companyTd}${groupTd}${subGroupTd}${agentTd}<td class="border-green-300">${r.n}</td><td class="border-green-300 ${r.exc > 0 ? 'text-red-600 font-bold' : ''}">${r.exc}</td><td class="border-green-300"><span class="inline-block w-3.5 h-3.5 rounded-full ${r.lightColor} shadow-sm border border-gray-300"></span></td><td class="text-left text-xs border-green-300 font-bold ${r.lightColor === 'bg-red-600' ? 'text-red-600' : ''}">${note}</td></tr>`;
             };
-            const trafficLegend5 = `<div class="prevent-break text-xs text-gray-600 mt-2 mb-4 p-3 bg-gray-50 border border-gray-200 rounded text-left"><p><strong>※ 신호등 범례 (일반유해물질):</strong> <span class="bg-green-500 w-2.5 h-2.5 inline-block rounded-full"></span> 10% 미만 &nbsp; <span class="bg-yellow-400 w-2.5 h-2.5 inline-block rounded-full"></span> 10~50% 미만 &nbsp; <span class="bg-orange-400 w-2.5 h-2.5 inline-block rounded-full"></span> 50~100% 이하 &nbsp; <span class="bg-red-600 w-2.5 h-2.5 inline-block rounded-full"></span> 노출기준 초과</p><p class="mt-1"><strong>※ 신호등 범례 (소음):</strong> <span class="bg-green-500 w-2.5 h-2.5 inline-block rounded-full"></span> 80dB 미만 &nbsp; <span class="bg-yellow-400 w-2.5 h-2.5 inline-block rounded-full"></span> 80~85dB 미만 &nbsp; <span class="bg-orange-400 w-2.5 h-2.5 inline-block rounded-full"></span> 85~기준치 이하 &nbsp; <span class="bg-red-600 w-2.5 h-2.5 inline-block rounded-full"></span> 노출기준 초과</p><p class="mt-1"><strong>※ 신호등 범례 (고열):</strong> <span class="bg-green-500 w-2.5 h-2.5 inline-block rounded-full"></span> 23℃ 미만 &nbsp; <span class="bg-yellow-400 w-2.5 h-2.5 inline-block rounded-full"></span> 23~25℃ 미만 &nbsp; <span class="bg-orange-400 w-2.5 h-2.5 inline-block rounded-full"></span> 25~노출기준 미만 &nbsp; <span class="bg-red-600 w-2.5 h-2.5 inline-block rounded-full"></span> 노출기준 이상</p></div>`;
+            const trafficLegend5 = `<div class="prevent-break text-xs text-gray-600 mt-2 mb-4 p-3 bg-gray-50 border border-gray-200 rounded text-left"><p><strong>※ 신호등 범례 (일반유해물질):</strong> <span class="bg-green-500 w-2.5 h-2.5 inline-block rounded-full"></span> 10% 미만 &nbsp; <span class="bg-yellow-400 w-2.5 h-2.5 inline-block rounded-full"></span> 10~50% 미만 &nbsp; <span class="bg-orange-400 w-2.5 h-2.5 inline-block rounded-full"></span> 50~100% 이하 &nbsp; <span class="bg-red-600 w-2.5 h-2.5 inline-block rounded-full"></span> 노출기준 초과</p><p class="mt-1"><strong>※ 신호등 범례 (소음):</strong> <span class="bg-green-500 w-2.5 h-2.5 inline-block rounded-full"></span> 80dB 미만 &nbsp; <span class="bg-yellow-400 w-2.5 h-2.5 inline-block rounded-full"></span> 80~85dB 미만 &nbsp; <span class="bg-orange-400 w-2.5 h-2.5 inline-block rounded-full"></span> 85~기준치 이하 &nbsp; <span class="bg-red-600 w-2.5 h-2.5 inline-block rounded-full"></span> 노출기준 초과</p><p class="mt-1"><strong>※ 신호등 범례 (고열):</strong> <span class="bg-green-500 w-2.5 h-2.5 inline-block rounded-full"></span> 23℃ 미만 &nbsp; <span class="bg-yellow-400 w-2.5 h-2.5 inline-block rounded-full"></span> 23~25℃ 미만 &nbsp; <span class="bg-orange-400 w-2.5 h-2.5 inline-block rounded-full"></span> 25~노출기준 이하 &nbsp; <span class="bg-red-600 w-2.5 h-2.5 inline-block rounded-full"></span> 노출기준 초과</p></div>`;
             
             const sec5Thead = `<tr><th width="15%">단위사업체명</th><th width="15%">단위작업장소</th><th width="12%">분류</th><th width="20%">세부 유해인자명</th><th width="8%">측정건수</th><th width="8%">초과건수</th><th width="7%">신호등</th><th width="15%">비고</th></tr>`;
             
@@ -1259,28 +1200,29 @@
                     let html = `<div class="a4-page page-container flex flex-col justify-start major-section" data-section="7">`;
                     html += `<div class="section-title mt-4 border-b-2 border-green-600 pb-2 mb-4 font-bold text-gray-900 text-xl"><span class="sec-num-badge-7" style="${num7?'':'display:none;'}">${num7}</span> ${title}</div>`;
                     
-                    html += `<div class="grid grid-cols-1 gap-6 flex-1 mb-2">`;
+                    // ★ flex 컨테이너와 명시적 고정 높이(height)를 사용하여 차트 사라짐 버그 완벽 차단
+                    html += `<div class="flex flex-col gap-6 w-full mb-2">`;
                     
                     if (pagePart === 1) {
                         html += `
-                            <div class="prevent-break bg-white p-4 border border-green-300 rounded-xl shadow-lg flex flex-col items-center flex-1">
-                                <h3 class="text-[1rem] font-bold text-center mb-3 bg-gradient-to-r from-green-50 to-green-100 w-full py-2 rounded-lg border border-green-200">1) 측정항목 분포도</h3>
-                                <div id="chart_${prefix}_1" class="w-full relative flex-1" style="min-height: 320px; margin: 0 auto;"></div>
+                            <div class="prevent-break bg-white p-4 border border-green-300 rounded-xl shadow-lg flex flex-col items-center w-full">
+                                <h3 class="text-[1rem] font-bold text-center mb-3 bg-gradient-to-r from-green-50 to-green-100 w-full py-2 rounded-lg border border-green-200">1) 측정항목 분포도 <span id="title_${prefix}_1" class="ml-1"></span></h3>
+                                <div id="chart_${prefix}_1" style="height: 340px; width: 100%;"></div>
                             </div>
-                            <div class="prevent-break bg-white p-4 border border-green-300 rounded-xl shadow-lg flex flex-col items-center flex-1">
-                                <h3 class="text-[1rem] font-bold text-center mb-3 bg-gradient-to-r from-green-50 to-green-100 w-full py-2 rounded-lg border border-green-200">2) 총 측정건수 대비 분류별 초과 비율</h3>
-                                <div id="chart_${prefix}_2" class="w-full relative flex-1" style="min-height: 320px; margin: 0 auto;"></div>
+                            <div class="prevent-break bg-white p-4 border border-green-300 rounded-xl shadow-lg flex flex-col items-center w-full">
+                                <h3 class="text-[1rem] font-bold text-center mb-3 bg-gradient-to-r from-green-50 to-green-100 w-full py-2 rounded-lg border border-green-200">2) 총 측정건수 대비 분류별 초과 건수 <span id="title_${prefix}_2" class="ml-1"></span></h3>
+                                <div id="chart_${prefix}_2" style="height: 340px; width: 100%;"></div>
                             </div>
                         `;
                     } else {
                         html += `
-                            <div class="prevent-break bg-white p-4 border border-green-300 rounded-xl shadow-lg flex flex-col items-center flex-1">
-                                <h3 class="text-[1rem] font-bold text-center mb-3 bg-gradient-to-r from-green-50 to-green-100 w-full py-2 rounded-lg border border-green-200">3) 분류별 최대 노출 분포 (Max치, 노출기준=100%)</h3>
-                                <div id="chart_${prefix}_3" class="w-full relative flex-1" style="min-height: 320px; margin: 0 auto;"></div>
+                            <div class="prevent-break bg-white p-4 border border-green-300 rounded-xl shadow-lg flex flex-col items-center w-full">
+                                <h3 class="text-[1rem] font-bold text-center mb-3 bg-gradient-to-r from-green-50 to-green-100 w-full py-2 rounded-lg border border-green-200">3) 분류별 최대 노출 분포(노출기준=100%)</h3>
+                                <div id="chart_${prefix}_3" style="height: 340px; width: 100%;"></div>
                             </div>
-                            <div class="prevent-break bg-white p-4 border border-green-300 rounded-xl shadow-lg flex flex-col items-center flex-1">
-                                <h3 class="text-[1rem] font-bold text-center mb-3 bg-gradient-to-r from-green-50 to-green-100 w-full py-2 rounded-lg border border-green-200">4) 소음 발생수준별 분포도</h3>
-                                <div id="chart_${prefix}_4" class="w-full relative flex-1" style="min-height: 320px; margin: 0 auto;"></div>
+                            <div class="prevent-break bg-white p-4 border border-green-300 rounded-xl shadow-lg flex flex-col items-center w-full">
+                                <h3 class="text-[1rem] font-bold text-center mb-3 bg-gradient-to-r from-green-50 to-green-100 w-full py-2 rounded-lg border border-green-200">4) 소음 발생수준별 분포도 <span id="title_${prefix}_4" class="ml-1"></span></h3>
+                                <div id="chart_${prefix}_4" style="height: 340px; width: 100%;"></div>
                             </div>
                         `;
                     }
@@ -1306,8 +1248,6 @@
 
             document.getElementById('report-content').innerHTML = reportHtml;
             updateCharts(data, companies);
-            
-            hideDeletedSections();
         }
 
         function getChartStats(subset) {
@@ -1360,6 +1300,12 @@
                 pie1DataHC.push({ name: '데이터 없음', y: 1, color: '#e5e7eb', dataLabels: { format: '<b>{point.name}</b>' }, sliced: false });
             }
 
+            const totalN = stats['전체'].t;
+            const title1 = document.getElementById(`title_${prefix}_1`);
+            if (title1) title1.innerText = `[ 총 측정건수 : ${totalN}건(100%) ]`;
+            const title2 = document.getElementById(`title_${prefix}_2`);
+            if (title2) title2.innerText = `[ 총 측정건수 : ${totalN}건 ]`;
+
             // 1. Chart 1
             const ctx1 = document.getElementById(`chart_${prefix}_1`);
             if(ctx1) {
@@ -1386,40 +1332,45 @@
             // ★ '전체' 항목 제외, 세부 유해인자 분류만 추출
             const bar2Labels = cats.filter(c => stats[c].t > 0);
             
-            // ★ 초과 시 빨간색, 0%일 때 녹색 부여
+            // ★ 초과 건수로 변경 (비율 -> 건수) 및 색상 지정 (초과 1건 이상이면 빨간색, 0건이면 녹색)
             const bar2DataHC = bar2Labels.map(c => {
-                const val = stats[c].t > 0 ? parseFloat(((stats[c].e / stats[c].t) * 100).toFixed(1)) : 0;
+                const val = stats[c].e; // 초과 건수 직접 매핑
                 return { y: val, color: val > 0 ? '#ef4444' : '#22c55e' };
             });
             
             const ctx2 = document.getElementById(`chart_${prefix}_2`);
             if(ctx2) {
-                const maxY = Math.max(...bar2DataHC.map(d => d.y), 10); // 0%일 때도 그래프 틀이 유지되도록 최소 max 지정
+                const maxY = Math.max(...bar2DataHC.map(d => d.y), 5); // 0건일 때도 그래프 틀이 유지되도록 최소 max 지정
                 const chart2 = Highcharts.chart(`chart_${prefix}_2`, {
                     chart: { type: 'column', options3d: { enabled: true, alpha: 10, beta: 20, depth: 50, viewDistance: 25 }, backgroundColor: 'transparent', marginTop: 30 },
                     title: { text: null },
                     xAxis: { categories: bar2Labels, labels: { style: { fontWeight: 'bold' } } },
-                    yAxis: { title: { text: null }, min: 0, max: maxY * 1.2 }, // ★ min: 0 강제 부여 (0% 막대가 바닥에 붙도록 함)
-                    tooltip: { pointFormat: '초과 비율: <b>{point.y}%</b>' },
+                    yAxis: { title: { text: null }, min: 0, max: maxY * 1.2 }, // ★ min: 0 강제 부여 (0건 막대가 바닥에 붙도록 함)
+                    tooltip: { pointFormat: '초과 건수: <b>{point.y}건</b>' },
                     plotOptions: {
                         column: {
                             depth: 40,
-                            dataLabels: { enabled: true, format: '{y}%', style: { fontSize: '11px', textOutline: 'none', color: '#1f2937' } }
+                            dataLabels: { enabled: true, format: '{y}건', style: { fontSize: '11px', textOutline: 'none', color: '#1f2937' } }
                         }
                     },
                     credits: { enabled: false },
                     legend: { enabled: false },
-                    series: [{ name: '초과 비율', data: bar2DataHC.length > 0 ? bar2DataHC : [{y:0, color:'#22c55e'}] }]
+                    series: [{ name: '초과 건수', data: bar2DataHC.length > 0 ? bar2DataHC : [{y:0, color:'#22c55e'}] }]
                 });
                 allChartInstances.push(chart2);
             }
 
             // 3. Chart 3
-            // ★ 100% 초과 시 빨간색, 이하일 때 녹색 부여
+            // ★ 값에 따른 컬러 팔레트 적용 (10%미만 녹색, 10~50% 노란색, 50~100% 주황색, 100%초과 빨간색)
             const bar3DataHC = bar2Labels.map(c => {
                 const val = parseFloat(stats[c].max.toFixed(1));
-                return { y: val, color: val > 100 ? '#ef4444' : '#22c55e' };
+                let barColor = '#22c55e'; // < 10% (녹색)
+                if (val > 100) barColor = '#ef4444'; // 100% 초과 (빨간색)
+                else if (val >= 50) barColor = '#f97316'; // 50~100% 이하 (주황색)
+                else if (val >= 10) barColor = '#eab308'; // 10~50% 미만 (노란색)
+                return { y: val, color: barColor };
             });
+            
             const ctx3 = document.getElementById(`chart_${prefix}_3`);
             if(ctx3) {
                 const chart3 = Highcharts.chart(`chart_${prefix}_3`, {
@@ -1443,6 +1394,12 @@
 
             // 4. Chart 4
             const nT = noiseStats.A + noiseStats.B + noiseStats.C + noiseStats.D;
+            
+            const title4 = document.getElementById(`title_${prefix}_4`);
+            if (title4) {
+                title4.innerText = `[ 총 측정건수 : ${nT}건(100%) ]`;
+            }
+
             let pie4DataHC = [];
             if(nT > 0) {
                 pie4DataHC = [

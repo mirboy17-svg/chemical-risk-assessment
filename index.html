@@ -478,9 +478,12 @@
 
         function findKey(row, keywords) {
             const keys = Object.keys(row);
-            for(let key of keys) {
-                const normalized = key.replace(/\s+/g, '');
-                for(let kw of keywords) if(normalized.includes(kw)) return key;
+            // ★ 컬럼 순서가 아닌 '키워드 우선순위'로 탐색하도록 로직 변경
+            for(let kw of keywords) {
+                for(let key of keys) {
+                    const normalized = key.replace(/\s+/g, '');
+                    if(normalized.includes(kw)) return key;
+                }
             }
             return null;
         }
@@ -537,7 +540,8 @@
                 const deptKey = findKey(row, ['부서', '공정', '팀']);
                 const locKey = findKey(row, ['장소', '작업위치', '단위작업']);
                 const agentKey = findKey(row, ['인자', '유해인자', '측정물질', '물질명']);
-                const valKey = findKey(row, ['측정치', '결과', '값', 'TWA', '금회']);
+                // ★ '금회(금회치)'를 가장 먼저 찾도록 키워드 배열 최우선순위 부여
+                const valKey = findKey(row, ['금회', 'TWA', '측정치', '결과', '값']);
                 const prevValKey = findKey(row, ['전회치', '전회', '이전결과', '과거']);
                 const limitKey = findKey(row, ['기준', '노출기준', '법적기준']);
                 const dateKey = findKey(row, ['측정일', '날짜', '일자', 'Date']);

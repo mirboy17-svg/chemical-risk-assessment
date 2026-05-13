@@ -1041,7 +1041,8 @@
             reportHtml += renderSectionStrict(5, `<span class="sec-num-badge-5" style="${num5?'':'display:none;'}">${num5}</span> 단위작업장소별 유해인자 측정 및 초과 현황`, sec5Thead, buildGroupRows(data, ['location', 'category', 'agent', 'limit'], companies), groupRender5, true, '', trafficLegend5);
 
             // --- Section 6 ---
-            const sec6Data = data.filter(d => d.category !== '물리적 인자');
+            // ★ 화학물질 위험성 평가 시 '혼합물질(평가)' 항목 제외 로직 추가
+            const sec6Data = data.filter(d => d.category !== '물리적 인자' && !d.agent.replace(/\s+/g, '').includes('혼합물질'));
             const sec6Thead = `<tr><th width="13%">단위사업체명</th><th width="12%">부서(팀)명</th><th width="11%">분류</th><th width="24%">세부 유해인자명</th><th width="4.5%" style="padding:0.5rem 0.1rem; line-height:1.2; font-size:0.8rem;">측<br>정<br>건<br>수</th><th width="4.5%" style="padding:0.5rem 0.1rem; line-height:1.2; font-size:0.8rem;">초<br>과<br>건<br>수</th><th width="4.5%" style="padding:0.5rem 0.1rem; line-height:1.2; font-size:0.8rem;">노<br>출<br>수<br>준</th><th width="4.5%" style="padding:0.5rem 0.1rem; line-height:1.2; font-size:0.8rem;">유<br>해<br>성</th><th width="4.5%" style="color: #2563eb; padding:0.5rem 0.1rem; line-height:1.2; font-size:0.8rem;">위<br>험<br>성</th><th width="4.5%" style="padding:0.5rem 0.1rem; line-height:1.2; font-size:0.8rem;">신<br>호<br>등</th><th width="13%">판정</th></tr>`;
             
             const groupRender6 = (r, isG, isNG, rs, isNSG, subRS) => {
@@ -1185,7 +1186,8 @@
             companies.forEach((comp, idx) => {
                 const compData = data.filter(d => d.company === comp);
                 const compExcData = compData.filter(d => d.isExceed);
-                const compSec6Data = compData.filter(d => d.category !== '물리적 인자');
+                // ★ Section 7 내부 개별 사업체별 화학물질 위험성 평가에서도 '혼합물질(평가)' 항목 제외
+                const compSec6Data = compData.filter(d => d.category !== '물리적 인자' && !d.agent.replace(/\s+/g, '').includes('혼합물질'));
 
                 let compSec4Rows = [];
                 sortedCats.forEach(cat => {

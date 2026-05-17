@@ -5,10 +5,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>작업환경측정 위험성평가 및 분석 보고서</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <!-- 3D 입체 차트 구현을 위한 Highcharts 라이브러리 -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highcharts/11.4.0/highcharts.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highcharts/11.4.0/highcharts-3d.js"></script>
+    
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&display=swap" rel="stylesheet">
     <style>
         html { scroll-behavior: smooth; }
@@ -20,53 +22,61 @@
             margin: 20mm auto; 
             background: white; 
             box-shadow: 0 4px 6px rgba(0,0,0,0.1); 
-            padding: 15mm 15mm 25mm 15mm; 
+            padding: 15mm 20mm 25mm 20mm;
             box-sizing: border-box; 
             position: relative; 
+            page-break-after: always; 
+        }
+        
+        .a4-page[data-section="1"], .a4-page[data-section="6"] {
+            padding-left: 8mm;
+            padding-right: 8mm;
         }
 
-        /* --- 완벽한 자연스러운 출력을 위한 인쇄 전용 CSS 최적화 --- */
-        @page { 
-            size: A4 portrait; 
-            margin: 12mm 10mm 15mm 10mm !important; /* 표가 넓게 들어갈 수 있도록 여백 최적화 */
-        }
-
+        /* --- PDF 저장 및 인쇄 전용 CSS 최적화 --- */
         @media print {
+            @page { 
+                size: A4 portrait; 
+                margin: 10mm 8mm 10mm 8mm !important;
+            }
+
             * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; color-adjust: exact !important; }
             
-            /* 1. Flex 레이아웃 강제 해제 (표가 뭉텅이로 잘리는 현상 원천 차단) */
             html, body { background: white !important; margin: 0 !important; padding: 0 !important; width: 100% !important; height: auto !important; display: block !important; overflow: visible !important; }
             .no-print { display: none !important; }
+            .hide-in-print { display: none !important; } 
             
             #main-wrapper, #report-content { 
                 width: 100% !important; max-width: 100% !important; margin: 0 !important; padding: 0 !important; display: block !important; overflow: visible !important; 
             }
             
-            /* 2. 항목별 독립 페이지(1~6항목 시작 시 새 페이지)는 유지, 내부 표는 길이에 맞춰 무한히 자동 이어짐 */
             .a4-page, .page-container { 
                 width: 100% !important; max-width: 100% !important; height: auto !important; min-height: 0 !important; 
-                display: block !important; /* Flex 완전 해제 */
-                margin: 0 !important; padding: 0 !important; box-shadow: none !important; border: none !important;
+                display: block !important; 
+                margin: 0 0 10mm 0 !important; 
+                padding: 0 12mm !important;
+                box-sizing: border-box !important;
+                box-shadow: none !important; border: none !important;
                 page-break-inside: auto !important; break-inside: auto !important;
-                page-break-after: always !important; break-after: page !important;
-            }
-            .page-container:last-child {
-                page-break-after: auto !important; break-after: auto !important;
+                page-break-after: always !important; 
             }
             
-            /* 3. 표가 다음 페이지로 넘어갈 때 자연스럽게 이어지며 헤더(분류명 등) 자동 반복 */
-            table { width: 100% !important; max-width: 100% !important; border-collapse: collapse !important; margin-bottom: 5mm !important; page-break-inside: auto !important; break-inside: auto !important; }
+            .page-container[data-section="1"], .page-container[data-section="6"] {
+                padding: 0 !important;
+            }
+            
+            .major-section { page-break-before: always !important; break-before: page !important; }
+            #section-1 { page-break-before: avoid !important; break-before: avoid !important; }
+
+            table { width: 100% !important; max-width: none !important; border-collapse: collapse !important; margin-bottom: 3mm !important; page-break-inside: auto !important; break-inside: auto !important; display: table !important; }
             thead { display: table-header-group !important; } 
             tfoot { display: table-footer-group !important; }
             
-            /* 4. 표의 행(tr)이나 텍스트가 페이지 경계선에서 반토막 나지 않도록 보호막 적용 */
             tr { page-break-inside: avoid !important; break-inside: avoid !important; page-break-after: auto !important; break-after: auto !important; }
-            th, td { padding: 4px !important; word-break: keep-all !important; } /* font-size는 맞춤 조절 기능을 위해 덮어쓰지 않음 */
+            th, td { word-break: normal !important; overflow-wrap: break-word !important; }
             
-            /* 5. 제목 및 블록(설명서)이 페이지 아래쪽에 혼자 고립되거나 반토막 나지 않도록 보호 */
-            h1, h2, h3, h4, h5, .section-title { page-break-after: avoid !important; break-after: avoid !important; margin-top: 0 !important; padding-top: 5mm !important; }
-            .prevent-break { page-break-inside: avoid !important; break-inside: avoid !important; margin-bottom: 3mm !important; }
-            .chart-container { page-break-inside: avoid !important; break-inside: avoid !important; }
+            h1, h2, h3, h4, h5, .section-title { page-break-after: avoid !important; break-after: avoid !important; margin-top: 3mm !important; margin-bottom: 2mm !important; padding-top: 0 !important; }
+            .prevent-break { page-break-inside: avoid !important; break-inside: avoid !important; margin-bottom: 2mm !important; }
         }
 
         table { width: 100%; border-collapse: collapse; margin-bottom: 1.5rem; font-size: 0.85rem; }
@@ -78,64 +88,195 @@
         .text-left { text-align: left; }
         .font-bold { font-weight: 700; }
         .text-red-600 { color: #dc2626; }
-        .section-title { font-size: 1.25rem; font-weight: 700; color: #111827; border-bottom: 2px solid #2563eb; padding-bottom: 0.5rem; margin-bottom: 1rem; display: flex; align-items: center; margin-top: 1rem; }
-        .section-title span { background-color: #2563eb; color: white; padding: 0.1rem 0.5rem; border-radius: 4px; margin-right: 0.5rem; font-size: 1rem; }
+        
+        .section-title { font-size: 1.25rem; font-weight: 700; color: #111827; border-bottom: 2px solid #16a34a; padding-bottom: 0.5rem; margin-bottom: 1rem; display: flex; align-items: center; margin-top: 1rem; }
+        .section-title span { background-color: #16a34a; color: white; padding: 0.1rem 0.5rem; border-radius: 4px; margin-right: 0.5rem; font-size: 1rem; }
         
         #loading-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255,255,255,0.95); z-index: 9999; flex-direction: column; justify-content: center; align-items: center; text-align: center; }
         .loader { border: 8px solid #f3f3f3; border-top: 8px solid #dc2626; border-radius: 50%; width: 60px; height: 60px; animation: spin 1s linear infinite; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
     </style>
 </head>
-<body class="flex min-h-screen">
+<body class="flex min-h-screen relative overflow-x-hidden">
 
+    <!-- 로그인 오버레이 -->
+    <div id="login-overlay" class="fixed inset-0 bg-gray-100 z-[99999] flex flex-col justify-center items-center print:hidden">
+        <div class="bg-white p-8 rounded-lg shadow-xl w-96 max-w-[90%] border border-green-300">
+            <div class="text-center mb-6">
+                <div class="bg-green-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-3">
+                    <svg class="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>
+                </div>
+                <h2 class="text-xl font-bold text-gray-800">작업환경측정 분석 보고서</h2>
+                <p class="text-sm text-gray-500 mt-1">대시보드 접속을 위해 비밀번호를 입력해주세요.</p>
+            </div>
+            <div class="space-y-4">
+                <div>
+                    <input type="password" id="login-password" placeholder="비밀번호 입력(임시:1234)" class="w-full px-4 py-3 rounded border border-gray-300 focus:outline-none focus:ring-2 focus:ring-green-500 transition text-center text-lg tracking-widest" onkeypress="if(event.key === 'Enter') checkLogin()">
+                </div>
+                <button onclick="checkLogin()" class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 rounded shadow transition text-lg">접속하기</button>
+                <p id="login-error" class="text-red-500 text-sm text-center hidden font-bold">비밀번호가 일치하지 않습니다.</p>
+            </div>
+        </div>
+        
+        <div class="mt-8 text-center text-[0.8rem] leading-relaxed tracking-wide space-y-1.5">
+            <p class="font-bold text-[0.85rem] text-black">시스템 오류 및 사용 문의</p>
+            <p class="text-[#9ba9bd] font-normal text-[0.7rem]">대한산업보건협회 경남지역본부 산업위생국</p>
+            <div class="flex items-center justify-center gap-3 pt-1 text-[#9ba9bd] font-normal text-[0.7rem]">
+                <span class="flex items-center">
+                    <svg class="w-3.5 h-3.5 mr-1" fill="currentColor" viewBox="0 0 24 24"><path d="M6.62 10.79c1.44 2.83 3.76 5.14 6.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.03.74-.25 1.02l-2.2 2.2z"/></svg>
+                    055-295-2461
+                </span>
+                <span class="text-[#9ba9bd] font-light">|</span>
+                <span class="flex items-center">
+                    <svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 24 24"><path d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/></svg>
+                    aniag000@kiha21.or.kr
+                </span>
+            </div>
+            <p class="text-[0.7rem] text-[#9ba9bd] font-normal mt-6 tracking-normal">© Copyright 2026 aniag000@kiha21.or.kr. All rights reserved.</p>
+        </div>
+    </div>
+
+    <!-- 로딩 오버레이 -->
     <div id="loading-overlay">
         <div class="loader mb-4"></div>
         <h2 id="loading-title" class="text-xl font-bold text-gray-800">데이터를 분석 중입니다...</h2>
         <p id="loading-desc" class="text-gray-600 mt-2">구글 스프레드시트 데이터를 전수 조사 및 통계 산출 중입니다.</p>
     </div>
 
-    <!-- 우측 메인 영역 (좌측 사이드바 메뉴만큼 패딩 확보) - 인쇄시 완전한 block 속성 보장 -->
-    <div id="main-wrapper" class="flex-1 w-full lg:pl-72 print:pl-0 print:block print:w-full">
+    <!-- 모바일용 사이드바 배경 오버레이 -->
+    <div id="sidebar-overlay" class="fixed inset-0 bg-black bg-opacity-50 z-40 hidden transition-opacity print:hidden lg:hidden" onclick="toggleSidebar()"></div>
+
+    <!-- ★ 좌측 고정 사이드바 (PC에서는 항상 노출되도록 lg:translate-x-0 부여) -->
+    <div id="sidebar" class="w-72 fixed left-0 top-0 h-screen bg-white shadow-2xl border-r border-gray-200 flex flex-col z-50 no-print transition-transform duration-300 -translate-x-full lg:translate-x-0">
+        <div class="p-5 border-b border-gray-200 bg-gray-50 flex justify-between items-center">
+            <div>
+                <h2 class="font-bold text-gray-800 text-lg flex items-center">
+                    <svg class="w-5 h-5 mr-2 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h7"></path></svg>
+                    보고서 메뉴
+                </h2>
+                <p class="text-[0.7rem] text-gray-500 mt-1 tracking-tight">※ 숫자를 수정하여 맞춤형 제목을 만드세요.</p>
+            </div>
+            <button onclick="toggleSidebar()" class="text-gray-400 hover:text-gray-800 focus:outline-none lg:hidden">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+            </button>
+        </div>
         
-        <div class="no-print sticky top-0 bg-white border-b border-gray-200 p-4 shadow-md z-40">
+        <div class="flex-1 overflow-y-auto p-4 space-y-1">
+            <div class="flex items-center px-2 py-1 hover:bg-blue-50 rounded transition">
+                <input type="checkbox" value="1" class="print-checkbox w-4 h-4 text-blue-600 rounded border-gray-300 cursor-pointer mr-2" checked>
+                <input type="text" id="menu-num-1" value="1" oninput="updateSectionNumber(1, this.value)" class="w-8 text-center text-sm font-bold bg-white border border-gray-300 rounded focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none py-0.5">
+                <a href="#section-1" onclick="if(window.innerWidth < 1024) toggleSidebar()" class="block py-1.5 px-2 flex-1 text-sm font-bold text-gray-700 hover:text-blue-600 truncate">작업환경측정 통계 분석</a>
+            </div>
+            <div class="flex items-center px-2 py-1 hover:bg-blue-50 rounded transition">
+                <input type="checkbox" value="2" class="print-checkbox w-4 h-4 text-blue-600 rounded border-gray-300 cursor-pointer mr-2" checked>
+                <input type="text" id="menu-num-2" value="2" oninput="updateSectionNumber(2, this.value)" class="w-8 text-center text-sm font-bold bg-white border border-gray-300 rounded focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none py-0.5">
+                <a href="#section-2" onclick="if(window.innerWidth < 1024) toggleSidebar()" class="block py-1.5 px-2 flex-1 text-sm font-bold text-gray-700 hover:text-blue-600 truncate">노출기준 초과 현황 리스트</a>
+            </div>
+            <div class="flex items-center px-2 py-1 hover:bg-blue-50 rounded transition">
+                <input type="checkbox" value="3" class="print-checkbox w-4 h-4 text-blue-600 rounded border-gray-300 cursor-pointer mr-2" checked>
+                <input type="text" id="menu-num-3" value="3" oninput="updateSectionNumber(3, this.value)" class="w-8 text-center text-sm font-bold bg-white border border-gray-300 rounded focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none py-0.5">
+                <a href="#section-3" onclick="if(window.innerWidth < 1024) toggleSidebar()" class="block py-1.5 px-2 flex-1 text-sm font-bold text-gray-700 hover:text-blue-600 truncate">분류별 측정 분포 및 초과 현황</a>
+            </div>
+            <div class="flex items-center px-2 py-1 hover:bg-blue-50 rounded transition">
+                <input type="checkbox" value="4" class="print-checkbox w-4 h-4 text-blue-600 rounded border-gray-300 cursor-pointer mr-2" checked>
+                <input type="text" id="menu-num-4" value="4" oninput="updateSectionNumber(4, this.value)" class="w-8 text-center text-sm font-bold bg-white border border-gray-300 rounded focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none py-0.5">
+                <a href="#section-4" onclick="if(window.innerWidth < 1024) toggleSidebar()" class="block py-1.5 px-2 flex-1 text-sm font-bold text-gray-700 hover:text-blue-600 truncate">단위사업체별 종합 현황</a>
+            </div>
+            <div class="flex items-center px-2 py-1 hover:bg-blue-50 rounded transition">
+                <input type="checkbox" value="5" class="print-checkbox w-4 h-4 text-blue-600 rounded border-gray-300 cursor-pointer mr-2" checked>
+                <input type="text" id="menu-num-5" value="5" oninput="updateSectionNumber(5, this.value)" class="w-8 text-center text-sm font-bold bg-white border border-gray-300 rounded focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none py-0.5">
+                <a href="#section-5" onclick="if(window.innerWidth < 1024) toggleSidebar()" class="block py-1.5 px-2 flex-1 text-sm font-bold text-gray-700 hover:text-blue-600 truncate">단위작업장소별 측정 현황</a>
+            </div>
+            <div class="flex items-center px-2 py-1 hover:bg-blue-50 rounded transition">
+                <input type="checkbox" value="6" class="print-checkbox w-4 h-4 text-blue-600 rounded border-gray-300 cursor-pointer mr-2" checked>
+                <input type="text" id="menu-num-6" value="6" oninput="updateSectionNumber(6, this.value)" class="w-8 text-center text-sm font-bold bg-white border border-gray-300 rounded focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none py-0.5">
+                <a href="#section-6" onclick="if(window.innerWidth < 1024) toggleSidebar()" class="block py-1.5 px-2 flex-1 text-sm font-bold text-gray-700 hover:text-blue-600 truncate">화학물질 위험성 평가</a>
+            </div>
+            <div class="flex items-center px-2 py-1 hover:bg-blue-50 rounded transition">
+                <input type="checkbox" value="7" class="print-checkbox w-4 h-4 text-blue-600 rounded border-gray-300 cursor-pointer mr-2" checked>
+                <input type="text" id="menu-num-7" value="7" oninput="updateSectionNumber(7, this.value)" class="w-8 text-center text-sm font-bold bg-white border border-gray-300 rounded focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none py-0.5">
+                <a href="#section-7" onclick="if(window.innerWidth < 1024) toggleSidebar()" class="block py-1.5 px-2 flex-1 text-sm font-bold text-gray-700 hover:text-blue-600 truncate">단위사업체별 종합 보고서</a>
+            </div>
+        </div>
+
+        <div class="p-5 border-t border-gray-200 bg-gray-50">
+            <h3 class="text-xs font-bold text-gray-500 mb-3 flex items-center">
+                <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4"></path></svg>
+                데이터 관리
+            </h3>
+            
+            <div class="flex gap-2 mb-2">
+                <button onclick="resetAnalysis(); if(window.innerWidth < 1024) toggleSidebar();" class="flex-1 bg-red-50 border border-red-200 hover:bg-red-100 text-red-600 py-2 rounded shadow-sm text-xs font-bold transition">초기화</button>
+            </div>
+
+            <button onclick="openModal('print'); if(window.innerWidth < 1024) toggleSidebar();" title="인쇄 대화상자 열기 (단축키: Ctrl + P)" class="w-full mt-3 bg-blue-600 hover:bg-blue-700 text-white font-bold py-3.5 rounded shadow-md transition flex items-center justify-center text-[0.95rem] gap-2">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path></svg>
+                PDF 저장 / 인쇄
+            </button>
+            
+            <button onclick="logout()" class="w-full mt-2 bg-gray-500 hover:bg-gray-600 text-white font-bold py-2.5 rounded shadow-sm transition flex items-center justify-center text-[0.85rem] gap-2">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg>
+                로그아웃
+            </button>
+        </div>
+    </div>
+
+    <!-- 우측 메인 영역 (PC에서는 사이드바 넓이만큼 여백 부여 lg:pl-72) -->
+    <div id="main-wrapper" class="flex-1 w-full lg:pl-72 print:pl-0 print:block print:w-full transition-all duration-300">
+        
+        <div class="no-print sticky top-0 bg-white border-b border-gray-200 p-4 shadow-md z-30">
             <div class="max-w-[1400px] mx-auto flex flex-col gap-4">
                 <div class="flex justify-between items-center">
-                    <div>
-                        <h1 class="text-xl font-bold text-gray-800">작업환경측정 위험성평가 및 분석 보고서</h1>
-                        <p class="text-xs text-gray-500" id="top-status-msg">※ 시트 주소와 측정 기간을 입력하고 분석을 실행해 주세요.</p>
+                    <div class="flex items-center">
+                        <button onclick="toggleSidebar()" class="mr-4 p-2 bg-gray-100 hover:bg-gray-200 rounded text-gray-700 transition shadow-sm border border-gray-300 flex items-center lg:hidden">
+                            <svg class="w-6 h-6 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
+                            <span class="text-sm font-bold">메뉴</span>
+                        </button>
+                        
+                        <div>
+                            <h1 id="main-report-title" class="text-xl font-bold text-gray-800">작업환경측정 위험성평가 및 분석 보고서</h1>
+                            <p class="text-xs text-gray-500" id="top-status-msg">※ 시트 주소와 측정 기간을 입력하고 분석을 실행해 주세요.</p>
+                        </div>
                     </div>
                     <div class="flex gap-2">
                         <button onclick="saveAsCSV()" class="bg-green-600 hover:bg-green-700 text-white px-3 py-2 rounded shadow flex items-center transition text-sm font-bold">
                             <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
                             엑셀(CSV) 저장
                         </button>
-                        <button onclick="openModal('pdf')" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded shadow flex items-center transition text-sm font-bold">
-                            <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
-                            보고서 출력 / 다운로드
+                        <button onclick="openModal('print')" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded shadow flex items-center transition text-sm font-bold">
+                            <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path></svg>
+                            PDF 저장 / 인쇄
                         </button>
                     </div>
                 </div>
                 
-                <div class="flex flex-wrap items-center gap-4 bg-gray-50 p-3 rounded-lg border border-gray-200">
-                    <div class="flex items-center gap-2">
-                        <span class="text-xs font-bold text-gray-600 border-r pr-2">구글 시트 링크</span>
-                        <input type="url" id="noise-url" placeholder="소음 시트 주소..." class="text-xs py-1.5 px-3 border rounded w-48 focus:ring-2 focus:ring-blue-500 outline-none">
-                        <input type="url" id="chemical-url" placeholder="소음제외 시트 주소..." class="text-xs py-1.5 px-3 border rounded w-48 focus:ring-2 focus:ring-green-500 outline-none">
-                    </div>
-
-                    <div class="flex items-center gap-2 ml-auto">
-                        <span class="text-xs font-bold text-gray-600 border-r pr-2">측정 기간 설정</span>
-                        <input type="date" id="input-start-date" class="text-xs py-1.5 px-2 border rounded outline-none focus:ring-2 focus:ring-blue-400">
-                        <span class="text-gray-400">~</span>
-                        <input type="date" id="input-end-date" class="text-xs py-1.5 px-2 border rounded outline-none focus:ring-2 focus:ring-blue-400">
-                        <div class="flex items-center bg-white border rounded px-2 py-1.5">
-                            <span class="text-xs text-gray-500 mr-1">총</span>
-                            <input type="number" id="input-total-days" value="0" class="text-xs font-bold w-10 text-center outline-none">
-                            <span class="text-xs text-gray-500 ml-1">일</span>
+                <div class="flex flex-col gap-3 bg-gray-50 p-3 rounded-lg border border-gray-200">
+                    <div class="flex flex-wrap items-center gap-4">
+                        <div class="flex items-center gap-2">
+                            <span class="text-xs font-bold text-gray-600 border-r pr-2 w-20 text-right">구글 시트 링크</span>
+                            <input type="url" id="noise-url" placeholder="소음 시트 주소..." class="text-xs py-1.5 px-3 border rounded w-48 focus:ring-2 focus:ring-blue-500 outline-none">
+                            <input type="url" id="chemical-url" value="https://docs.google.com/spreadsheets/d/1CoVTbGoYpK6r-tWfMP2alD59kjJHk8lGZ6Wk5C8210Q/edit?usp=sharing" placeholder="소음제외 시트 주소..." class="text-xs py-1.5 px-3 border rounded w-48 focus:ring-2 focus:ring-green-500 outline-none">
                         </div>
-                        <button onclick="executeAnalysis()" class="bg-gray-800 hover:bg-gray-900 text-white px-6 py-1.5 rounded shadow text-sm font-bold transition ml-2">
-                            데이터 분석 실행
-                        </button>
+                    </div>
+                    <div class="flex flex-wrap items-center gap-4">
+                        <div class="flex items-center gap-2">
+                            <span class="text-xs font-bold text-gray-600 border-r pr-2 w-20 text-right">사업장명</span>
+                            <input type="text" id="input-company-name" placeholder="사업장명 입력 (예: 오성테크)" class="text-xs py-1.5 px-3 border rounded w-96 focus:ring-2 focus:ring-purple-500 outline-none">
+                        </div>
+                        <div class="flex items-center gap-2 ml-auto">
+                            <span class="text-xs font-bold text-gray-600 border-r pr-2">측정 기간 설정</span>
+                            <input type="date" id="input-start-date" class="text-xs py-1.5 px-2 border rounded outline-none focus:ring-2 focus:ring-blue-400">
+                            <span class="text-gray-400">~</span>
+                            <input type="date" id="input-end-date" class="text-xs py-1.5 px-2 border rounded outline-none focus:ring-2 focus:ring-blue-400">
+                            <div class="flex items-center bg-white border rounded px-2 py-1.5">
+                                <span class="text-xs text-gray-500 mr-1">총</span>
+                                <input type="number" id="input-total-days" value="0" class="text-xs font-bold w-10 text-center outline-none">
+                                <span class="text-xs text-gray-500 ml-1">일</span>
+                            </div>
+                            <button onclick="executeAnalysis()" class="bg-gray-800 hover:bg-gray-900 text-white px-6 py-1.5 rounded shadow text-sm font-bold transition ml-2">
+                                데이터 분석 실행
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -150,84 +291,153 @@
         </div>
     </div>
 
-    <!-- 좌측 고정 사이드바 메뉴창 -->
-    <div class="w-72 fixed left-0 top-0 h-screen bg-white shadow-2xl border-r border-gray-200 flex flex-col z-50 no-print hidden lg:flex">
-        <div class="p-5 border-b border-gray-200 bg-gray-50">
-            <h2 class="font-bold text-gray-800 text-lg flex items-center">
-                <svg class="w-5 h-5 mr-2 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h7"></path></svg>
-                보고서 메뉴
-            </h2>
-        </div>
-        
-        <div class="flex-1 overflow-y-auto p-4 space-y-1">
-            <a href="#section-1" class="block py-2.5 px-3 hover:bg-blue-50 hover:text-blue-600 rounded text-sm font-bold text-gray-700 transition">1. 작업환경측정 통계 분석</a>
-            <a href="#section-2" class="block py-2.5 px-3 hover:bg-blue-50 hover:text-blue-600 rounded text-sm font-bold text-gray-700 transition">2. 노출기준 초과 현황 리스트</a>
-            <a href="#section-3" class="block py-2.5 px-3 hover:bg-blue-50 hover:text-blue-600 rounded text-sm font-bold text-gray-700 transition">3. 분류별 측정 분포 및 초과 현황</a>
-            <a href="#section-4" class="block py-2.5 px-3 hover:bg-blue-50 hover:text-blue-600 rounded text-sm font-bold text-gray-700 transition">4. 단위사업체별 종합 현황</a>
-            <a href="#section-5" class="block py-2.5 px-3 hover:bg-blue-50 hover:text-blue-600 rounded text-sm font-bold text-gray-700 transition">5. 단위작업장소별 측정 현황</a>
-            <a href="#section-6" class="block py-2.5 px-3 hover:bg-blue-50 hover:text-blue-600 rounded text-sm font-bold text-gray-700 transition">6. 작업환경측정 화학물질 위험성 평가</a>
-        </div>
-
-        <!-- 데이터 관리 창 -->
-        <div class="p-5 border-t border-gray-200 bg-gray-50">
-            <h3 class="text-xs font-bold text-gray-500 mb-3 flex items-center">
-                <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4"></path></svg>
-                데이터 관리
-            </h3>
-            
-            <div class="flex gap-2 mb-2">
-                <button onclick="resetAnalysis()" class="flex-1 bg-red-50 border border-red-200 hover:bg-red-100 text-red-600 py-2 rounded shadow-sm text-xs font-bold transition">초기화</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- 출력 방식 선택 모달 (2가지 방식 통합) -->
+    <!-- 출력 방식 선택 모달 -->
     <div id="selection-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50 flex justify-center items-center">
-        <div class="bg-white rounded-lg p-6 w-[32rem] shadow-xl relative">
-            <h3 class="text-lg font-bold mb-2 text-gray-800 border-b pb-2">보고서 출력 및 저장 방식 선택</h3>
-            <p class="text-sm text-gray-600 mb-5">원하시는 출력 또는 저장 방식을 선택해 주세요.</p>
+        <div class="bg-white rounded-lg p-6 w-[34rem] shadow-xl relative max-h-[95vh] overflow-y-auto border border-gray-200">
+            <h3 class="text-lg font-bold mb-2 text-gray-800 border-b pb-2">보고서 출력 (PDF 저장) 설정</h3>
+            <p class="text-sm text-gray-600 mb-4">출력할 항목을 선택하고 인쇄 버튼을 눌러주세요.</p>
 
-            <!-- 1번 방법: 시스템 인쇄창 (권장) -->
             <div class="mb-5 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-                <h4 class="font-bold text-blue-800 mb-1 flex items-center">
-                    <svg class="w-5 h-5 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path></svg>
-                    방법 1. 인쇄창 열기 (고화질 PDF 저장 권장)
+                <h4 class="font-bold text-blue-800 mb-3 flex items-center text-sm">
+                    <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"></path></svg>
+                    출력할 보고서 항목 선택
                 </h4>
-                <p class="text-xs text-blue-600 mb-3 break-keep">표가 잘리지 않고 가장 깔끔하게 출력 및 저장됩니다.<br>대상 프린터에서 <strong>'PDF로 저장'</strong>을 선택해 파일로 다운로드할 수도 있습니다.</p>
-                <button onclick="executeNativePrint()" class="w-full py-2.5 bg-blue-600 text-white rounded font-bold shadow hover:bg-blue-700 transition">
-                    인쇄창 열기 (단축키: Ctrl+P)
-                </button>
+                <div class="grid grid-cols-2 gap-x-2 gap-y-2 text-xs text-gray-800">
+                    <label class="flex items-center cursor-pointer hover:bg-blue-100 p-1.5 rounded border border-transparent transition" id="modal-item-1"><input type="checkbox" value="1" class="pdf-checkbox mr-2 w-4 h-4 text-blue-600 rounded border-gray-400 focus:ring-blue-500" checked> <span id="modal-num-1" class="font-bold mr-1">1.</span> 작업환경측정 통계 분석</label>
+                    <label class="flex items-center cursor-pointer hover:bg-blue-100 p-1.5 rounded border border-transparent transition" id="modal-item-2"><input type="checkbox" value="2" class="pdf-checkbox mr-2 w-4 h-4 text-blue-600 rounded border-gray-400 focus:ring-blue-500" checked> <span id="modal-num-2" class="font-bold mr-1">2.</span> 노출기준 초과 현황</label>
+                    <label class="flex items-center cursor-pointer hover:bg-blue-100 p-1.5 rounded border border-transparent transition" id="modal-item-3"><input type="checkbox" value="3" class="pdf-checkbox mr-2 w-4 h-4 text-blue-600 rounded border-gray-400 focus:ring-blue-500" checked> <span id="modal-num-3" class="font-bold mr-1">3.</span> 분류별 측정 분포 차트</label>
+                    <label class="flex items-center cursor-pointer hover:bg-blue-100 p-1.5 rounded border border-transparent transition" id="modal-item-4"><input type="checkbox" value="4" class="pdf-checkbox mr-2 w-4 h-4 text-blue-600 rounded border-gray-400 focus:ring-blue-500" checked> <span id="modal-num-4" class="font-bold mr-1">4.</span> 단위사업체별 종합 현황</label>
+                    <label class="flex items-center cursor-pointer hover:bg-blue-100 p-1.5 rounded border border-transparent transition" id="modal-item-5"><input type="checkbox" value="5" class="pdf-checkbox mr-2 w-4 h-4 text-blue-600 rounded border-gray-400 focus:ring-blue-500" checked> <span id="modal-num-5" class="font-bold mr-1">5.</span> 단위작업장소별 측정 현황</label>
+                    <label class="flex items-center cursor-pointer hover:bg-blue-100 p-1.5 rounded border border-transparent transition" id="modal-item-6"><input type="checkbox" value="6" class="pdf-checkbox mr-2 w-4 h-4 text-blue-600 rounded border-gray-400 focus:ring-blue-500" checked> <span id="modal-num-6" class="font-bold mr-1">6.</span> 화학물질 위험성 평가</label>
+                    <label class="flex items-center cursor-pointer hover:bg-blue-100 p-1.5 rounded border border-blue-300 bg-white transition col-span-2 shadow-sm font-bold mt-1" id="modal-item-7"><input type="checkbox" value="7" class="pdf-checkbox mr-2 w-4 h-4 text-blue-600 rounded border-gray-400 focus:ring-blue-500"> <span id="modal-num-7" class="font-bold mr-1">7.</span> 단위사업체별 종합 보고서 (개별 인쇄용)</label>
+                </div>
             </div>
 
-            <!-- 2번 방법: 이미지 캡처형 PDF -->
-            <div class="p-4 bg-gray-50 border border-gray-200 rounded-lg">
-                <h4 class="font-bold text-gray-800 mb-1 flex items-center">
-                    <svg class="w-5 h-5 mr-1.5 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
-                    방법 2. 이미지형 PDF 변환 다운로드
-                </h4>
-                <p class="text-xs text-gray-500 mb-3 break-keep">화면을 캡처하여 강제로 PDF로 변환합니다. (페이지 분할 시 표 중간이 잘릴 수 있습니다.)</p>
-                <div class="space-y-2 mb-4 text-xs text-gray-700 grid grid-cols-2 gap-x-2 gap-y-1">
-                    <label class="flex items-center cursor-pointer hover:bg-gray-100 p-1 rounded"><input type="checkbox" value="1" class="pdf-checkbox mr-2 w-3 h-3 text-red-600 rounded border-gray-300" checked> 1. 작업환경측정 통계</label>
-                    <label class="flex items-center cursor-pointer hover:bg-gray-100 p-1 rounded"><input type="checkbox" value="2" class="pdf-checkbox mr-2 w-3 h-3 text-red-600 rounded border-gray-300" checked> 2. 노출기준 초과 현황</label>
-                    <label class="flex items-center cursor-pointer hover:bg-gray-100 p-1 rounded"><input type="checkbox" value="3" class="pdf-checkbox mr-2 w-3 h-3 text-red-600 rounded border-gray-300" checked> 3. 분류별 측정 분포</label>
-                    <label class="flex items-center cursor-pointer hover:bg-gray-100 p-1 rounded"><input type="checkbox" value="4" class="pdf-checkbox mr-2 w-3 h-3 text-red-600 rounded border-gray-300" checked> 4. 단위사업체별 현황</label>
-                    <label class="flex items-center cursor-pointer hover:bg-gray-100 p-1 rounded"><input type="checkbox" value="5" class="pdf-checkbox mr-2 w-3 h-3 text-red-600 rounded border-gray-300" checked> 5. 단위작업장소별 현황</label>
-                    <label class="flex items-center cursor-pointer hover:bg-gray-100 p-1 rounded"><input type="checkbox" value="6" class="pdf-checkbox mr-2 w-3 h-3 text-red-600 rounded border-gray-300" checked> 6. 화학물질 위험성평가</label>
-                </div>
-                <button id="modal-pdf-btn" onclick="executePdfDownload()" class="w-full py-2 bg-red-600 text-white rounded font-bold shadow hover:bg-red-700 transition">
-                    이미지형 PDF 강제 변환
+            <div class="mb-2">
+                <button onclick="executeNativePrint()" class="w-full py-3.5 bg-blue-600 text-white rounded font-bold shadow hover:bg-blue-700 transition flex items-center justify-center text-lg">
+                    <svg class="w-6 h-6 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path></svg>
+                    선택 항목 PDF 저장 (인쇄)
                 </button>
+                <p class="text-xs text-center text-red-500 mt-2 font-bold">※ 브라우저 인쇄 창이 뜨면 대상(프린터)을 [PDF로 저장]으로 선택하세요.</p>
             </div>
             
-            <div class="mt-4 flex justify-end">
-                <button onclick="closeModal()" class="px-5 py-2 bg-gray-200 text-gray-800 rounded font-bold hover:bg-gray-300 transition">닫기</button>
+            <div class="mt-4 flex justify-end border-t pt-3 border-gray-100">
+                <button onclick="closeModal()" class="px-5 py-2 bg-gray-200 text-gray-800 rounded font-bold hover:bg-gray-300 transition">취소 및 닫기</button>
             </div>
         </div>
     </div>
 
     <script>
-        let pieChartInstance = null;
-        let barChartInstance = null;
+        const APP_PASSWORD = "1234";
+
+        function updateSectionNumber(secIdx, val) {
+            const modalNum = document.getElementById('modal-num-' + secIdx);
+            if (modalNum) {
+                modalNum.innerText = val ? val + '.' : '';
+            }
+            
+            const badges = document.querySelectorAll('.sec-num-badge-' + secIdx);
+            badges.forEach(b => {
+                b.innerText = val;
+                b.style.display = val ? 'inline-block' : 'none';
+            });
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            if(sessionStorage.getItem('isLoggedIn') === 'true') {
+                document.getElementById('login-overlay').style.display = 'none';
+            } else {
+                document.getElementById('login-password').focus();
+            }
+
+            window.addEventListener('keydown', function(e) {
+                if ((e.ctrlKey || e.metaKey) && e.key === 'p') {
+                    e.preventDefault();
+                    const summary = document.getElementById('report-summary');
+                    if(summary && !summary.innerText.includes('대기 중')) openModal('print');
+                }
+            });
+            
+            document.addEventListener('click', function(event) {
+                const sidebar = document.getElementById('sidebar');
+                const overlay = document.getElementById('sidebar-overlay');
+                const toggleBtn = document.querySelector('button[onclick="toggleSidebar()"]');
+                
+                // 모바일 환경에서만 외부 클릭 시 닫기 동작 적용
+                if (window.innerWidth < 1024 && sidebar && !sidebar.classList.contains('-translate-x-full') && 
+                    !sidebar.contains(event.target) && 
+                    event.target !== toggleBtn && 
+                    !toggleBtn.contains(event.target) &&
+                    event.target !== overlay) {
+                    toggleSidebar();
+                }
+            });
+        });
+
+        function checkLogin() {
+            const pwd = document.getElementById('login-password').value;
+            if(pwd === APP_PASSWORD) {
+                sessionStorage.setItem('isLoggedIn', 'true');
+                document.getElementById('login-overlay').style.display = 'none';
+            } else {
+                const err = document.getElementById('login-error');
+                err.classList.remove('hidden');
+                document.getElementById('login-password').value = '';
+                document.getElementById('login-password').focus();
+            }
+        }
+        
+        function logout() {
+            if(confirm('로그아웃 하시겠습니까?\n화면이 초기화되고 로그인 화면으로 돌아갑니다.')) {
+                sessionStorage.removeItem('isLoggedIn');
+                
+                globalRawData = [];
+                document.getElementById('noise-url').value = '';
+                document.getElementById('chemical-url').value = 'https://docs.google.com/spreadsheets/d/1CoVTbGoYpK6r-tWfMP2alD59kjJHk8lGZ6Wk5C8210Q/edit?usp=sharing';
+                document.getElementById('input-company-name').value = '';
+                document.getElementById('input-start-date').value = '';
+                document.getElementById('input-end-date').value = '';
+                document.getElementById('input-total-days').value = '0';
+                
+                const titleEl = document.getElementById('main-report-title');
+                titleEl.innerHTML = '작업환경측정 위험성평가 및 분석 보고서';
+                titleEl.removeAttribute('data-filename');
+                
+                document.getElementById('top-status-msg').innerText = '※ 시트 주소와 측정 기간을 입력하고 분석을 실행해 주세요.';
+                document.getElementById('report-content').innerHTML = `
+                    <div class="a4-page page-container flex flex-col justify-center items-center text-gray-400" data-section="0">
+                        <svg class="w-16 h-16 mb-4 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+                        <p class="text-lg font-medium">데이터 분석을 기다리고 있습니다.</p>
+                    </div>`;
+
+                document.getElementById('login-password').value = '';
+                document.getElementById('login-error').classList.add('hidden');
+                document.getElementById('login-overlay').style.display = 'flex';
+                document.getElementById('login-password').focus();
+            }
+        }
+
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('sidebar-overlay');
+            if (sidebar.classList.contains('-translate-x-full')) {
+                sidebar.classList.remove('-translate-x-full');
+                overlay.classList.remove('hidden');
+            } else {
+                sidebar.classList.add('-translate-x-full');
+                overlay.classList.add('hidden');
+            }
+        }
+
+        function openModal(type) {
+            document.getElementById('selection-modal').classList.remove('hidden');
+        }
+
+        function closeModal() {
+            document.getElementById('selection-modal').classList.add('hidden');
+        }
+
+        let allChartInstances = [];
         let globalRawData = []; 
 
         const CATEGORY_ORDER = { '물리적 인자': 1, '허가 대상 유해물질': 2, '금속가공유': 3, '분진': 4, '금속류': 5, '유기화합물': 6, '산 및 알칼리류': 7, '가스 상태 물질류': 8 };
@@ -258,7 +468,7 @@
             if(acidAlkali.some(k => name.includes(k)) && !name.includes('황산디메틸') && !name.includes('초산에틸') && !name.includes('초산부틸') && !name.includes('초산메틸')) return '산 및 알칼리류';
             const gas = ['불소', '산화에틸렌', '삼수소화비소', '시안화수소', '암모니아', '염소', '오존', '이산화질소', '이산화황', '일산화질소', '일산화탄소', '포스겐', '포스핀', '황화수소'];
             if(gas.some(k => name.includes(k)) || (name.includes('브롬') && !name.includes('브롬화'))) return '가스 상태 물질류';
-            const metal = ['구리', '납', '니켈', '망간', '바륨', '백금', '산화마그네슘', '산화아연', '산화철', '셀레늄', '수은', '안티몬', '알루미늄', '오산화바나듐', '인듐', '은', '이산화티타늄', '주석', '지르코늄', '카드뮴', '코발트', '크롬', '텅스텐'];
+            const metal = ['구리', '납', '니켈', '망간', '바륨', '백금', '산화마그네슘', '산화아연', '산화철', '셀레늄', '수은', '안티몬', '알루미늄', '오산화바나듐', '인듐', '은', '이산화티타늄', '주석', '지르코늄', '지르코니움', '카드뮴', '코발트', '크롬', '텅스텐'];
             if(metal.some(k => name.includes(k)) || (name.includes('요오드') && !name.includes('요오드화메틸'))) return '금속류';
             const dust = ['분진', '흄', '석면', '유리섬유', '석영', '크리스토발라이트', '트리디마이트', '소우프스톤', '운모', '시멘트', '활석', '흑연', '규산'];
             if(dust.some(k => name.includes(k))) return '분진';
@@ -268,9 +478,12 @@
 
         function findKey(row, keywords) {
             const keys = Object.keys(row);
-            for(let key of keys) {
-                const normalized = key.replace(/\s+/g, '');
-                for(let kw of keywords) if(normalized.includes(kw)) return key;
+            // ★ 컬럼 순서가 아닌 '키워드 우선순위'로 탐색하도록 로직 변경
+            for(let kw of keywords) {
+                for(let key of keys) {
+                    const normalized = key.replace(/\s+/g, '');
+                    if(normalized.includes(kw)) return key;
+                }
             }
             return null;
         }
@@ -327,7 +540,8 @@
                 const deptKey = findKey(row, ['부서', '공정', '팀']);
                 const locKey = findKey(row, ['장소', '작업위치', '단위작업']);
                 const agentKey = findKey(row, ['인자', '유해인자', '측정물질', '물질명']);
-                const valKey = findKey(row, ['측정치', '결과', '값', 'TWA', '금회']);
+                // ★ '금회(금회치)'를 가장 먼저 찾도록 키워드 배열 최우선순위 부여
+                const valKey = findKey(row, ['금회', 'TWA', '측정치', '결과', '값']);
                 const prevValKey = findKey(row, ['전회치', '전회', '이전결과', '과거']);
                 const limitKey = findKey(row, ['기준', '노출기준', '법적기준']);
                 const dateKey = findKey(row, ['측정일', '날짜', '일자', 'Date']);
@@ -336,6 +550,11 @@
                 const limitStr = limitKey && row[limitKey] ? String(row[limitKey]).trim() : '';
                 const limit = parseFloat(limitStr);
                 const valStr = valKey && row[valKey] ? String(row[valKey]).trim() : '';
+                
+                const cleanValStr = valStr.replace(/\s+/g, '');
+                const excludeKeywords = ['횟수조정', '작업없음', '미측정', '측정불가', '가동중지', '미가동', '비가동', '휴업', '결근', '휴가'];
+                const isExcluded = excludeKeywords.some(kw => cleanValStr.includes(kw));
+
                 let value = parseFloat(valStr);
                 
                 if (valStr.toUpperCase().includes('N.D') || valStr.includes('불검출') || valStr.includes('ND') || valStr.includes('<')) value = 0; 
@@ -366,9 +585,10 @@
                     isExceed: value > (isNaN(limit) ? 9999 : limit),
                     sheetType: defaultType,
                     hasData: valStr !== '',
+                    isExcluded: isExcluded,
                     date: rowDate
                 };
-            }).filter(d => d.hasData && d.agent !== '미상');
+            }).filter(d => d.hasData && d.agent !== '미상' && !d.isExcluded);
         }
 
         function calculateStats(values, limit) {
@@ -447,7 +667,7 @@
             }
         }
 
-        function buildGroupRows(data, groupKeys) {
+        function buildGroupRows(data, groupKeys, companyArray) {
             const groupBy = (array, keys) => array.reduce((res, obj) => {
                 const key = keys.map(k => obj[k]).join('|');
                 if (!res[key]) res[key] = [];
@@ -468,105 +688,74 @@
                     const ratio = (maxVal / first.limit) * 100;
                     if (ratio > 100) lightColor = 'bg-red-600'; else if (ratio >= 50) lightColor = 'bg-orange-400'; else if (ratio >= 10) lightColor = 'bg-yellow-400'; else lightColor = 'bg-green-500';
                 }
-                rows.push({ mainKey: first[groupKeys[0]], subKey: first.category, cat: first.category, agent: first.agent, n: group.length, exc: excCount, lightColor: lightColor, limit: first.limit, rawLimit: first.rawLimit });
+                rows.push({ groupId: first.company + '|' + first[groupKeys[0]], mainKey: first[groupKeys[0]], subKey: first.category, cat: first.category, agent: first.agent, n: group.length, exc: excCount, lightColor: lightColor, limit: first.limit, rawLimit: first.rawLimit, company: first.company });
             }
-            const mainTotal = {};
-            rows.forEach(r => { mainTotal[r.mainKey] = (mainTotal[r.mainKey] || 0) + r.exc; });
-            rows.sort((a,b) => (mainTotal[b.mainKey] - mainTotal[a.mainKey]) || a.mainKey.localeCompare(b.mainKey) || (getCategoryOrder(a.cat) - getCategoryOrder(b.cat)) || (b.exc - a.exc) || a.agent.localeCompare(b.agent));
+            
+            rows.sort((a,b) => {
+                let compA = companyArray ? companyArray.indexOf(a.company) : 0;
+                let compB = companyArray ? companyArray.indexOf(b.company) : 0;
+                if(compA !== compB) return compA - compB;
+                return a.mainKey.localeCompare(b.mainKey) || (getCategoryOrder(a.cat) - getCategoryOrder(b.cat)) || (b.exc - a.exc) || a.agent.localeCompare(b.agent);
+            });
             return rows;
         }
 
-        // 고정 행 분할 로직 부활 (1항목: 1p 12개, 2p~ 15개 / 2~6항목: 19개 고정)
-        function renderSectionStrict(sectionNum, title, thead, rows, renderRow, isGrouped, prefixHtml, suffixHtml, suffixRowsCost = 0) {
-            let htmlArr = [];
-            if (rows.length === 0) {
-                let emptyHtml = (prefixHtml || '') + `<div class="section-title">${title}</div>` + 
-                                `<table style="border-bottom: 1px solid #86efac !important;"><thead>${thead}</thead><tbody><tr><td colspan="15" class="py-10 text-gray-400 text-center border-green-300">데이터가 없습니다.</td></tr></tbody></table>` + 
-                                (suffixHtml || '');
-                return `<div id="section-${sectionNum}" class="a4-page page-container flex flex-col justify-start" data-section="${sectionNum}">${emptyHtml}</div>`;
-            }
+        function renderSectionStrict(sectionNum, title, thead, rows, renderRow, isGrouped, prefixHtml, suffixHtml, emptyMsg = "데이터가 없습니다.") {
+            let titleRow = `<tr><th colspan="100" class="bg-white text-left p-0 pt-3 pb-3 print:bg-white print:border-none" style="border: none !important; background-color: white !important;"><div class="section-title" style="margin-top: 0; margin-bottom: 0; padding-bottom: 0.2rem; border-bottom: 2px solid #16a34a; font-size: 1.25rem; font-weight: bold;">${title}</div></th></tr>`;
+            let enhancedThead = titleRow + thead;
 
-            let i = 0;
-            let pageIndex = 0;
+            let html = '';
+            if (prefixHtml) html += prefixHtml;
             
-            while (i < rows.length) {
-                let currentLimit = 19; 
-                if (sectionNum === 1) {
-                    if (pageIndex === 0) currentLimit = 12;      // 1항목 1페이지 12줄
-                    else currentLimit = 15;                      // 1항목 2페이지부터 15줄
-                } else {
-                    currentLimit = 19;                           // 2~6항목은 19줄 고정
-                }
+            if (rows.length === 0) {
+                html += `<table style="width: 100%; border-bottom: 1px solid #86efac !important;">` +
+                        `<thead>${enhancedThead}</thead>` +
+                        `<tbody><tr><td colspan="15" class="py-10 text-gray-400 text-center border border-green-300">${emptyMsg}</td></tr></tbody></table>`;
+            } else {
+                let tableStyle = "width: 100%; border-bottom: 1px solid #86efac !important;";
                 
-                let displayTitle = (pageIndex === 0) ? title : title.replace('</span>', '</span> (계속)');
-                let pageHtml = '';
+                let tableHtml = `<table style="${tableStyle}"><thead>${enhancedThead}</thead><tbody>`;
                 
-                if (pageIndex === 0 && prefixHtml) pageHtml += prefixHtml;
-                pageHtml += `<div class="section-title">${displayTitle}</div>`;
-                
-                let tableStyle = "border-bottom: 1px solid #86efac !important;";
-                if (sectionNum === 1) tableStyle += " table-layout: fixed; word-wrap: break-word; width: 100%;";
-                
-                let tableHtml = `<table style="${tableStyle}"><thead>${thead}</thead><tbody>`;
-                let rowsInChunk = 0;
-                
-                while (i < rows.length && rowsInChunk < currentLimit) {
+                for (let i = 0; i < rows.length; i++) {
                     let r = rows[i];
                     let rowspan = 1; let subRowspan = 1;
                     let isNewGroup = false; let isNewSubGroup = false;
 
+                    const getGroupId = (row) => row.groupId || row.mainKey;
+                    const getSubGroupId = (row) => getGroupId(row) + '|' + row.subKey;
+
                     if (isGrouped) {
-                        isNewGroup = (i === 0 || rows[i-1].mainKey !== r.mainKey || rowsInChunk === 0);
+                        isNewGroup = (i === 0 || getGroupId(rows[i-1]) !== getGroupId(r));
                         if (isNewGroup) {
                             let count = 0;
-                            for (let j = i; j < rows.length && count < (currentLimit - rowsInChunk); j++) {
-                                if (rows[j].mainKey === r.mainKey) count++; else break;
+                            for (let j = i; j < rows.length; j++) {
+                                if (getGroupId(rows[j]) === getGroupId(r)) count++; else break;
                             }
-                            rowspan = Math.max(1, count);
+                            rowspan = count;
                         }
-                        if (r.subKey) {
-                            isNewSubGroup = (i === 0 || rows[i-1].mainKey !== r.mainKey || rows[i-1].subKey !== r.subKey || rowsInChunk === 0);
+
+                        if (r.subKey !== undefined) {
+                            isNewSubGroup = (i === 0 || getSubGroupId(rows[i-1]) !== getSubGroupId(r));
                             if (isNewSubGroup) {
                                 let count = 0;
-                                for (let j = i; j < rows.length && count < (currentLimit - rowsInChunk); j++) {
-                                    if (rows[j].mainKey === r.mainKey && rows[j].subKey === r.subKey) count++; else break;
+                                for (let j = i; j < rows.length; j++) {
+                                    if (getSubGroupId(rows[j]) === getSubGroupId(r)) count++; else break;
                                 }
-                                subRowspan = Math.max(1, count);
+                                subRowspan = count;
                             }
                         }
                     }
-
                     tableHtml += renderRow(r, isGrouped, isNewGroup, rowspan, isNewSubGroup, subRowspan);
-                    i++; rowsInChunk++;
                 }
                 tableHtml += `</tbody></table>`;
-                pageHtml += tableHtml;
-                
-                // 범례 등 하단 꼬리말(suffix)이 남은 공간에 들어갈 수 있는지 계산
-                if (i >= rows.length && suffixHtml) {
-                    let usedSpace = rowsInChunk;
-                    if (sectionNum === 1 && pageIndex === 0) usedSpace += 4; 
-                    
-                    if (usedSpace + suffixRowsCost <= currentLimit) {
-                        pageHtml += suffixHtml;
-                    } else {
-                        let secId = (pageIndex === 0) ? `id="section-${sectionNum}"` : `id="sec-${sectionNum}-${pageIndex}"`;
-                        htmlArr.push(`<div ${secId} class="a4-page page-container flex flex-col justify-start" data-section="${sectionNum}">${pageHtml}</div>`);
-                        let suffixPageHtml = `<div class="section-title">${title.replace('</span>', '</span> (계속)')}</div>` + suffixHtml;
-                        htmlArr.push(`<div class="a4-page page-container flex flex-col justify-start" data-section="${sectionNum}">${suffixPageHtml}</div>`);
-                        pageHtml = ''; 
-                    }
-                }
-
-                if (pageHtml !== '') {
-                    let secId = (pageIndex === 0) ? `id="section-${sectionNum}"` : `id="sec-${sectionNum}-${pageIndex}"`;
-                    htmlArr.push(`<div ${secId} class="a4-page page-container flex flex-col justify-start" data-section="${sectionNum}">${pageHtml}</div>`);
-                }
-                
-                pageIndex++;
+                html += tableHtml;
             }
             
-            return htmlArr.join('');
+            if (suffixHtml) {
+                html += suffixHtml;
+            }
+
+            return `<div id="section-${parseInt(sectionNum)}" class="a4-page page-container flex flex-col justify-start major-section" data-section="${parseInt(sectionNum)}">${html}</div>`;
         }
 
         function renderDashboard(data) {
@@ -578,22 +767,49 @@
             const startDateRaw = document.getElementById('input-start-date').value;
             const endDateRaw = document.getElementById('input-end-date').value;
             const totalDays = document.getElementById('input-total-days').value;
+            const companyName = document.getElementById('input-company-name').value.trim();
             
             let periodText = '측정 기간 정보 없음';
+            let subTitle = '';
+            
+            if (companyName) {
+                if (startDateRaw) {
+                    const d = new Date(startDateRaw);
+                    const fullYear = d.getFullYear(); 
+                    const month = d.getMonth() + 1;
+                    const half = month <= 6 ? '상반기' : '하반기';
+                    subTitle = `${fullYear}년 ${half} ${companyName}`;
+                } else {
+                    subTitle = `${companyName}`;
+                }
+            }
+            
             if (startDateRaw && endDateRaw) {
                 const formatDate = (ds) => {
-                    const d = new Date(ds);
-                    return `${d.getFullYear()}년 ${String(d.getMonth() + 1).padStart(2, '0')}월 ${String(d.getDate()).padStart(2, '0')}일`;
+                    const dateObj = new Date(ds);
+                    return `${dateObj.getFullYear()}년 ${String(dateObj.getMonth() + 1).padStart(2, '0')}월 ${String(dateObj.getDate()).padStart(2, '0')}일`;
                 };
                 periodText = `측정 기간: ${formatDate(startDateRaw)} ~ ${formatDate(endDateRaw)} (총 ${totalDays}일)`;
             }
+            
+            const mainTitle = '작업환경측정 위험성평가 및 분석 보고서';
+            const topHeaderTitle = subTitle ? `${mainTitle} <span class="text-sm font-normal text-blue-700 bg-blue-50 px-2.5 py-1 rounded-md ml-2 border border-blue-200 align-middle">${subTitle}</span>` : mainTitle;
+            const titleEl = document.getElementById('main-report-title');
+            titleEl.innerHTML = topHeaderTitle;
+            titleEl.setAttribute('data-filename', subTitle ? `${subTitle}_작업환경측정_보고서` : '작업환경측정_보고서');
+
+            // ★ 스프레드시트 원본 순서 유지
+            const companies = [...new Set(data.map(d => d.company))];
 
             let reportHtml = '';
 
             // --- Section 1 ---
+            const subTitleHtml = subTitle ? `<h2 class="text-[1.65rem] font-bold text-blue-800 mb-4 tracking-tight">${subTitle}</h2>` : '';
+            
             const prefixHtml = `
                 <div class="text-center mb-6 mt-2">
-                    <h1 class="text-3xl font-bold mb-2">작업환경측정 위험성평가 및 분석 보고서</h1>
+                    <h1 class="text-3xl font-extrabold text-gray-900 mb-2">${mainTitle}</h1>
+                    ${subTitleHtml}
                     <p class="text-gray-500 text-sm mb-1" id="report-summary">${periodText}</p>
                     <p class="text-gray-600">총 측정 건수: ${totalCount.toLocaleString()}건 | 기준 초과: <span class="text-red-600 font-bold">${totalExceed.toLocaleString()}건</span></p>
                 </div>
@@ -615,8 +831,17 @@
             sec1Rows.forEach(r => { sec1CatExc[r.first.category] = (sec1CatExc[r.first.category] || 0) + r.stats.excCount; });
             sec1Rows.sort((a, b) => (sec1CatExc[b.first.category] - sec1CatExc[a.first.category]) || (getCategoryOrder(a.first.category) - getCategoryOrder(b.first.category)) || (b.stats.excCount - a.stats.excCount) || a.first.agent.localeCompare(b.first.agent));
             
-            const sec1Thead = `<tr><th width="10%">분류</th><th width="15%">세부 인자명</th><th width="6%">측정 건수</th><th width="6%">초과 건수</th><th width="7%">최대값</th><th width="7%">최소값</th><th width="7%">기하평균</th><th width="8%">기하표준편차</th><th width="7%">노출배수</th><th width="9%">법적 준수율</th><th width="6%">신호등</th><th width="12%">노출기준(단위)</th></tr>`;
-            const sec1Render = (r, isG, isNG, rs) => {
+            const sec1Thead = `<tr><th width="10%">분류</th><th width="17%">세부 인자명</th><th width="5.5%">측정<br>건수</th><th width="5.5%">초과<br>건수</th><th width="7%">최대값</th><th width="7%">최소값</th><th width="7%">기하<br>평균</th><th width="7%">기하<br>표준편차</th><th width="7%">노출<br>배수</th><th width="9%">법적<br>준수율</th><th width="6%">신호등</th><th width="12%">노출기준<br>(단위)</th></tr>`;
+            
+            const num1 = document.getElementById('menu-num-1').value || '1';
+            const num2 = document.getElementById('menu-num-2').value || '2';
+            const num3 = document.getElementById('menu-num-3').value || '3';
+            const num4 = document.getElementById('menu-num-4').value || '4';
+            const num5 = document.getElementById('menu-num-5').value || '5';
+            const num6 = document.getElementById('menu-num-6').value || '6';
+            const num7 = document.getElementById('menu-num-7').value || '7';
+
+            const sec1Render = (r, isG, isNG, rs, isNSG, subRS) => {
                 let extractedUnit = r.first.rawLimit ? String(r.first.rawLimit).replace(/^[\d\.\,\s]+/g, '').trim() : '';
                 if (!extractedUnit) extractedUnit = (r.first.category === '물리적 인자') ? (r.first.agent.includes('고열') ? '℃' : 'dB(A)') : ((r.first.category === '분진' || r.first.category === '금속류' || r.first.category === '금속가공유') ? 'mg/㎥' : 'ppm');
                 
@@ -636,17 +861,26 @@
                 const agentTd = getAgentTdSec1(r.first.agent, 'text-left border-green-300 align-middle');
                 const limitText = r.first.rawLimit ? r.first.rawLimit : (r.first.limit === 9999 ? '기준없음' : r.first.limit);
                 
-                return `<tr>${isNG ? `<td rowspan="${rs}" class="font-bold border-green-300 bg-white align-middle break-keep">${r.mainKey}</td>` : ''}${agentTd}<td class="border-green-300">${r.stats.n}</td><td class="border-green-300 font-bold ${r.stats.excCount > 0 ? 'text-red-600' : ''}">${r.stats.excCount}</td><td class="border-green-300 ${parseFloat(r.stats.max) > limit ? 'text-red-600 font-bold' : ''}">${r.stats.max}</td><td class="border-green-300">${r.stats.min}</td><td class="border-green-300">${r.stats.gm}</td><td class="border-green-300">${r.stats.gsd}</td><td class="border-green-300 font-bold text-gray-700">${expMult}</td><td class="border-green-300 font-bold">${compRate}</td><td class="border-green-300"><span class="inline-block w-3.5 h-3.5 rounded-full ${lightCol} shadow-sm border border-gray-300"></span></td><td class="border-green-300 font-bold bg-green-50 break-keep">${limitText}</td></tr>`;
+                let groupTd = '';
+                if (isG) {
+                    if (isNG) {
+                        groupTd = `<td rowspan="${rs}" class="border-green-300 bg-white align-middle font-bold">${r.mainKey}</td>`;
+                    }
+                }
+                
+                return `<tr>${groupTd}${agentTd}<td class="border-green-300">${r.stats.n}</td><td class="border-green-300 font-bold ${r.stats.excCount > 0 ? 'text-red-600' : ''}">${r.stats.excCount}</td><td class="border-green-300 ${parseFloat(r.stats.max) > limit ? 'text-red-600 font-bold' : ''}">${r.stats.max}</td><td class="border-green-300">${r.stats.min}</td><td class="border-green-300">${r.stats.gm}</td><td class="border-green-300">${r.stats.gsd}</td><td class="border-green-300 font-bold text-gray-700">${expMult}</td><td class="border-green-300 font-bold">${compRate}</td><td class="border-green-300"><span class="inline-block w-3.5 h-3.5 rounded-full ${lightCol} shadow-sm border border-gray-300"></span></td><td class="border-green-300 font-bold bg-green-50 break-keep">${limitText}</td></tr>`;
             };
-            const sec1Legend = `<div class="prevent-break text-xs text-gray-700 mt-2 mb-4 space-y-1.5 bg-blue-50 p-4 rounded border border-blue-200"><p><span class="font-bold text-blue-700">※ 기하평균(GM):</span> 대수정규분포를 따르는 측정 데이터의 중심경향 대푯값입니다.</p><p><span class="font-bold text-blue-700">※ 노출배수:</span> 최대 측정치를 노출기준으로 나눈 비율입니다.</p><p><span class="font-bold text-blue-700">※ 법적 준수율:</span> 총 측정건수 중 노출기준을 초과하지 않은(준수한) 건수의 백분율(%)입니다.</p></div>`;
+            const sec1Legend = `<div class="prevent-break text-xs text-gray-700 mt-2 mb-4 space-y-1.5 bg-green-50 p-4 rounded border border-green-200"><p><span class="font-bold text-green-700">※ 기하평균(GM):</span> 대수정규분포를 따르는 측정 데이터의 중심경향 대푯값입니다.</p><p><span class="font-bold text-green-700">※ 노출배수:</span> 최대 측정치를 노출기준으로 나눈 비율입니다.</p><p><span class="font-bold text-green-700">※ 법적 준수율:</span> 총 측정건수 중 노출기준을 초과하지 않은(준수한) 건수의 백분율(%)입니다.</p></div>`;
             
-            // 1번 항목 렌더링 호출
-            reportHtml += renderSectionStrict(1, `<span>1</span> 작업환경측정 통계 분석(전수 분석)`, sec1Thead, sec1Rows, sec1Render, true, prefixHtml, sec1Legend, 4);
+            reportHtml += renderSectionStrict(1, `<span class="sec-num-badge-1" style="${num1?'':'display:none;'}">${num1}</span> 작업환경측정 통계 분석(전수 분석)`, sec1Thead, sec1Rows, sec1Render, true, prefixHtml, sec1Legend);
 
             // --- Section 2 ---
-            const compTotalExc = {};
-            exceedData.forEach(d => { compTotalExc[d.company] = (compTotalExc[d.company] || 0) + 1; });
-            exceedData.sort((a, b) => (compTotalExc[b.company] - compTotalExc[a.company]) || a.company.localeCompare(b.company) || (getCategoryOrder(a.category) - getCategoryOrder(b.category)));
+            exceedData.sort((a, b) => {
+                let compA = companies.indexOf(a.company);
+                let compB = companies.indexOf(b.company);
+                if(compA !== compB) return compA - compB;
+                return (getCategoryOrder(a.category) - getCategoryOrder(b.category));
+            });
 
             const sec2Thead = `<tr><th width="20%">단위사업체명</th><th width="20%">단위작업장소</th><th width="20%">유해인자</th><th width="15%">전회치</th><th width="10%">금회치</th><th width="15%">노출기준</th></tr>`;
             const sec2Render = (d) => {
@@ -657,25 +891,49 @@
                 return `<tr><td class="border-green-300 break-keep">${d.company}</td><td class="border-green-300 break-keep">${d.location}</td>${agentTd}<td class="border-green-300">${d.prevValue === null ? '전회없음' : d.prevValue + ' ' + extractedUnit}</td><td class="text-red-600 font-bold border-green-300">${d.value} ${extractedUnit}</td><td class="border-green-300 break-keep">${limitText}</td></tr>`;
             };
             
-            reportHtml += renderSectionStrict(2, `<span>2</span> 노출기준 초과 현황 상세 리스트`, sec2Thead, exceedData, sec2Render, false, '', '', 0);
+            reportHtml += renderSectionStrict(2, `<span class="sec-num-badge-2" style="${num2?'':'display:none;'}">${num2}</span> 노출기준 초과 현황 상세 리스트`, sec2Thead, exceedData, sec2Render, false, '', '', '노출기준 초과 유해인자가 없습니다.');
 
-            // --- Section 3 ---
-            reportHtml += `
-                <div id="section-3" class="a4-page page-container flex flex-col justify-start" data-section="3">
-                    <div class="section-title mt-4"><span>3</span> 분류별 측정 분포 및 초과 현황</div>
-                    <p class="text-sm text-gray-600 mb-4">※ 산업안전보건법 시행규칙 [별표 21] 기준 7대 분류 적용 시각화</p>
-                    <div class="grid grid-cols-1 gap-6 mb-4">
-                        <div class="prevent-break bg-white p-4 border border-green-300 rounded-lg shadow-sm chart-container flex flex-col items-center">
-                            <h3 class="font-bold text-center mb-2" id="chart1-title">총 측정건수 대비 초과 비율</h3>
-                            <div class="w-2/3 max-w-sm"><canvas id="pieChart"></canvas></div>
+            const createSection3ChartPageGlobal = (title, prefix, pagePart, isFirst) => {
+                let html = `<div class="a4-page page-container flex flex-col justify-start ${isFirst ? 'major-section' : ''}" data-section="3">`;
+                if (isFirst) {
+                    html += `<div class="section-title mt-4 border-b-2 border-green-600 pb-2 mb-4 font-bold text-gray-900 text-xl"><span class="sec-num-badge-3" style="${num3?'':'display:none;'}">${num3}</span> 분류별 측정 분포 및 초과 현황</div>`;
+                }
+                html += `<h2 class="text-lg font-bold text-gray-800 mb-3 ml-1 border-b border-gray-200 pb-1">${title}</h2>`;
+                
+                // ★ flex 컨테이너와 명시적 고정 높이(height)를 사용하여 차트 사라짐 버그 완벽 차단
+                html += `<div class="flex flex-col gap-6 w-full mb-2">`;
+                
+                if (pagePart === 1) {
+                    html += `
+                        <div class="prevent-break bg-white p-4 border border-green-300 rounded-xl shadow-lg flex flex-col items-center w-full">
+                            <h3 class="text-[1rem] font-bold text-center mb-3 bg-gradient-to-r from-green-50 to-green-100 w-full py-2 rounded-lg border border-green-200">1) 측정항목 분포도 <span id="title_${prefix}_1" class="ml-1"></span></h3>
+                            <div id="chart_${prefix}_1" style="height: 340px; width: 100%;"></div>
                         </div>
-                        <div class="prevent-break bg-white p-4 border border-green-300 rounded-lg shadow-sm chart-container">
-                            <h3 class="font-bold text-center mb-2" id="chart2-title">분류별 최대 노출 분포 (Max치 기준, 노출기준=100%)</h3>
-                            <canvas id="barChart" height="120"></canvas>
+                        <div class="prevent-break bg-white p-4 border border-green-300 rounded-xl shadow-lg flex flex-col items-center w-full">
+                            <h3 class="text-[1rem] font-bold text-center mb-3 bg-gradient-to-r from-green-50 to-green-100 w-full py-2 rounded-lg border border-green-200">2) 총 측정건수 대비 분류별 초과 건수 <span id="title_${prefix}_2" class="ml-1"></span></h3>
+                            <div id="chart_${prefix}_2" style="height: 340px; width: 100%;"></div>
                         </div>
-                    </div>
-                </div>
-            `;
+                    `;
+                } else {
+                    html += `
+                        <div class="prevent-break bg-white p-4 border border-green-300 rounded-xl shadow-lg flex flex-col items-center w-full">
+                            <h3 class="text-[1rem] font-bold text-center mb-3 bg-gradient-to-r from-green-50 to-green-100 w-full py-2 rounded-lg border border-green-200">3) 분류별 최대 노출 분포(노출기준=100%)</h3>
+                            <div id="chart_${prefix}_3" style="height: 340px; width: 100%;"></div>
+                        </div>
+                        <div class="prevent-break bg-white p-4 border border-green-300 rounded-xl shadow-lg flex flex-col items-center w-full">
+                            <h3 class="text-[1rem] font-bold text-center mb-3 bg-gradient-to-r from-green-50 to-green-100 w-full py-2 rounded-lg border border-green-200">4) 소음 발생수준별 분포도 <span id="title_${prefix}_4" class="ml-1"></span></h3>
+                            <div id="chart_${prefix}_4" style="height: 340px; width: 100%;"></div>
+                        </div>
+                    `;
+                }
+                html += `</div></div>`;
+                return html;
+            };
+
+            let sec3Html = '';
+            sec3Html += createSection3ChartPageGlobal('가. 전 공정 측정현황 (1/2)', 'global', 1, true);
+            sec3Html += createSection3ChartPageGlobal('가. 전 공정 측정현황 (2/2)', 'global', 2, false);
+            reportHtml += sec3Html;
 
             // --- Section 4 ---
             const categoryMap = {}; 
@@ -683,11 +941,8 @@
                 if (!categoryMap[d.category]) categoryMap[d.category] = new Set(); 
                 categoryMap[d.category].add(d.agent); 
             });
-            
-            const companies = [...new Set(data.map(d => d.company))].sort();
             const sortedCats = Object.keys(categoryMap).sort((a,b) => getCategoryOrder(a) - getCategoryOrder(b));
             
-            // 사업체를 4개씩 묶기 위한 청크(chunk) 로직 (사업체가 20개, 100개든 상관없이 무한히 분할 처리됨)
             const chunkSize = 4;
             const companyChunks = [];
             for (let i = 0; i < companies.length; i += chunkSize) {
@@ -696,49 +951,68 @@
 
             if (companyChunks.length === 0) {
                 let sec4Thead = `<tr><th rowspan="2" width="15%" class="align-middle text-gray-800">분류</th><th rowspan="2" width="20%" class="align-middle text-gray-800">유해인자</th><th colspan="2" width="12%" class="bg-green-200 border-green-400 text-gray-800 font-bold">Total</th></tr><tr><th class="border-green-400 text-xs font-bold text-gray-800 p-1">측정</th><th class="border-green-400 text-xs font-bold text-gray-800 p-1">초과</th></tr>`;
-                reportHtml += renderSectionStrict(4, `<span>4</span> 단위사업체별 작업환경측정 종합 현황`, sec4Thead, [], () => '', true, '', '', 0);
+                reportHtml += renderSectionStrict(4, `<span class="sec-num-badge-4" style="${num4?'':'display:none;'}">${num4}</span> 단위사업체별 작업환경측정 종합 현황`, sec4Thead, [], () => '', true, '', '');
             } else {
-                // 4개씩 나뉜 묶음(chunk) 단위로 표를 개별 렌더링 (1~4, 5~8, 9~12, 13~16, 17~20... 무한대로 자동 생성)
                 companyChunks.forEach((chunk, chunkIdx) => {
-                    let titleStr = `<span>4</span> 단위사업체별 작업환경측정 종합 현황`;
+                    let titleStr = `<span class="sec-num-badge-4" style="${num4?'':'display:none;'}">${num4}</span> 단위사업체별 작업환경측정 종합 현황`;
                     if (companyChunks.length > 1) {
                         let startNum = chunkIdx * chunkSize + 1;
                         let endNum = chunkIdx * chunkSize + chunk.length;
-                        titleStr += ` <span style="font-size:0.85rem; font-weight:normal; color:#4b5563; background:#e5e7eb; padding:2px 8px; border-radius:12px; margin-left:8px;">사업체 ${startNum}~${endNum}</span>`;
+                        let badgeText = startNum === endNum ? `사업체 ${startNum}` : `사업체 ${startNum}~${endNum}`;
+                        titleStr += ` <span style="font-size:0.85rem; font-weight:normal; color:#4b5563; background:#e5e7eb; padding:2px 8px; border-radius:12px; margin-left:8px;">${badgeText}</span>`;
                     }
 
-                    let sec4Thead = `<tr><th rowspan="2" width="15%" class="align-middle text-gray-800">분류</th><th rowspan="2" width="20%" class="align-middle text-gray-800">유해인자</th>${chunk.map(c => `<th colspan="2" class="text-gray-800 break-keep">${c}</th>`).join('')}<th colspan="2" width="12%" class="bg-green-200 border-green-400 text-gray-800 font-bold">Total</th></tr><tr>${chunk.map(() => `<th class="bg-green-50 text-xs text-gray-700 p-1">측정</th><th class="bg-green-50 text-xs text-gray-700 p-1">초과</th>`).join('')}<th class="border-green-400 text-xs font-bold text-gray-800 p-1">측정</th><th class="border-green-400 text-xs font-bold text-gray-800 p-1">초과</th></tr>`;
+                    let paddedChunk = [...chunk];
+                    while (paddedChunk.length < chunkSize) {
+                        paddedChunk.push(null);
+                    }
+
+                    let sec4Thead = `<tr><th rowspan="2" width="15%" class="align-middle text-gray-800 border border-green-300">분류</th><th rowspan="2" width="20%" class="align-middle text-gray-800 border border-green-300">유해인자</th>${paddedChunk.map(c => `<th colspan="2" class="text-gray-800 break-keep border border-green-300">${c ? c : ''}</th>`).join('')}<th colspan="2" width="12%" class="bg-green-200 border-green-400 text-gray-800 font-bold border border-green-300">Total</th></tr><tr>${paddedChunk.map(() => `<th class="bg-green-50 text-xs text-gray-700 p-1 border border-green-300">측정</th><th class="bg-green-50 text-xs text-gray-700 p-1 border border-green-300">초과</th>`).join('')}<th class="border-green-400 text-xs font-bold text-gray-800 p-1 border border-green-300">측정</th><th class="border-green-400 text-xs font-bold text-gray-800 p-1 border border-green-300">초과</th></tr>`;
                     
                     let sec4Rows = [];
                     sortedCats.forEach(cat => {
                         Array.from(categoryMap[cat]).sort().forEach(agent => {
                             let rowObj = { mainKey: cat, agent: agent, companyData: [], totalN: 0, totalExc: 0 };
-                            chunk.forEach(comp => {
-                                const filtered = data.filter(d => d.company === comp && d.category === cat && d.agent === agent);
-                                const n = filtered.length;
-                                const exc = filtered.filter(d => d.isExceed).length;
-                                rowObj.companyData.push({ n, exc });
-                                rowObj.totalN += n;
-                                rowObj.totalExc += exc;
+                            paddedChunk.forEach(comp => {
+                                if (comp) {
+                                    const filtered = data.filter(d => d.company === comp && d.category === cat && d.agent === agent);
+                                    const n = filtered.length;
+                                    const exc = filtered.filter(d => d.isExceed).length;
+                                    rowObj.companyData.push({ n, exc, isReal: true });
+                                    rowObj.totalN += n;
+                                    rowObj.totalExc += exc;
+                                } else {
+                                    rowObj.companyData.push({ n: 0, exc: 0, isReal: false }); 
+                                }
                             });
-                            // 해당 4개 사업체 묶음에서 한 번도 측정되지 않은(0건) 데이터는 빈 칸 낭비를 막기 위해 표에서 제외
-                            if (rowObj.totalN > 0) {
-                                sec4Rows.push(rowObj);
-                            }
+                            if (rowObj.totalN > 0) sec4Rows.push(rowObj);
                         });
                     });
 
-                    const sec4Render = (r, isG, isNG, rs) => {
+                    const sec4Render = (r, isG, isNG, rs, isNSG, subRS) => {
                         const agentTd = getAgentTd(r.agent, 'text-left border-green-300 bg-white align-middle');
-                        let trHtml = `<tr>${isNG ? `<td rowspan="${rs}" class="font-bold border-green-300 bg-white align-middle break-keep">${r.mainKey}</td>` : ''}${agentTd}`;
-                        r.companyData.forEach(cell => { trHtml += `<td class="border-green-300 bg-white">${cell.n > 0 ? cell.n : '-'}</td><td class="border-green-300 bg-white">${cell.exc > 0 ? `<span class="text-red-600 font-bold">${cell.exc}</span>` : (cell.n > 0 ? '0' : '-')}</td>`; });
+                        
+                        let groupTd = '';
+                        if (isG) {
+                            if (isNG) {
+                                groupTd = `<td rowspan="${rs}" class="border-green-300 bg-white align-middle font-bold break-keep">${r.mainKey}</td>`;
+                            }
+                        }
+                        
+                        let trHtml = `<tr>${groupTd}${agentTd}`;
+                        r.companyData.forEach(cell => { 
+                            if (cell.isReal) {
+                                trHtml += `<td class="border-green-300 bg-white">${cell.n > 0 ? cell.n : '-'}</td><td class="border-green-300 bg-white">${cell.exc > 0 ? `<span class="text-red-600 font-bold">${cell.exc}</span>` : (cell.n > 0 ? '0' : '-')}</td>`; 
+                            } else {
+                                trHtml += `<td class="border-green-300 bg-white"></td><td class="border-green-300 bg-white"></td>`;
+                            }
+                        });
                         trHtml += `<td class="border-green-300 bg-green-50 font-bold">${r.totalN > 0 ? r.totalN : '-'}</td><td class="border-green-300 bg-green-50 font-bold">${r.totalExc > 0 ? `<span class="text-red-600 font-bold">${r.totalExc}</span>` : (r.totalN > 0 ? '0' : '-')}</td></tr>`;
                         return trHtml;
                     };
                     
-                    // 첫 번째 묶음은 ID section-4 지정, 2번째부터는 고유 ID를 부여하여 메뉴 이동 및 HTML 충돌 방지
                     let currentSecNum = chunkIdx === 0 ? 4 : `4-${chunkIdx}`;
-                    reportHtml += renderSectionStrict(currentSecNum, titleStr, sec4Thead, sec4Rows, sec4Render, true, '', '', 0);
+                    reportHtml += renderSectionStrict(currentSecNum, titleStr, sec4Thead, sec4Rows, sec4Render, true, '', '');
                 });
             }
 
@@ -746,23 +1020,36 @@
             const groupRender5 = (r, isG, isNG, rs, isNSG, subRS) => {
                 let note = r.lightColor === 'bg-green-500' ? '-' : (r.lightColor === 'bg-yellow-400' ? '관찰 필요' : (r.lightColor === 'bg-orange-400' ? '개선 필요' : '개선 대상'));
                 const agentTd = getAgentTd(r.agent, 'text-left border-green-300 align-middle');
-                return `<tr>${isNG ? `<td rowspan="${rs}" class="font-bold bg-white border-green-300 align-middle break-keep">${r.mainKey}</td>` : ''}${isNSG ? `<td rowspan="${subRS}" class="border-green-300 bg-white align-middle break-keep">${r.subKey}</td>` : ''}${agentTd}<td class="border-green-300">${r.n}</td><td class="border-green-300 ${r.exc > 0 ? 'text-red-600 font-bold' : ''}">${r.exc}</td><td class="border-green-300"><span class="inline-block w-3.5 h-3.5 rounded-full ${r.lightColor} shadow-sm border border-gray-300"></span></td><td class="text-left text-xs border-green-300 font-bold ${r.lightColor === 'bg-red-600' ? 'text-red-600' : ''}">${note}</td></tr>`;
+                
+                let groupTd = '', companyTd = '', subGroupTd = '';
+                if (isG) {
+                    if (isNG) {
+                        companyTd = `<td rowspan="${rs}" class="border-green-300 bg-white align-middle font-bold break-keep">${r.company}</td>`;
+                        groupTd = `<td rowspan="${rs}" class="border-green-300 bg-white align-middle break-keep">${r.mainKey}</td>`;
+                    }
+                    if (isNSG) {
+                        subGroupTd = `<td rowspan="${subRS}" class="border-green-300 bg-white align-middle break-keep">${r.subKey}</td>`;
+                    }
+                }
+                
+                return `<tr>${companyTd}${groupTd}${subGroupTd}${agentTd}<td class="border-green-300">${r.n}</td><td class="border-green-300 ${r.exc > 0 ? 'text-red-600 font-bold' : ''}">${r.exc}</td><td class="border-green-300"><span class="inline-block w-3.5 h-3.5 rounded-full ${r.lightColor} shadow-sm border border-gray-300"></span></td><td class="text-left text-xs border-green-300 font-bold ${r.lightColor === 'bg-red-600' ? 'text-red-600' : ''}">${note}</td></tr>`;
             };
-            const trafficLegend5 = `<div class="prevent-break text-xs text-gray-600 mt-2 mb-4 p-3 bg-green-50 border border-green-200 rounded text-left"><p><strong>※ 신호등 범례 (일반유해물질):</strong> <span class="bg-green-500 w-2.5 h-2.5 inline-block rounded-full"></span> 10% 미만 &nbsp; <span class="bg-yellow-400 w-2.5 h-2.5 inline-block rounded-full"></span> 10~50% 미만 &nbsp; <span class="bg-orange-400 w-2.5 h-2.5 inline-block rounded-full"></span> 50~100% 이하 &nbsp; <span class="bg-red-600 w-2.5 h-2.5 inline-block rounded-full"></span> 노출기준 초과</p><p class="mt-1"><strong>※ 신호등 범례 (소음):</strong> <span class="bg-green-500 w-2.5 h-2.5 inline-block rounded-full"></span> 80dB 미만 &nbsp; <span class="bg-yellow-400 w-2.5 h-2.5 inline-block rounded-full"></span> 80~85dB 미만 &nbsp; <span class="bg-orange-400 w-2.5 h-2.5 inline-block rounded-full"></span> 85~기준치 이하 &nbsp; <span class="bg-red-600 w-2.5 h-2.5 inline-block rounded-full"></span> 노출기준 초과</p><p class="mt-1"><strong>※ 신호등 범례 (고열):</strong> <span class="bg-green-500 w-2.5 h-2.5 inline-block rounded-full"></span> 23℃ 미만 &nbsp; <span class="bg-yellow-400 w-2.5 h-2.5 inline-block rounded-full"></span> 23~25℃ 미만 &nbsp; <span class="bg-orange-400 w-2.5 h-2.5 inline-block rounded-full"></span> 25~노출기준 미만 &nbsp; <span class="bg-red-600 w-2.5 h-2.5 inline-block rounded-full"></span> 노출기준 이상</p></div>`;
-            const sec5Thead = `<tr><th width="20%">단위작업장소</th><th width="15%">분류</th><th width="22%">세부 유해인자명</th><th width="8%">측정건수</th><th width="8%">초과건수</th><th width="7%">신호등</th><th width="20%">비고</th></tr>`;
+            const trafficLegend5 = `<div class="prevent-break text-xs text-gray-600 mt-2 mb-4 p-3 bg-gray-50 border border-gray-200 rounded text-left"><p><strong>※ 신호등 범례 (일반유해물질):</strong> <span class="bg-green-500 w-2.5 h-2.5 inline-block rounded-full"></span> 10% 미만 &nbsp; <span class="bg-yellow-400 w-2.5 h-2.5 inline-block rounded-full"></span> 10~50% 미만 &nbsp; <span class="bg-orange-400 w-2.5 h-2.5 inline-block rounded-full"></span> 50~100% 이하 &nbsp; <span class="bg-red-600 w-2.5 h-2.5 inline-block rounded-full"></span> 노출기준 초과</p><p class="mt-1"><strong>※ 신호등 범례 (소음):</strong> <span class="bg-green-500 w-2.5 h-2.5 inline-block rounded-full"></span> 80dB 미만 &nbsp; <span class="bg-yellow-400 w-2.5 h-2.5 inline-block rounded-full"></span> 80~85dB 미만 &nbsp; <span class="bg-orange-400 w-2.5 h-2.5 inline-block rounded-full"></span> 85~기준치 이하 &nbsp; <span class="bg-red-600 w-2.5 h-2.5 inline-block rounded-full"></span> 노출기준 초과</p><p class="mt-1"><strong>※ 신호등 범례 (고열):</strong> <span class="bg-green-500 w-2.5 h-2.5 inline-block rounded-full"></span> 23℃ 미만 &nbsp; <span class="bg-yellow-400 w-2.5 h-2.5 inline-block rounded-full"></span> 23~25℃ 미만 &nbsp; <span class="bg-orange-400 w-2.5 h-2.5 inline-block rounded-full"></span> 25~노출기준 이하 &nbsp; <span class="bg-red-600 w-2.5 h-2.5 inline-block rounded-full"></span> 노출기준 초과</p></div>`;
             
-            reportHtml += renderSectionStrict(5, `<span>5</span> 단위작업장소별 유해인자 측정 및 초과 현황`, sec5Thead, buildGroupRows(data, ['location', 'category', 'agent', 'limit']), groupRender5, true, '', trafficLegend5, 3);
+            const sec5Thead = `<tr><th width="15%">단위사업체명</th><th width="15%">단위작업장소</th><th width="12%">분류</th><th width="20%">세부 유해인자명</th><th width="8%">측정건수</th><th width="8%">초과건수</th><th width="7%">신호등</th><th width="15%">비고</th></tr>`;
+            
+            reportHtml += renderSectionStrict(5, `<span class="sec-num-badge-5" style="${num5?'':'display:none;'}">${num5}</span> 단위작업장소별 유해인자 측정 및 초과 현황`, sec5Thead, buildGroupRows(data, ['location', 'category', 'agent', 'limit'], companies), groupRender5, true, '', trafficLegend5);
 
             // --- Section 6 ---
-            const sec6Data = data.filter(d => d.sheetType !== '소음');
-
+            // ★ 화학물질 위험성 평가 시 '혼합물질(평가)' 항목 제외 로직 추가
+            const sec6Data = data.filter(d => d.category !== '물리적 인자' && !d.agent.replace(/\s+/g, '').includes('혼합물질'));
+            const sec6Thead = `<tr><th width="13%">단위사업체명</th><th width="12%">부서(팀)명</th><th width="11%">분류</th><th width="24%">세부 유해인자명</th><th width="4.5%" style="padding:0.5rem 0.1rem; line-height:1.2; font-size:0.8rem;">측<br>정<br>건<br>수</th><th width="4.5%" style="padding:0.5rem 0.1rem; line-height:1.2; font-size:0.8rem;">초<br>과<br>건<br>수</th><th width="4.5%" style="padding:0.5rem 0.1rem; line-height:1.2; font-size:0.8rem;">노<br>출<br>수<br>준</th><th width="4.5%" style="padding:0.5rem 0.1rem; line-height:1.2; font-size:0.8rem;">유<br>해<br>성</th><th width="4.5%" style="color: #2563eb; padding:0.5rem 0.1rem; line-height:1.2; font-size:0.8rem;">위<br>험<br>성</th><th width="4.5%" style="padding:0.5rem 0.1rem; line-height:1.2; font-size:0.8rem;">신<br>호<br>등</th><th width="13%">판정</th></tr>`;
+            
             const groupRender6 = (r, isG, isNG, rs, isNSG, subRS) => {
                 let extractedUnit = r.rawLimit ? String(r.rawLimit).replace(/^[\d\.\,\s]+/g, '').trim().toLowerCase() : '';
-                
                 let exLv = '-', hzLv = '-', rkLv = '-';
-                let jud = '-';
-                let judColorClass = '';
-                let sec6LightColor = r.lightColor; // 6번 항목 전용 신호등 색상 변수
+                let jud = '-', judColorClass = '';
+                let sec6LightColor = r.lightColor; 
                 
                 if (r.cat !== '물리적 인자') {
                     exLv = r.lightColor === 'bg-green-500' ? 1 : (r.lightColor === 'bg-yellow-400' ? 2 : (r.lightColor === 'bg-orange-400' ? 3 : 4));
@@ -775,261 +1062,635 @@
                     }
                     rkLv = exLv * hzLv;
 
-                    // 위험성 점수(rkLv)에 따른 판정 및 신호등 색상 동기화
                     if (rkLv >= 12) {
-                        jud = '매우 높음';
-                        judColorClass = 'text-red-600';
-                        sec6LightColor = 'bg-red-600'; // 빨간색
+                        jud = '매우 높음'; judColorClass = 'text-red-600'; sec6LightColor = 'bg-red-600';
                     } else if (rkLv >= 5) {
-                        jud = '높음';
-                        judColorClass = 'text-orange-500';
-                        sec6LightColor = 'bg-orange-400'; // 주황색
+                        jud = '높음'; judColorClass = 'text-orange-500'; sec6LightColor = 'bg-orange-400';
                     } else if (rkLv >= 3) {
-                        jud = '보통';
-                        judColorClass = 'text-yellow-600';
-                        sec6LightColor = 'bg-yellow-400'; // 노란색
+                        jud = '보통'; judColorClass = 'text-yellow-600'; sec6LightColor = 'bg-yellow-400';
                     } else {
-                        jud = '낮음';
-                        judColorClass = 'text-green-600';
-                        sec6LightColor = 'bg-green-500'; // 녹색
+                        jud = '낮음'; judColorClass = 'text-green-600'; sec6LightColor = 'bg-green-500';
                     }
                 } else {
-                    // 물리적 인자(소음, 고열 등)는 판정란에 '-' 기록
-                    jud = '-';
-                    judColorClass = 'text-gray-700';
-                    sec6LightColor = r.lightColor;
+                    jud = '-'; judColorClass = 'text-gray-700'; sec6LightColor = r.lightColor;
                 }
-                const agentTd = getAgentTd(r.agent, 'text-left border-green-300 align-middle');
                 
-                // r.lightColor 대신 6번 전용으로 연동된 sec6LightColor 삽입
-                return `<tr>${isNG ? `<td rowspan="${rs}" class="font-bold bg-white border-green-300 align-middle break-keep">${r.mainKey}</td>` : ''}${isNSG ? `<td rowspan="${subRS}" class="border-green-300 bg-white align-middle break-keep">${r.subKey}</td>` : ''}${agentTd}<td class="border-green-300">${r.n}</td><td class="border-green-300 ${r.exc > 0 ? 'text-red-600 font-bold' : ''}">${r.exc}</td><td class="border-green-300 text-gray-700">${exLv}</td><td class="border-green-300 text-gray-700">${hzLv}</td><td class="border-green-300 font-bold ${rkLv >= 12 ? 'text-red-600' : 'text-blue-600'}">${rkLv}</td><td class="border-green-300"><span class="inline-block w-3.5 h-3.5 rounded-full ${sec6LightColor} shadow-sm border border-gray-300"></span></td><td class="text-center text-xs border-green-300 font-bold ${judColorClass}">${jud}</td></tr>`;
+                let formattedAgent = r.agent;
+                if (formattedAgent.length > 18) {
+                    let halfIndex = Math.ceil(formattedAgent.length / 2);
+                    formattedAgent = formattedAgent.substring(0, halfIndex) + '<br>' + formattedAgent.substring(halfIndex);
+                }
+                const sec6AgentTd = `<td class="text-left border-green-300 align-middle" style="letter-spacing: -0.05em; word-break: keep-all;">${formattedAgent}</td>`;
+                
+                let groupTd = '', companyTd = '', subGroupTd = '';
+                if (isG) {
+                    if (isNG) {
+                        companyTd = `<td rowspan="${rs}" class="border-green-300 bg-white align-middle font-bold break-keep">${r.company}</td>`;
+                        groupTd = `<td rowspan="${rs}" class="border-green-300 bg-white align-middle break-keep">${r.mainKey}</td>`;
+                    }
+                    if (isNSG) {
+                        subGroupTd = `<td rowspan="${subRS}" class="border-green-300 bg-white align-middle break-keep">${r.subKey}</td>`;
+                    }
+                }
+                
+                return `<tr>${companyTd}${groupTd}${subGroupTd}${sec6AgentTd}<td class="border-green-300">${r.n}</td><td class="border-green-300 ${r.exc > 0 ? 'text-red-600 font-bold' : ''}">${r.exc}</td><td class="border-green-300 text-gray-800">${exLv}</td><td class="border-green-300 text-gray-800">${hzLv}</td><td class="border-green-300 font-bold text-blue-600">${rkLv}</td><td class="border-green-300"><span class="inline-block w-3.5 h-3.5 rounded-full ${sec6LightColor} shadow-sm border border-gray-300"></span></td><td class="text-center text-xs border-green-300 font-bold ${judColorClass}">${jud}</td></tr>`;
             };
-            
-            // 새 페이지 상단에 들어갈 예정이므로 위쪽 여백과 테두리를 깔끔하게 정리하고 prevent-break를 적용하여 문단 끊김을 방지했습니다.
-            const extra6 = `<div class="mt-4 text-left break-keep">
-                <!-- 1. CHARM 방법 -->
-                <div class="prevent-break">
-                    <h3 class="text-[1.05rem] font-bold text-gray-800 mb-2">■ 화학물질 위험성평가 방법(CHARM) 이란?</h3>
-                    <div class="mb-5 space-y-2 text-[0.85rem] text-gray-700">
-                        <p class="leading-relaxed">ㅇ 근로자에게 건강장해를 유발하는 모든 화학물질을 대상으로 화학물질의 작업환경측정결과, CMR정보, 구성성분의 함유량, 노출기준, 취급량 등을 통해 위험성을 결정하고 작업환경 개선대책을 수립할 수 있도록 하는 위험성평가 기법</p>
-                        <div class="bg-gray-50 p-3 rounded border border-gray-200 text-[0.75rem] space-y-1.5 mt-2">
-                            <p>※ CHARM(Chemical Hazard Risk Management) : 영국 HSE의 Control Banding* 등 선진 외국의 위험성평가 기법 참조</p>
-                            <p class="pl-3 text-gray-500">* 화학물질의 유해성과 노출실태를 토대로 정성적 위험성평가 기법과 관리대책을 온라인으로 제공하는 프로그램</p>
+
+            const extra6Content = `
+                <div class="mt-4 text-left break-keep">
+                    <div class="prevent-break">
+                        <h3 class="text-[1.05rem] font-bold text-gray-800 mb-2">■ 화학물질 위험성평가 방법(CHARM) 이란?</h3>
+                        <div class="mb-5 space-y-2 text-[0.85rem] text-gray-700">
+                            <p class="leading-relaxed">ㅇ 근로자에게 건강장해를 유발하는 모든 화학물질을 대상으로 화학물질의 작업환경측정결과, CMR정보, 구성성분의 함유량, 노출기준, 취급량 등을 통해 위험성을 결정하고 작업환경 개선대책을 수립할 수 있도록 하는 위험성평가 기법</p>
+                            <div class="bg-gray-50 p-3 rounded border border-gray-200 text-[0.75rem] space-y-1.5 mt-2">
+                                <p>※ CHARM(Chemical Hazard Risk Management) : 영국 HSE의 Control Banding* 등 선진 외국의 위험성평가 기법 참조</p>
+                                <p class="pl-3 text-gray-500">* 화학물질의 유해성과 노출실태를 토대로 정성적 위험성평가 기법과 관리대책을 온라인으로 제공하는 프로그램</p>
+                            </div>
                         </div>
                     </div>
-                </div>
 
-                <!-- 2. 실시방법 요약 (이미지 공식 반영) -->
-                <div class="prevent-break mt-5">
-                    <h3 class="text-[1.05rem] font-bold text-gray-800 mb-2">■ 실시방법 요약</h3>
-                    <div class="mb-6 text-[0.85rem] text-gray-700">
-                        <p class="font-bold text-gray-800 mb-3">ㅇ [제1방법] 작업환경측정결과가 있는 경우 위험성 추정방법</p>
-                        <div class="flex items-center justify-center gap-3 text-center text-xs font-bold text-white max-w-2xl ml-4 my-2">
-                            <div class="bg-red-700 py-2.5 px-4 rounded w-1/3 shadow-sm">위험성(Risk)</div>
-                            <div class="text-gray-500 font-bold text-lg">=</div>
-                            <div class="bg-[#548235] py-1.5 px-4 rounded w-1/3 shadow-sm leading-tight">작업환경측정결과<br>(1~4등급)</div>
-                            <div class="text-gray-500 font-bold text-lg">×</div>
-                            <div class="bg-[#2f5597] py-1.5 px-4 rounded w-1/3 shadow-sm leading-tight">노출기준<br>(1~4등급)</div>
+                    <div class="prevent-break mt-5">
+                        <h3 class="text-[1.05rem] font-bold text-gray-800 mb-2">■ 실시방법 요약</h3>
+                        <div class="mb-6 text-[0.85rem] text-gray-700">
+                            <p class="font-bold text-gray-800 mb-3">ㅇ [제1방법] 작업환경측정결과가 있는 경우 위험성 추정방법</p>
+                            <div class="flex items-center justify-center gap-3 text-center text-xs font-bold text-white max-w-2xl ml-4 my-2">
+                                <div class="bg-red-700 py-2.5 px-4 rounded w-1/3 shadow-sm">위험성(Risk)</div>
+                                <div class="text-gray-500 font-bold text-lg">=</div>
+                                <div class="bg-[#548235] py-1.5 px-4 rounded w-1/3 shadow-sm leading-tight">작업환경측정결과<br>(1~4등급)</div>
+                                <div class="text-gray-500 font-bold text-lg">×</div>
+                                <div class="bg-[#2f5597] py-1.5 px-4 rounded w-1/3 shadow-sm leading-tight">노출기준<br>(1~4등급)</div>
+                            </div>
                         </div>
                     </div>
-                </div>
 
-                <!-- 3. 허용가능여부 판단 기준 -->
-                <div class="prevent-break mt-6">
-                    <h3 class="text-[1.05rem] font-bold text-gray-800 mb-2">■ 위험성 결정에 따른 허용가능여부 판단 기준</h3>
-                    <table class="w-full text-[0.8rem] border-collapse mb-2 text-center" style="border-bottom: 1px solid #9ca3af !important;">
-                        <thead>
-                            <tr>
-                                <th colspan="2" style="background-color: #dbeafe; border: 1px solid #9ca3af; padding: 0.4rem;">위험성크기</th>
-                                <th style="background-color: #dbeafe; border: 1px solid #9ca3af; padding: 0.4rem;">허용가능여부</th>
-                                <th style="background-color: #dbeafe; border: 1px solid #9ca3af; padding: 0.4rem;">개선의 정도</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                <td class="font-bold" style="border: 1px solid #9ca3af; width: 15%;">12~16</td>
-                                <td class="text-red-600 font-bold" style="border: 1px solid #9ca3af; width: 20%;">매우 높음</td>
-                                <td rowspan="2" class="font-bold" style="border: 1px solid #9ca3af;">허용불가능</td>
-                                <td class="font-bold text-red-600" style="border: 1px solid #9ca3af;">즉시 개선</td>
-                            </tr>
-                            <tr>
-                                <td class="font-bold" style="border: 1px solid #9ca3af;">5~11</td>
-                                <td class="text-orange-500 font-bold" style="border: 1px solid #9ca3af;">높음</td>
-                                <td class="text-orange-500 font-bold" style="border: 1px solid #9ca3af;">가능한 한 빨리 개선</td>
-                            </tr>
-                            <tr>
-                                <td class="font-bold" style="border: 1px solid #9ca3af;">3~4</td>
-                                <td class="text-yellow-600 font-bold" style="border: 1px solid #9ca3af;">보통</td>
-                                <td style="border: 1px solid #9ca3af;">허용 가능 또는<br>허용 불가능*</td>
-                                <td class="text-yellow-600 font-bold" style="border: 1px solid #9ca3af;">연간계획에 따라 개선</td>
-                            </tr>
-                            <tr>
-                                <td class="font-bold" style="border: 1px solid #9ca3af;">1~2</td>
-                                <td class="text-green-600 font-bold" style="border: 1px solid #9ca3af;">낮음</td>
-                                <td style="border: 1px solid #9ca3af;">허용가능</td>
-                                <td class="text-green-600 font-bold" style="border: 1px solid #9ca3af;">필요에 따라 개선</td>
-                            </tr>
-                        </tbody>
-                    </table>
-                    <p class="text-[0.7rem] text-gray-600 mb-6">* 허용 불가능 : 위험성 크기가 4인 화학물질 중 직업병 유소견자가 발생(노출수준=4등급) 하였거나, 해당 화학물질이 CMR물질(유해성=4등급)인 경우</p>
-                </div>
-
-                <!-- 4. 감소대책 수립 및 실행 -->
-                <div class="prevent-break mt-5">
-                    <h3 class="text-[1.05rem] font-bold text-gray-800 mb-2">■ 위험성 감소대책 수립 및 실행</h3>
-                    <div class="bg-gray-50 border border-gray-300 p-3 rounded text-[0.8rem] space-y-1.5 text-gray-800 leading-relaxed">
-                        <p>- 위험성의 크기, 근로자 수 등을 고려하여 안전보건상 중대한 문제는 위험성 감소 조치 즉시 실시</p>
-                        <p>- 개선 우선순위: 화학물질 제거 → 대체 → 공정변경 → 격리 → 환기장치 설치/개선 → 보호구 착용 등 순으로 실시</p>
+                    <div class="prevent-break mt-6">
+                        <h3 class="text-[1.05rem] font-bold text-gray-800 mb-2">■ 위험성 결정에 따른 허용가능여부 판단 기준</h3>
+                        <table class="w-full text-[0.8rem] border-collapse mb-2 text-center" style="border-bottom: 1px solid #9ca3af !important;">
+                            <thead>
+                                <tr>
+                                    <th colspan="2" style="background-color: #dbeafe; border: 1px solid #9ca3af; padding: 0.4rem;">위험성크기</th>
+                                    <th style="background-color: #dbeafe; border: 1px solid #9ca3af; padding: 0.4rem;">허용가능여부</th>
+                                    <th style="background-color: #dbeafe; border: 1px solid #9ca3af; padding: 0.4rem;">개선의 정도</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td class="font-bold" style="border: 1px solid #9ca3af; width: 15%;">12~16</td>
+                                    <td class="text-red-600 font-bold" style="border: 1px solid #9ca3af; width: 20%;">매우 높음</td>
+                                    <td rowspan="2" class="font-bold" style="border: 1px solid #9ca3af;">허용불가능</td>
+                                    <td class="font-bold text-red-600" style="border: 1px solid #9ca3af;">즉시 개선</td>
+                                </tr>
+                                <tr>
+                                    <td class="font-bold" style="border: 1px solid #9ca3af;">5~11</td>
+                                    <td class="text-orange-500 font-bold" style="border: 1px solid #9ca3af;">높음</td>
+                                    <td class="text-orange-500 font-bold" style="border: 1px solid #9ca3af;">가능한 한 빨리 개선</td>
+                                </tr>
+                                <tr>
+                                    <td class="font-bold" style="border: 1px solid #9ca3af;">3~4</td>
+                                    <td class="text-yellow-600 font-bold" style="border: 1px solid #9ca3af;">보통</td>
+                                    <td style="border: 1px solid #9ca3af;">허용 가능 또는<br>허용 불가능*</td>
+                                    <td class="text-yellow-600 font-bold" style="border: 1px solid #9ca3af;">연간계획에 따라 개선</td>
+                                </tr>
+                                <tr>
+                                    <td class="font-bold" style="border: 1px solid #9ca3af;">1~2</td>
+                                    <td class="text-green-600 font-bold" style="border: 1px solid #9ca3af;">낮음</td>
+                                    <td style="border: 1px solid #9ca3af;">허용가능</td>
+                                    <td class="text-green-600 font-bold" style="border: 1px solid #9ca3af;">필요에 따라 개선</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                        <p class="text-[0.7rem] text-gray-600 mb-6">* 허용 불가능 : 위험성 크기가 4인 화학물질 중 직업병 유소견자가 발생(노출수준=4등급) 하였거나, 해당 화학물질이 CMR물질(유해성=4등급)인 경우</p>
                     </div>
-                </div>
-            </div>`;
-            const sec6Thead = `<tr><th width="14%">부서(팀)명</th><th width="10%">분류</th><th width="14%">세부 유해인자명</th><th width="6%">측정 건수</th><th width="6%">초과 건수</th><th width="7%">노출 수준</th><th width="7%">유해성</th><th width="7%">위험성</th><th width="6%">신호등</th><th width="23%">판정</th></tr>`;
-            
-            // 표 렌더링을 먼저 수행합니다. (suffixHtml은 빈칸으로 두어 표 아래에 붙지 않게 함)
-            reportHtml += renderSectionStrict(6, `<span>6</span> 작업환경측정 화학물질 위험성 평가`, sec6Thead, buildGroupRows(sec6Data, ['department', 'category', 'agent']), groupRender6, true, '', '');
-            
-            // CHARM 부가 설명을 강제로 새 페이지(.page-container) 컨테이너에 담아 추가합니다.
-            reportHtml += `
-                <div class="a4-page page-container flex flex-col justify-start" data-section="6">
-                    <div class="section-title"><span>6</span> 작업환경측정 화학물질 위험성 평가 (참고자료)</div>
-                    ${extra6}
+
+                    <div class="prevent-break mt-5">
+                        <h3 class="text-[1.05rem] font-bold text-gray-800 mb-2">■ 위험성 감소대책 수립 및 실행</h3>
+                        <div class="bg-gray-50 border border-gray-300 p-3 rounded text-[0.8rem] space-y-1.5 text-gray-800 leading-relaxed">
+                            <p>- 위험성의 크기, 근로자 수 등을 고려하여 안전보건상 중대한 문제는 위험성 감소 조치 즉시 실시</p>
+                            <p>- 개선 우선순위: 화학물질 제거 → 대체 → 공정변경 → 격리 → 환기장치 설치/개선 → 보호구 착용 등 순으로 실시</p>
+                        </div>
+                    </div>
                 </div>
             `;
 
+            reportHtml += renderSectionStrict(6, `<span class="sec-num-badge-6" style="${num6?'':'display:none;'}">${num6}</span> 작업환경측정 화학물질 위험성 평가`, sec6Thead, buildGroupRows(sec6Data, ['department', 'category', 'agent'], companies), groupRender6, true, '', '');
+            
+            reportHtml += `
+                <div class="a4-page page-container flex flex-col justify-start major-section" data-section="6">
+                    <div class="section-title border-b-2 border-green-600 pb-2 mb-4 font-bold text-gray-900 text-xl"><span class="sec-num-badge-6" style="${num6?'':'display:none;'}">${num6}</span> 작업환경측정 화학물질 위험성 평가 (참고자료)</div>
+                    ${extra6Content}
+                </div>
+            `;
+
+            // ★ 6번. 화학물질 위험성평가 감소대책 (실행계획서) 페이지 추가
+            const reductionGrouped = buildGroupRows(sec6Data, ['department', 'category', 'agent'], companies);
+            let reductionRows = [];
+            let rSeq = 1;
+            
+            reductionGrouped.forEach(r => {
+                let extractedUnit = r.rawLimit ? String(r.rawLimit).replace(/^[\d\.\,\s]+/g, '').trim().toLowerCase() : '';
+                let exLv = r.lightColor === 'bg-green-500' ? 1 : (r.lightColor === 'bg-yellow-400' ? 2 : (r.lightColor === 'bg-orange-400' ? 3 : 4));
+                let limit = parseFloat(r.limit);
+                let hzLv = 1;
+                if (extractedUnit.includes('mg') || r.cat === '분진' || r.cat === '금속류' || r.cat === '금속가공유') {
+                    hzLv = limit > 1 ? 1 : (limit > 0.1 ? 2 : (limit > 0.01 ? 3 : 4));
+                } else {
+                    hzLv = limit > 50 ? 1 : (limit > 5 ? 2 : (limit > 0.5 ? 3 : 4));
+                }
+                let rkLv = exLv * hzLv;
+                
+                let jud = '';
+                let judColorClass = '';
+                if (rkLv >= 12) { jud = '매우 높음'; judColorClass = 'text-red-600'; }
+                else if (rkLv >= 5) { jud = '높음'; judColorClass = 'text-orange-500'; }
+                else if (rkLv >= 3) { jud = '보통'; judColorClass = 'text-yellow-600'; }
+                else { jud = '낮음'; judColorClass = 'text-green-600'; }
+                
+                // ★ '보통' 이상(rkLv >= 3)인 항목만 감소대책 표에 포함
+                if (rkLv >= 3) {
+                    let measureText = '';
+                    const tag = (name) => `<span class="font-bold text-blue-700">[${name}]</span>`;
+                    const br = `<br>`;
+
+                    let ppeText = '';
+                    let agentName = r.agent.replace(/\s+/g, '');
+
+                    // ★ 지능형 보호구 판정 로직 (사용자 요구사항 및 첨부 PDF 별표 1, 2, 3 기준 완벽 반영)
+                    if (r.cat === '금속가공유') {
+                        ppeText = '방진마스크(특급/1급/2급 이상) 및 내유성 장갑 착용';
+                    } else if (agentName.includes('수산화나트륨') || agentName.includes('수산화칼륨') || agentName.includes('황산')) {
+                        ppeText = '내산성/내화학성 보호의/장갑, 보안경 및 방진마스크(특급/1급 이상) 착용';
+                    } else if (agentName.includes('염화비닐') || agentName.includes('톨리딘') || agentName.includes('불소') || agentName.includes('삼수소화비소') || agentName.includes('이산화질소') || agentName.includes('일산화질소') || agentName.includes('일산화탄소') || agentName.includes('포스겐') || agentName.includes('포스핀') || agentName.includes('메틸클로라이드') || agentName.includes('브롬화메틸') || agentName.includes('요오드화메틸') || agentName.includes('메탄올') || agentName.includes('질산')) {
+                        ppeText = '전면형 송기식 마스크 또는 자급식 공기호흡기, 보호복 착용';
+                    } else if (agentName.includes('암모니아') || agentName.includes('디메틸아민') || agentName.includes('메틸아민') || agentName.includes('에틸아민') || agentName.includes('트리에틸아민') || agentName.includes('히드라진')) {
+                        ppeText = '방독마스크(암모니아용) 및 화학물질용 보호장갑 착용';
+                    } else if (agentName.includes('염소')) {
+                        ppeText = '방독마스크(할로겐용) 및 화학물질용 보호장갑 착용';
+                    } else if (agentName.includes('이산화황') || agentName.includes('불화수소') || agentName.includes('브롬화수소') || agentName.includes('염화수소')) {
+                        ppeText = '방독마스크(아황산가스용) 및 화학물질용 보호장갑 착용';
+                    } else if (agentName.includes('시안화수소')) {
+                        ppeText = '방독마스크(시안화수소용) 및 화학물질용 보호장갑 착용';
+                    } else if (agentName.includes('석면') || agentName.includes('나프틸아민') || agentName.includes('디아니시딘') || agentName.includes('디클로로벤지딘') || agentName.includes('베릴륨') || agentName.includes('비소') || agentName.includes('크롬') || agentName.includes('황화니켈') || agentName.includes('사붕소산나트륨') || agentName.includes('인산') || agentName.includes('에틸헥실프탈레이트')) {
+                        ppeText = '특급/1급 방진마스크 및 적절한 보호복 착용';
+                    } else if (r.cat === '분진' || r.cat === '금속류') {
+                        ppeText = '특급 또는 1급 방진마스크(안면부 여과식/반면형) 지급 및 밀착 착용';
+                    } else if (r.cat === '유기화합물') {
+                        if (agentName.includes('에틸렌글리콜') || agentName.includes('무수말레산') || agentName.includes('무수프탈산') || agentName.includes('톨루엔디이소시아네이트') || agentName.includes('크레졸') || agentName.includes('콜타르피치') || agentName.includes('오존')) {
+                            ppeText = '겸용 마스크(유기화합물/방진), 불침투성 보호복/장갑 착용';
+                        } else {
+                            ppeText = '방독마스크(유기화합물용, KCs인증), 불침투성 보호복/장갑 착용';
+                        }
+                    } else if (r.cat === '산 및 알칼리류') {
+                        ppeText = '내산성/내화학성 보호의, 보호장갑, 보안경 및 방독마스크(산성용) 착용';
+                    } else if (r.cat === '허가 대상 유해물질') {
+                        ppeText = '전면형 방독/방진 투과식 마스크 또는 송기마스크 등 최고 수준 보호구 지급';
+                    } else {
+                        ppeText = '취급 물질의 물리화학적 특성에 적합한 KCs 인증 호흡기/피부 보호구 지급';
+                    }
+
+                    if(r.cat === '유기화합물') {
+                        measureText = `${tag('제거')} 수용성 및 저독성 세척제/용제로의 대체 검토${br}` +
+                                      `${tag('격리')} 유기화합물 취급 공정 분리 및 작업자 원격 조작 전환${br}` +
+                                      `${tag('공학적대책')} 발생원 밀폐, 국소배기장치(적정 제어풍속 이상) 가동 및 활성탄 흡착탑 효율 유지${br}` +
+                                      `${tag('개인보호구')} ${ppeText}${br}` +
+                                      `${tag('교육및훈련')} 취급물질 MSDS 유해성 주지, 환기설비 사용법 및 보호구 밀착도 검사(Fit Test) 실습`;
+                    } else if(r.cat === '금속가공유') {
+                        measureText = `${tag('제거')} 인체 친화적 및 저독성 수용성 가공유로 대체 검토${br}` +
+                                      `${tag('격리')} 가공 기계(CNC 등) 완전 밀폐화 및 칩 컨베이어 자동화${br}` +
+                                      `${tag('공학적대책')} 국소배기장치(적정 제어풍속 이상) 및 오일미스트 집진기 필수 설치/가동${br}` +
+                                      `${tag('개인보호구')} ${ppeText}${br}` +
+                                      `${tag('교육및훈련')} 오일미스트 피부염 및 호흡기 질환 예방 교육, 작업 후 위생 관리 철저`;
+                    } else if(r.cat === '분진') {
+                        measureText = `${tag('제거')} 분말/가루 형태를 과립상 또는 액상 형태로 변경하여 원천적 비산 억제${br}` +
+                                      `${tag('격리')} 분진 발생 공정(분쇄/혼합 등) 격리실 운영 및 무인화 검토${br}` +
+                                      `${tag('공학적대책')} 비산원 밀폐, 국소배기장치(적정 제어풍속 이상) 가동 및 백필터/집진기 차압 점검${br}` +
+                                      `${tag('개인보호구')} ${ppeText}${br}` +
+                                      `${tag('교육및훈련')} 진폐증 예방 교육, 작업장 진공청소(건식청소 금지) 절차 및 필터 교체주기 교육`;
+                    } else if(r.cat === '금속류') {
+                        measureText = `${tag('제거')} 유해성이 낮은 용접봉/와이어로 대체 및 공법 변경(예: 아크→레이저) 검토${br}` +
+                                      `${tag('격리')} 흄 발생 공정 방진막/차광막 설치 및 작업 공간 완전 분리${br}` +
+                                      `${tag('공학적대책')} 발생원 밀폐화, 이동/고정식 국소배기장치(적정 제어풍속 이상) 적극 가동${br}` +
+                                      `${tag('개인보호구')} ${ppeText}${br}` +
+                                      `${tag('교육및훈련')} 금속열(Metal Fume Fever) 및 중독 예방 교육, 호흡기 보호구 올바른 착용법 실습`;
+                    } else if(r.cat === '산 및 알칼리류') {
+                        measureText = `${tag('제거')} 고농도 취급을 피하고 약산성/약알칼리성 등 상대적 안전 물질로 대체 검토${br}` +
+                                      `${tag('격리')} 부식성 물질 취급 탱크/배관 밀폐화 및 원격 제어 시스템 도입${br}` +
+                                      `${tag('공학적대책')} 내부식성 국소배기장치(적정 제어풍속 이상) 가동, 스크러버(세정식 집진기) pH 관리${br}` +
+                                      `${tag('개인보호구')} ${ppeText}${br}` +
+                                      `${tag('교육및훈련')} 누출 시 비상대응조치(비상샤워기/세안설비 사용법), 화학화상 예방 교육`;
+                    } else if(r.cat === '허가 대상 유해물질') {
+                        measureText = `${tag('제거')} 발암성/생식독성(CMR) 물질 사용 취소 및 비발암성 안전 물질로 즉각적 대체 최우선 검토${br}` +
+                                      `${tag('격리')} 취급 공정 완전 격리(밀폐실) 및 관계자 외 출입 엄격 통제${br}` +
+                                      `${tag('공학적대책')} 내부 음압 유지, 배기구 고효율 필터(HEPA) 장착된 국소배기장치(적정 제어풍속 이상) 가동${br}` +
+                                      `${tag('개인보호구')} ${ppeText}${br}` +
+                                      `${tag('교육및훈련')} 발암/생식독성 특별 유해성 주지, 작업 전후 탈의/샤워 절차 및 오염 세탁물 분리 교육`;
+                    } else {
+                        measureText = `${tag('제거')} 해당 물질의 유해성이 낮은 유사/친환경 물질로의 대체(Substitution) 다각적 검토${br}` +
+                                      `${tag('격리')} 발생원 격리 및 취급 구역 제한을 통한 비노출 근로자 철저 보호${br}` +
+                                      `${tag('공학적대책')} 발생원 밀폐 및 공정 맞춤형 국소배기장치(적정 제어풍속 이상) 최적화 가동${br}` +
+                                      `${tag('개인보호구')} ${ppeText}${br}` +
+                                      `${tag('교육및훈련')} 유해인자별 건강장해 예방 교육, 작업표준 준수 및 보호구 정기 점검 훈련`;
+                    }
+
+                    // 전문가 로직: 개선 후 위험성 평가 (대책 적용 시 노출수준(exLv)을 1등급으로 감소시켰을 때의 위험성. 단, 물질의 유해성(hzLv)은 불변)
+                    let postExLv = 1;
+                    let postRkLv = postExLv * hzLv; 
+                    let postJud = ''; let postJudColorClass = '';
+                    
+                    if (postRkLv >= 3) { postJud = '보통'; postJudColorClass = 'text-yellow-600'; }
+                    else { postJud = '낮음'; postJudColorClass = 'text-green-600'; }
+
+                    reductionRows.push({
+                        seq: rSeq++,
+                        company: r.company,
+                        department: r.mainKey,
+                        agent: r.agent,
+                        rkLv: rkLv,
+                        jud: jud,
+                        judColor: judColorClass,
+                        measure: measureText,
+                        postRkLv: postRkLv,
+                        postJud: postJud,
+                        postJudColor: postJudColorClass
+                    });
+                }
+            });
+
+            let reductionHtmlTbody = '';
+            if (reductionRows.length === 0) {
+                reductionHtmlTbody = `<tr><td colspan="9" class="border border-green-300 py-10 text-center text-gray-500 font-bold">위험성 판정이 '보통' 이상인 공정 및 유해인자가 없습니다.</td></tr>`;
+            } else {
+                reductionRows.forEach(row => {
+                    reductionHtmlTbody += `
+                    <tr>
+                        <td class="border border-green-300 py-2 text-center text-gray-700 font-medium">${row.seq}</td>
+                        <td class="border border-green-300 py-2 text-center text-gray-800 break-keep font-medium">${row.company}</td>
+                        <td class="border border-green-300 py-2 text-center text-gray-800 break-keep">${row.department}</td>
+                        <td class="border border-green-300 py-2 text-left text-gray-800 font-bold break-keep px-2">${row.agent}</td>
+                        <td class="border border-green-300 py-2 text-center font-bold bg-red-50">
+                            <span class="text-blue-600 text-[0.8rem]">${row.rkLv}</span><br>
+                            <span class="${row.judColor} text-[0.65rem]">${row.jud}</span>
+                        </td>
+                        <td class="border border-green-300 py-2.5 px-3 text-left text-gray-700 text-[0.65rem] break-keep leading-relaxed">${row.measure}</td>
+                        <td class="border border-green-300 py-2 text-center font-bold bg-green-50">
+                            <span class="text-green-700 text-[0.8rem]">${row.postRkLv}</span><br>
+                            <span class="${row.postJudColor} text-[0.65rem]">${row.postJud}</span>
+                        </td>
+                        <td class="border border-green-300 py-2 text-center bg-gray-50"></td>
+                        <td class="border border-green-300 py-2 text-center bg-gray-50"></td>
+                    </tr>
+                    `;
+                });
+            }
+
+            reportHtml += `
+                <div class="a4-page page-container flex flex-col justify-start major-section" data-section="6">
+                    <div class="section-title border-b-2 border-green-600 pb-2 mb-4 font-bold text-gray-900 text-xl"><span class="sec-num-badge-6" style="${num6?'':'display:none;'}">${num6}</span> 화학물질 위험성평가 감소대책 (실행계획서)</div>
+                    <div class="flex flex-col flex-1 w-full bg-white">
+                        <p class="text-[0.8rem] text-gray-600 mb-3 font-medium">※ 위험성평가 결과 판정이 '보통' 이상(위험성 3 이상)인 공정 및 유해인자에 한하여 우선적인 감소대책을 수립합니다.<br>※ <span class="text-blue-600 font-bold">개선 후 위험성</span>은 감소대책이 완벽히 이행되어 '노출수준(1등급)'으로 낮아졌을 때를 가정한 예측값입니다. (화학물질 고유의 유해성은 변하지 않음)</p>
+                        <table style="width: 100%; border-collapse: collapse; font-size: 0.75rem;" class="border border-green-300">
+                            <thead>
+                                <tr>
+                                    <th class="bg-green-100 border border-green-300 py-2 px-1 w-[4%] text-center font-bold text-gray-800">No.</th>
+                                    <th class="bg-green-100 border border-green-300 py-2 px-1 w-[9%] text-center font-bold text-gray-800">사업장명</th>
+                                    <th class="bg-green-100 border border-green-300 py-2 px-1 w-[10%] text-center font-bold text-gray-800">부서(공정)명</th>
+                                    <th class="bg-green-100 border border-green-300 py-2 px-1 w-[12%] text-center font-bold text-gray-800 break-keep">유해인자명</th>
+                                    <th class="bg-green-100 border border-green-300 py-2 px-1 w-[8%] text-center font-bold text-gray-800 whitespace-nowrap">위험성<br>(판정)</th>
+                                    <th class="bg-green-100 border border-green-300 py-2 px-1 w-[35%] text-center font-bold text-gray-800">위험성 감소대책(예시)</th>
+                                    <th class="bg-green-100 border border-green-300 py-2 px-1 w-[7%] text-center font-bold text-gray-800 break-keep">개선 후<br>위험성</th>
+                                    <th class="bg-green-100 border border-green-300 py-2 px-1 w-[10%] text-center font-bold text-gray-800 whitespace-nowrap">개선일정<br>(담당자)</th>
+                                    <th class="bg-green-100 border border-green-300 py-2 px-1 w-[5%] text-center font-bold text-gray-800 whitespace-nowrap">완료일</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${reductionHtmlTbody}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            `;
+
+            // --- Section 7 ---
+            let sec7Html = '';
+            companies.forEach((comp, idx) => {
+                const compData = data.filter(d => d.company === comp);
+                const compExcData = compData.filter(d => d.isExceed);
+                // ★ Section 7 내부 개별 사업체별 화학물질 위험성 평가에서도 '혼합물질(평가)' 항목 제외
+                const compSec6Data = compData.filter(d => d.category !== '물리적 인자' && !d.agent.replace(/\s+/g, '').includes('혼합물질'));
+
+                let compSec4Rows = [];
+                sortedCats.forEach(cat => {
+                    Array.from(categoryMap[cat]).sort().forEach(agent => {
+                        const filtered = compData.filter(d => d.category === cat && d.agent === agent);
+                        const n = filtered.length;
+                        const exc = filtered.filter(d => d.isExceed).length;
+                        if (n > 0) {
+                            compSec4Rows.push({ mainKey: cat, agent: agent, n, exc, groupId: cat, subKey: cat }); 
+                        }
+                    });
+                });
+                
+                const sec7_1_Thead = `<tr><th width="20%">분류</th><th width="40%">유해인자</th><th width="20%">측정건수</th><th width="20%">초과건수</th></tr>`;
+                const sec7_1_Render = (r, isG, isNG, rs) => {
+                    let groupTd = '';
+                    if (isG && isNG) {
+                        groupTd = `<td rowspan="${rs}" class="border-green-300 bg-white align-middle font-bold break-keep">${r.mainKey}</td>`;
+                    }
+                    const agentTd = getAgentTd(r.agent, 'text-left border-green-300 bg-white align-middle');
+                    return `<tr>${groupTd}${agentTd}<td class="border-green-300 bg-white">${r.n}</td><td class="border-green-300 bg-white font-bold ${r.exc > 0 ? 'text-red-600' : ''}">${r.exc}</td></tr>`;
+                };
+                sec7Html += renderSectionStrict(7, `<span class="sec-num-badge-7" style="${num7?'':'display:none;'}">${num7}</span> 단위사업체별 종합 보고서 - ${comp} (종합 현황)`, sec7_1_Thead, compSec4Rows, sec7_1_Render, true, '', '');
+
+                sec7Html += renderSectionStrict(7, `<span class="sec-num-badge-7" style="${num7?'':'display:none;'}">${num7}</span> 단위사업체별 종합 보고서 - ${comp} (초과 현황 리스트)`, sec2Thead, compExcData, sec2Render, false, '', '', '노출기준 초과 유해인자가 없습니다.');
+
+                const createSection7ChartPage = (title, prefix, pagePart) => {
+                    let html = `<div class="a4-page page-container flex flex-col justify-start major-section" data-section="7">`;
+                    html += `<div class="section-title mt-4 border-b-2 border-green-600 pb-2 mb-4 font-bold text-gray-900 text-xl"><span class="sec-num-badge-7" style="${num7?'':'display:none;'}">${num7}</span> ${title}</div>`;
+                    
+                    // ★ flex 컨테이너와 명시적 고정 높이(height)를 사용하여 차트 사라짐 버그 완벽 차단
+                    html += `<div class="flex flex-col gap-6 w-full mb-2">`;
+                    
+                    if (pagePart === 1) {
+                        html += `
+                            <div class="prevent-break bg-white p-4 border border-green-300 rounded-xl shadow-lg flex flex-col items-center w-full">
+                                <h3 class="text-[1rem] font-bold text-center mb-3 bg-gradient-to-r from-green-50 to-green-100 w-full py-2 rounded-lg border border-green-200">1) 측정항목 분포도 <span id="title_${prefix}_1" class="ml-1"></span></h3>
+                                <div id="chart_${prefix}_1" style="height: 340px; width: 100%;"></div>
+                            </div>
+                            <div class="prevent-break bg-white p-4 border border-green-300 rounded-xl shadow-lg flex flex-col items-center w-full">
+                                <h3 class="text-[1rem] font-bold text-center mb-3 bg-gradient-to-r from-green-50 to-green-100 w-full py-2 rounded-lg border border-green-200">2) 총 측정건수 대비 분류별 초과 건수 <span id="title_${prefix}_2" class="ml-1"></span></h3>
+                                <div id="chart_${prefix}_2" style="height: 340px; width: 100%;"></div>
+                            </div>
+                        `;
+                    } else {
+                        html += `
+                            <div class="prevent-break bg-white p-4 border border-green-300 rounded-xl shadow-lg flex flex-col items-center w-full">
+                                <h3 class="text-[1rem] font-bold text-center mb-3 bg-gradient-to-r from-green-50 to-green-100 w-full py-2 rounded-lg border border-green-200">3) 분류별 최대 노출 분포(노출기준=100%)</h3>
+                                <div id="chart_${prefix}_3" style="height: 340px; width: 100%;"></div>
+                            </div>
+                            <div class="prevent-break bg-white p-4 border border-green-300 rounded-xl shadow-lg flex flex-col items-center w-full">
+                                <h3 class="text-[1rem] font-bold text-center mb-3 bg-gradient-to-r from-green-50 to-green-100 w-full py-2 rounded-lg border border-green-200">4) 소음 발생수준별 분포도 <span id="title_${prefix}_4" class="ml-1"></span></h3>
+                                <div id="chart_${prefix}_4" style="height: 340px; width: 100%;"></div>
+                            </div>
+                        `;
+                    }
+                    html += `</div></div>`;
+                    return html;
+                };
+
+                sec7Html += createSection7ChartPage(`단위사업체별 종합 보고서 - ${comp} (측정 분포 및 초과 현황 1/2)`, `sec7_${idx}`, 1);
+                sec7Html += createSection7ChartPage(`단위사업체별 종합 보고서 - ${comp} (측정 분포 및 초과 현황 2/2)`, `sec7_${idx}`, 2);
+
+                sec7Html += renderSectionStrict(7, `<span class="sec-num-badge-7" style="${num7?'':'display:none;'}">${num7}</span> 단위사업체별 종합 보고서 - ${comp} (단위작업장소별 측정 현황)`, sec5Thead, buildGroupRows(compData, ['location', 'category', 'agent', 'limit'], companies), groupRender5, true, '', trafficLegend5);
+
+                sec7Html += renderSectionStrict(7, `<span class="sec-num-badge-7" style="${num7?'':'display:none;'}">${num7}</span> 단위사업체별 종합 보고서 - ${comp} (화학물질 위험성 평가)`, sec6Thead, buildGroupRows(compSec6Data, ['department', 'category', 'agent'], companies), groupRender6, true, '', '');
+                
+                sec7Html += `
+                    <div class="a4-page page-container flex flex-col justify-start major-section" data-section="7">
+                        <div class="section-title border-b-2 border-green-600 pb-2 mb-4 font-bold text-gray-900 text-xl"><span class="sec-num-badge-7" style="${num7?'':'display:none;'}">${num7}</span> 단위사업체별 종합 보고서 - ${comp} (위험성 평가 참고자료)</div>
+                        ${extra6Content}
+                    </div>
+                `;
+            });
+            reportHtml += sec7Html;
+
             document.getElementById('report-content').innerHTML = reportHtml;
-            updateCharts(data, exceedData);
+            updateCharts(data, companies);
         }
 
-        function updateCharts(data, exceedData) {
-            const totalCount = data.length;
-            const noiseExcCount = exceedData.filter(d => d.category === '물리적 인자' && d.agent.includes('소음')).length;
-            const nonNoiseExcCount = exceedData.length - noiseExcCount;
-            const normalCount = totalCount - exceedData.length;
-            if(document.getElementById('pieChart')) {
-                if(pieChartInstance) pieChartInstance.destroy();
-                pieChartInstance = new Chart(document.getElementById('pieChart').getContext('2d'), { type: 'pie', data: { labels: [`기준 이내 (${normalCount}건)`, `소음 초과 (${noiseExcCount}건)`, `소음 제외 초과 (${nonNoiseExcCount}건)`], datasets: [{ data: [normalCount, noiseExcCount, nonNoiseExcCount], backgroundColor: ['rgba(52, 211, 153, 0.8)', 'rgba(245, 158, 11, 0.8)', 'rgba(239, 68, 68, 0.8)'] }] }, options: { devicePixelRatio: 4, responsive: true, plugins: { legend: { position: 'bottom' } } } });
+        function getChartStats(subset) {
+            const cats = ['소음', '고열', '분진', '금속가공유', '금속류', '유기화합물', '산 및 알칼리류', '허가 대상 유해물질', '가스 상태 물질류', '기타'];
+            const stats = { '전체': { t: 0, e: 0, max: 0 } };
+            cats.forEach(c => stats[c] = { t: 0, e: 0, max: 0 });
+
+            let noiseStats = { A: 0, B: 0, C: 0, D: 0 };
+
+            subset.forEach(d => {
+                let c = '기타';
+                if (d.category === '물리적 인자') c = d.agent.includes('고열') ? '고열' : '소음';
+                else if (cats.includes(d.category)) c = d.category;
+
+                stats['전체'].t++;
+                stats[c].t++;
+                if (d.isExceed) { stats['전체'].e++; stats[c].e++; }
+                if (d.limit > 0 && d.limit !== 9999) {
+                    let ratio = (d.value / d.limit) * 100;
+                    if (ratio > stats['전체'].max) stats['전체'].max = ratio;
+                    if (ratio > stats[c].max) stats[c].max = ratio;
+                }
+                if (c === '소음') {
+                    if (d.value > d.limit) noiseStats.A++;
+                    else if (d.value >= 85 && d.value <= d.limit) noiseStats.B++;
+                    else if (d.value >= 80 && d.value < 85) noiseStats.C++;
+                    else noiseStats.D++;
+                }
+            });
+            return { stats, noiseStats };
+        }
+
+        function renderFourCharts(dataObj, prefix) {
+            const { stats, noiseStats } = dataObj;
+            const cats = ['소음', '고열', '분진', '금속가공유', '금속류', '유기화합물', '산 및 알칼리류', '허가 대상 유해물질', '가스 상태 물질류', '기타'];
+
+            const pie1DataHC = [];
+            // ★ 기존의 강한 원색을 연하고 식별이 편한 파스텔톤 팔레트로 교체 (Tailwind 300 series 기반)
+            const pastelColors = ['#93c5fd', '#fca5a5', '#86efac', '#c4b5fd', '#fdba74', '#fde047', '#5eead4', '#f9a8d4', '#a5b4fc', '#cbd5e1'];
+
+            cats.forEach((c, idx) => {
+                if (stats[c].t > 0) {
+                    pie1DataHC.push({ name: `${c}`, y: stats[c].t, color: pastelColors[idx], sliced: true }); // 분할 효과
+                }
+            });
+
+            let isPie1Empty = false;
+            if (pie1DataHC.length === 0) {
+                isPie1Empty = true;
+                pie1DataHC.push({ name: '데이터 없음', y: 1, color: '#e5e7eb', dataLabels: { format: '<b>{point.name}</b>' }, sliced: false });
             }
-            if(document.getElementById('barChart')) {
-                const catMaxRatios = {}; 
-                data.forEach(d => { 
-                    if (d.limit > 0) { 
-                        const ratio = (d.value / d.limit) * 100; 
-                        let chartCat = d.category;
-                        if (chartCat === '물리적 인자') {
-                            chartCat = d.agent.includes('고열') ? '고열' : '소음';
+
+            const totalN = stats['전체'].t;
+            const title1 = document.getElementById(`title_${prefix}_1`);
+            if (title1) title1.innerText = `[ 총 측정건수 : ${totalN}건(100%) ]`;
+            const title2 = document.getElementById(`title_${prefix}_2`);
+            if (title2) title2.innerText = `[ 총 측정건수 : ${totalN}건 ]`;
+
+            // 1. Chart 1
+            const ctx1 = document.getElementById(`chart_${prefix}_1`);
+            if(ctx1) {
+                const chart1 = Highcharts.chart(`chart_${prefix}_1`, {
+                    chart: { type: 'pie', options3d: { enabled: true, alpha: 45, beta: 0 }, backgroundColor: 'transparent', margin: [0, 0, 0, 0], spacingTop: 10, spacingBottom: 10 },
+                    title: { text: null },
+                    tooltip: { pointFormat: isPie1Empty ? '<b>{point.name}</b>' : '{series.name}: <b>{point.y}건 ({point.percentage:.1f}%)</b>' },
+                    plotOptions: {
+                        pie: {
+                            innerSize: '35%',
+                            depth: 45,
+                            slicedOffset: 8,
+                            allowPointSelect: true, cursor: 'pointer',
+                            dataLabels: { enabled: true, format: isPie1Empty ? '<b>{point.name}</b>' : '<b>{point.name}</b><br>{point.y}건 ({point.percentage:.1f}%)', style: { fontSize: '11px', textOutline: 'none', color: '#1f2937' } }
                         }
-                        if (!catMaxRatios[chartCat] || ratio > catMaxRatios[chartCat]) {
-                            catMaxRatios[chartCat] = ratio; 
+                    },
+                    credits: { enabled: false },
+                    series: [{ name: '측정분포', data: pie1DataHC }]
+                });
+                allChartInstances.push(chart1);
+            }
+
+            // 2. Chart 2
+            // ★ '전체' 항목 제외, 세부 유해인자 분류만 추출
+            const bar2Labels = cats.filter(c => stats[c].t > 0);
+            
+            // ★ 초과 건수로 변경 (비율 -> 건수) 및 색상 지정 (초과 1건 이상이면 빨간색, 0건이면 녹색)
+            const bar2DataHC = bar2Labels.map(c => {
+                const val = stats[c].e; // 초과 건수 직접 매핑
+                return { y: val, color: val > 0 ? '#ef4444' : '#22c55e' };
+            });
+            
+            const ctx2 = document.getElementById(`chart_${prefix}_2`);
+            if(ctx2) {
+                const maxY = Math.max(...bar2DataHC.map(d => d.y), 5); // 0건일 때도 그래프 틀이 유지되도록 최소 max 지정
+                const chart2 = Highcharts.chart(`chart_${prefix}_2`, {
+                    chart: { type: 'column', options3d: { enabled: true, alpha: 10, beta: 20, depth: 50, viewDistance: 25 }, backgroundColor: 'transparent', marginTop: 30 },
+                    title: { text: null },
+                    xAxis: { categories: bar2Labels, labels: { style: { fontWeight: 'bold' } } },
+                    yAxis: { title: { text: null }, min: 0, max: maxY * 1.2 }, // ★ min: 0 강제 부여 (0건 막대가 바닥에 붙도록 함)
+                    tooltip: { pointFormat: '초과 건수: <b>{point.y}건</b>' },
+                    plotOptions: {
+                        column: {
+                            depth: 40,
+                            dataLabels: { enabled: true, format: '{y}건', style: { fontSize: '11px', textOutline: 'none', color: '#1f2937' } }
                         }
-                    } 
+                    },
+                    credits: { enabled: false },
+                    legend: { enabled: false },
+                    series: [{ name: '초과 건수', data: bar2DataHC.length > 0 ? bar2DataHC : [{y:0, color:'#22c55e'}] }]
                 });
-                
-                const customOrder = { '소음': 1.1, '고열': 1.2, '허가 대상 유해물질': 2, '금속가공유': 3, '분진': 4, '금속류': 5, '유기화합물': 6, '산 및 알칼리류': 7, '가스 상태 물질류': 8 };
-                const sorted = Object.keys(catMaxRatios).sort((a, b) => (customOrder[a] || 99) - (customOrder[b] || 99));
-                
-                if(barChartInstance) barChartInstance.destroy();
-                barChartInstance = new Chart(document.getElementById('barChart').getContext('2d'), { 
-                    type: 'bar', 
-                    data: { 
-                        labels: sorted, 
-                        datasets: [{ 
-                            label: '최대 노출치 (%)', 
-                            data: sorted.map(cat => catMaxRatios[cat]), 
-                            backgroundColor: ctx => ctx.raw > 100 ? 'rgba(220, 38, 38, 0.7)' : 'rgba(52, 211, 153, 0.7)' 
-                        }] 
-                    }, 
-                    options: { 
-                        devicePixelRatio: 4, 
-                        responsive: true, 
-                        scales: { y: { beginAtZero: true, max: Object.values(catMaxRatios).length > 0 ? Math.max(...Object.values(catMaxRatios), 120) + 20 : 140 } }, 
-                        plugins: { legend: { display: false } } 
-                    } 
+                allChartInstances.push(chart2);
+            }
+
+            // 3. Chart 3
+            // ★ 값에 따른 컬러 팔레트 적용 (10%미만 녹색, 10~50% 노란색, 50~100% 주황색, 100%초과 빨간색)
+            const bar3DataHC = bar2Labels.map(c => {
+                const val = parseFloat(stats[c].max.toFixed(1));
+                let barColor = '#22c55e'; // < 10% (녹색)
+                if (val > 100) barColor = '#ef4444'; // 100% 초과 (빨간색)
+                else if (val >= 50) barColor = '#f97316'; // 50~100% 이하 (주황색)
+                else if (val >= 10) barColor = '#eab308'; // 10~50% 미만 (노란색)
+                return { y: val, color: barColor };
+            });
+            
+            const ctx3 = document.getElementById(`chart_${prefix}_3`);
+            if(ctx3) {
+                const chart3 = Highcharts.chart(`chart_${prefix}_3`, {
+                    chart: { type: 'column', options3d: { enabled: true, alpha: 10, beta: 20, depth: 50, viewDistance: 25 }, backgroundColor: 'transparent', marginTop: 30 },
+                    title: { text: null },
+                    xAxis: { categories: bar2Labels, labels: { style: { fontWeight: 'bold' } } },
+                    yAxis: { title: { text: null }, min: 0, max: Math.max(...bar3DataHC.map(d=>d.y), 100) * 1.2 }, // ★ min: 0 강제 부여
+                    tooltip: { pointFormat: '최대 노출치: <b>{point.y}%</b>' },
+                    plotOptions: {
+                        column: {
+                            depth: 40,
+                            dataLabels: { enabled: true, format: '{y}%', style: { fontSize: '11px', textOutline: 'none', color: '#1f2937' } }
+                        }
+                    },
+                    credits: { enabled: false },
+                    legend: { enabled: false },
+                    series: [{ name: '최대 노출치', data: bar3DataHC.length > 0 ? bar3DataHC : [{y:0, color:'#22c55e'}] }]
                 });
+                allChartInstances.push(chart3);
+            }
+
+            // 4. Chart 4
+            const nT = noiseStats.A + noiseStats.B + noiseStats.C + noiseStats.D;
+            
+            const title4 = document.getElementById(`title_${prefix}_4`);
+            if (title4) {
+                title4.innerText = `[ 총 측정건수 : ${nT}건(100%) ]`;
+            }
+
+            let pie4DataHC = [];
+            if(nT > 0) {
+                pie4DataHC = [
+                    { name: `A.초과`, y: noiseStats.A, color: '#ef4444', sliced: true },
+                    { name: `B.85~기준이하`, y: noiseStats.B, color: '#f97316', sliced: true },
+                    { name: `C.80이상~85미만`, y: noiseStats.C, color: '#eab308', sliced: true },
+                    { name: `D.80미만`, y: noiseStats.D, color: '#22c55e', sliced: true }
+                ];
+            } else {
+                pie4DataHC = [{ name: '소음 데이터 없음', y: 1, color: '#e5e7eb', dataLabels: { format: '<b>{point.name}</b>' }, sliced: false }];
+            }
+            
+            const ctx4 = document.getElementById(`chart_${prefix}_4`);
+            if(ctx4) {
+                const chart4 = Highcharts.chart(`chart_${prefix}_4`, {
+                    chart: { type: 'pie', options3d: { enabled: true, alpha: 45, beta: 0 }, backgroundColor: 'transparent', margin: [0, 0, 0, 0], spacingTop: 10, spacingBottom: 10 },
+                    title: { text: null },
+                    tooltip: { pointFormat: nT > 0 ? '{series.name}: <b>{point.y}건 ({point.percentage:.1f}%)</b>' : '<b>{point.name}</b>' },
+                    plotOptions: {
+                        pie: {
+                            innerSize: '35%',
+                            depth: 45,
+                            slicedOffset: 8,
+                            allowPointSelect: true, cursor: 'pointer',
+                            dataLabels: { enabled: true, format: nT > 0 ? '<b>{point.name}</b><br>{point.y}건 ({point.percentage:.1f}%)' : '<b>{point.name}</b>', style: { fontSize: '11px', textOutline: 'none', color: '#1f2937' } }
+                        }
+                    },
+                    credits: { enabled: false },
+                    series: [{ name: '소음분포', data: pie4DataHC }]
+                });
+                allChartInstances.push(chart4);
             }
         }
 
-        function resetAnalysis() {
-            if(confirm('데이터 분석 결과를 초기화하시겠습니까?\\n화면의 보고서가 모두 지워집니다.')) {
-                globalRawData = [];
-                document.getElementById('noise-url').value = '';
-                document.getElementById('chemical-url').value = '';
-                document.getElementById('input-start-date').value = '';
-                document.getElementById('input-end-date').value = '';
-                document.getElementById('input-total-days').value = '0';
-                document.getElementById('top-status-msg').innerText = '※ 시트 주소와 측정 기간을 입력하고 분석을 실행해 주세요.';
-                
-                document.getElementById('report-content').innerHTML = `
-                    <div class="a4-page page-container flex flex-col justify-center items-center text-gray-400" data-section="0">
-                        <svg class="w-16 h-16 mb-4 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
-                        <p class="text-lg font-medium">데이터 분석을 기다리고 있습니다.</p>
-                        <p class="text-sm">상단에 시트 주소를 입력하고 [데이터 분석 실행]을 눌러주세요.</p>
-                    </div>`;
-            }
+        function updateCharts(data, companies) {
+            allChartInstances.forEach(c => {
+                if(c && typeof c.destroy === 'function') c.destroy();
+            });
+            allChartInstances = [];
+
+            const globalStats = getChartStats(data);
+            renderFourCharts(globalStats, 'global');
+
+            companies.forEach((comp, idx) => {
+                const compData = data.filter(d => d.company === comp);
+                const compStats = getChartStats(compData);
+                renderFourCharts(compStats, `sec7_${idx}`);
+            });
         }
 
-        function openModal(mode) { 
+        function executeNativePrint() {
             const summary = document.getElementById('report-summary');
             if(!summary || summary.innerText.includes('대기 중')) return alert("먼저 데이터 분석을 실행하여 보고서를 완성해 주세요.");
             
-            document.getElementById('selection-modal').classList.remove('hidden'); 
-        }
-        
-        function closeModal() { document.getElementById('selection-modal').classList.add('hidden'); }
-        
-        // 방법 1. 즉시 브라우저 인쇄창 호출 (고화질 네이티브 인쇄/PDF 저장)
-        function executeNativePrint() {
-            const summary = document.getElementById('report-summary');
-            if(!summary || summary.innerText.includes('대기 중')) {
-                alert("먼저 데이터 분석을 실행하여 보고서를 완성해 주세요.");
-                return;
-            }
+            const selected = Array.from(document.querySelectorAll('.pdf-checkbox:checked')).map(cb => parseInt(cb.value));
+            if(selected.length === 0) return alert("출력할 항목을 하나 이상 선택해주세요.");
 
             const allPages = document.querySelectorAll('.page-container');
-            allPages.forEach(page => {
-                page.classList.remove('no-print');
-                page.style.display = '';
-            });
-
-            closeModal();
-            // 동기적으로 바로 인쇄창 팝업
-            window.print();
-        }
-
-        // 방법 2. 이미지 캡처형 PDF 강제 변환
-        async function executePdfDownload() {
-            closeModal();
-            const selected = Array.from(document.querySelectorAll('.pdf-checkbox:checked')).map(cb => parseInt(cb.value));
-            const targetPages = Array.from(document.querySelectorAll('.page-container')).filter(page => selected.includes(parseInt(page.getAttribute('data-section'))));
-            if(targetPages.length === 0) return alert("선택한 항목에 해당하는 페이지가 없습니다.");
             
-            const overlay = document.getElementById('loading-overlay'); overlay.style.display = 'flex';
-            window.scrollTo(0, 0);
-            try {
-                const { jsPDF } = window.jspdf; const pdf = new jsPDF('p', 'mm', 'a4');
-                for (let i = 0; i < targetPages.length; i++) {
-                    const canvas = await html2canvas(targetPages[i], { scale: 2, useCORS: true, logging: false, scrollY: 0 });
-                    if (i > 0) pdf.addPage();
-                    const imgData = canvas.toDataURL('image/jpeg', 1.0);
-                    pdf.addImage(imgData, 'JPEG', 0, 0, 210, (canvas.height * 210) / canvas.width); 
+            allPages.forEach(page => { 
+                const section = parseInt(page.getAttribute('data-section'));
+                if (section === 0 || !selected.includes(section)) {
+                    page.classList.add('hide-in-print');
+                } else {
+                    page.classList.remove('hide-in-print'); 
                 }
-                pdf.save('작업환경측정_보고서.pdf');
-            } catch (err) { console.error(err); alert("PDF 생성 중 오류가 발생했습니다."); } finally { overlay.style.display = 'none'; }
-        }
-
-        function saveAsCSV() {
-            let csvContent = "\uFEFF"; 
-            document.querySelectorAll('#report-content table').forEach(table => {
-                const title = table.previousElementSibling?.innerText || "Table";
-                csvContent += title + "\n";
-                table.querySelectorAll('tr').forEach(row => {
-                    csvContent += Array.from(row.querySelectorAll('th, td')).map(col => `"${col.innerText.replace(/\n/g, " ").replace(/"/g, '""').trim()}"`).join(',') + "\n";
-                });
-                csvContent += "\n";
             });
-            const link = document.createElement("a");
-            link.setAttribute("href", URL.createObjectURL(new Blob([csvContent], { type: 'text/csv;charset=utf-8;' })));
-            link.setAttribute("download", "작업환경측정_데이터.csv");
-            link.click();
+
+            closeModal();
+            
+            const originalTitle = document.title;
+            const titleEl = document.getElementById('main-report-title');
+            const pdfFilename = titleEl.getAttribute('data-filename') || '작업환경측정_보고서';
+            document.title = pdfFilename;
+
+            setTimeout(() => {
+                window.print();
+                
+                setTimeout(() => {
+                    document.title = originalTitle; 
+                    allPages.forEach(page => { 
+                        page.classList.remove('hide-in-print');
+                    });
+                }, 500);
+            }, 800); 
         }
     </script>
 </body>

@@ -1181,6 +1181,194 @@
                 </div>
             `;
 
+            // ★ 6번. 화학물질 위험성평가 감소대책 (실행계획서) 페이지 추가
+            const reductionGrouped = buildGroupRows(sec6Data, ['department', 'category', 'agent'], companies);
+            let reductionRows = [];
+            let rSeq = 1;
+            
+            reductionGrouped.forEach(r => {
+                let extractedUnit = r.rawLimit ? String(r.rawLimit).replace(/^[\d\.\,\s]+/g, '').trim().toLowerCase() : '';
+                let exLv = r.lightColor === 'bg-green-500' ? 1 : (r.lightColor === 'bg-yellow-400' ? 2 : (r.lightColor === 'bg-orange-400' ? 3 : 4));
+                let limit = parseFloat(r.limit);
+                let hzLv = 1;
+                if (extractedUnit.includes('mg') || r.cat === '분진' || r.cat === '금속류' || r.cat === '금속가공유') {
+                    hzLv = limit > 1 ? 1 : (limit > 0.1 ? 2 : (limit > 0.01 ? 3 : 4));
+                } else {
+                    hzLv = limit > 50 ? 1 : (limit > 5 ? 2 : (limit > 0.5 ? 3 : 4));
+                }
+                let rkLv = exLv * hzLv;
+                
+                let jud = '';
+                let judColorClass = '';
+                if (rkLv >= 12) { jud = '매우 높음'; judColorClass = 'text-red-600'; }
+                else if (rkLv >= 5) { jud = '높음'; judColorClass = 'text-orange-500'; }
+                else if (rkLv >= 3) { jud = '보통'; judColorClass = 'text-yellow-600'; }
+                else { jud = '낮음'; judColorClass = 'text-green-600'; }
+                
+                // ★ '보통' 이상(rkLv >= 3)인 항목만 감소대책 표에 포함
+                if (rkLv >= 3) {
+                    let measureText = '';
+                    const tag = (name) => `<span class="font-bold text-blue-700">[${name}]</span>`;
+                    const br = `<br>`;
+
+                    let ppeText = '';
+                    let agentName = r.agent.replace(/\s+/g, '');
+
+                    // ★ 지능형 보호구 판정 로직 (사용자 요구사항 및 첨부 PDF 별표 1, 2, 3 기준 완벽 반영)
+                    if (r.cat === '금속가공유') {
+                        ppeText = '방진마스크(특급/1급/2급 이상) 및 내유성 장갑 착용';
+                    } else if (agentName.includes('수산화나트륨') || agentName.includes('수산화칼륨') || agentName.includes('황산')) {
+                        ppeText = '내산성/내화학성 보호의/장갑, 보안경 및 방진마스크(특급/1급 이상) 착용';
+                    } else if (agentName.includes('염화비닐') || agentName.includes('톨리딘') || agentName.includes('불소') || agentName.includes('삼수소화비소') || agentName.includes('이산화질소') || agentName.includes('일산화질소') || agentName.includes('일산화탄소') || agentName.includes('포스겐') || agentName.includes('포스핀') || agentName.includes('메틸클로라이드') || agentName.includes('브롬화메틸') || agentName.includes('요오드화메틸') || agentName.includes('메탄올') || agentName.includes('질산')) {
+                        ppeText = '전면형 송기식 마스크 또는 자급식 공기호흡기, 보호복 착용';
+                    } else if (agentName.includes('암모니아') || agentName.includes('디메틸아민') || agentName.includes('메틸아민') || agentName.includes('에틸아민') || agentName.includes('트리에틸아민') || agentName.includes('히드라진')) {
+                        ppeText = '방독마스크(암모니아용) 및 화학물질용 보호장갑 착용';
+                    } else if (agentName.includes('염소')) {
+                        ppeText = '방독마스크(할로겐용) 및 화학물질용 보호장갑 착용';
+                    } else if (agentName.includes('이산화황') || agentName.includes('불화수소') || agentName.includes('브롬화수소') || agentName.includes('염화수소')) {
+                        ppeText = '방독마스크(아황산가스용) 및 화학물질용 보호장갑 착용';
+                    } else if (agentName.includes('시안화수소')) {
+                        ppeText = '방독마스크(시안화수소용) 및 화학물질용 보호장갑 착용';
+                    } else if (agentName.includes('석면') || agentName.includes('나프틸아민') || agentName.includes('디아니시딘') || agentName.includes('디클로로벤지딘') || agentName.includes('베릴륨') || agentName.includes('비소') || agentName.includes('크롬') || agentName.includes('황화니켈') || agentName.includes('사붕소산나트륨') || agentName.includes('인산') || agentName.includes('에틸헥실프탈레이트')) {
+                        ppeText = '특급/1급 방진마스크 및 적절한 보호복 착용';
+                    } else if (r.cat === '분진' || r.cat === '금속류') {
+                        ppeText = '특급 또는 1급 방진마스크(안면부 여과식/반면형) 지급 및 밀착 착용';
+                    } else if (r.cat === '유기화합물') {
+                        if (agentName.includes('에틸렌글리콜') || agentName.includes('무수말레산') || agentName.includes('무수프탈산') || agentName.includes('톨루엔디이소시아네이트') || agentName.includes('크레졸') || agentName.includes('콜타르피치') || agentName.includes('오존')) {
+                            ppeText = '겸용 마스크(유기화합물/방진), 불침투성 보호복/장갑 착용';
+                        } else {
+                            ppeText = '방독마스크(유기화합물용, KCs인증), 불침투성 보호복/장갑 착용';
+                        }
+                    } else if (r.cat === '산 및 알칼리류') {
+                        ppeText = '내산성/내화학성 보호의, 보호장갑, 보안경 및 방독마스크(산성용) 착용';
+                    } else if (r.cat === '허가 대상 유해물질') {
+                        ppeText = '전면형 방독/방진 투과식 마스크 또는 송기마스크 등 최고 수준 보호구 지급';
+                    } else {
+                        ppeText = '취급 물질의 물리화학적 특성에 적합한 KCs 인증 호흡기/피부 보호구 지급';
+                    }
+
+                    if(r.cat === '유기화합물') {
+                        measureText = `${tag('제거')} 수용성 및 저독성 세척제/용제로의 대체 검토${br}` +
+                                      `${tag('격리')} 유기화합물 취급 공정 분리 및 작업자 원격 조작 전환${br}` +
+                                      `${tag('공학적대책')} 발생원 밀폐, 국소배기장치(적정 제어풍속 이상) 가동 및 활성탄 흡착탑 효율 유지${br}` +
+                                      `${tag('개인보호구')} ${ppeText}${br}` +
+                                      `${tag('교육및훈련')} 취급물질 MSDS 유해성 주지, 환기설비 사용법 및 보호구 밀착도 검사(Fit Test) 실습`;
+                    } else if(r.cat === '금속가공유') {
+                        measureText = `${tag('제거')} 인체 친화적 및 저독성 수용성 가공유로 대체 검토${br}` +
+                                      `${tag('격리')} 가공 기계(CNC 등) 완전 밀폐화 및 칩 컨베이어 자동화${br}` +
+                                      `${tag('공학적대책')} 국소배기장치(적정 제어풍속 이상) 및 오일미스트 집진기 필수 설치/가동${br}` +
+                                      `${tag('개인보호구')} ${ppeText}${br}` +
+                                      `${tag('교육및훈련')} 오일미스트 피부염 및 호흡기 질환 예방 교육, 작업 후 위생 관리 철저`;
+                    } else if(r.cat === '분진') {
+                        measureText = `${tag('제거')} 분말/가루 형태를 과립상 또는 액상 형태로 변경하여 원천적 비산 억제${br}` +
+                                      `${tag('격리')} 분진 발생 공정(분쇄/혼합 등) 격리실 운영 및 무인화 검토${br}` +
+                                      `${tag('공학적대책')} 비산원 밀폐, 국소배기장치(적정 제어풍속 이상) 가동 및 백필터/집진기 차압 점검${br}` +
+                                      `${tag('개인보호구')} ${ppeText}${br}` +
+                                      `${tag('교육및훈련')} 진폐증 예방 교육, 작업장 진공청소(건식청소 금지) 절차 및 필터 교체주기 교육`;
+                    } else if(r.cat === '금속류') {
+                        measureText = `${tag('제거')} 유해성이 낮은 용접봉/와이어로 대체 및 공법 변경(예: 아크→레이저) 검토${br}` +
+                                      `${tag('격리')} 흄 발생 공정 방진막/차광막 설치 및 작업 공간 완전 분리${br}` +
+                                      `${tag('공학적대책')} 발생원 밀폐화, 이동/고정식 국소배기장치(적정 제어풍속 이상) 적극 가동${br}` +
+                                      `${tag('개인보호구')} ${ppeText}${br}` +
+                                      `${tag('교육및훈련')} 금속열(Metal Fume Fever) 및 중독 예방 교육, 호흡기 보호구 올바른 착용법 실습`;
+                    } else if(r.cat === '산 및 알칼리류') {
+                        measureText = `${tag('제거')} 고농도 취급을 피하고 약산성/약알칼리성 등 상대적 안전 물질로 대체 검토${br}` +
+                                      `${tag('격리')} 부식성 물질 취급 탱크/배관 밀폐화 및 원격 제어 시스템 도입${br}` +
+                                      `${tag('공학적대책')} 내부식성 국소배기장치(적정 제어풍속 이상) 가동, 스크러버(세정식 집진기) pH 관리${br}` +
+                                      `${tag('개인보호구')} ${ppeText}${br}` +
+                                      `${tag('교육및훈련')} 누출 시 비상대응조치(비상샤워기/세안설비 사용법), 화학화상 예방 교육`;
+                    } else if(r.cat === '허가 대상 유해물질') {
+                        measureText = `${tag('제거')} 발암성/생식독성(CMR) 물질 사용 취소 및 비발암성 안전 물질로 즉각적 대체 최우선 검토${br}` +
+                                      `${tag('격리')} 취급 공정 완전 격리(밀폐실) 및 관계자 외 출입 엄격 통제${br}` +
+                                      `${tag('공학적대책')} 내부 음압 유지, 배기구 고효율 필터(HEPA) 장착된 국소배기장치(적정 제어풍속 이상) 가동${br}` +
+                                      `${tag('개인보호구')} ${ppeText}${br}` +
+                                      `${tag('교육및훈련')} 발암/생식독성 특별 유해성 주지, 작업 전후 탈의/샤워 절차 및 오염 세탁물 분리 교육`;
+                    } else {
+                        measureText = `${tag('제거')} 해당 물질의 유해성이 낮은 유사/친환경 물질로의 대체(Substitution) 다각적 검토${br}` +
+                                      `${tag('격리')} 발생원 격리 및 취급 구역 제한을 통한 비노출 근로자 철저 보호${br}` +
+                                      `${tag('공학적대책')} 발생원 밀폐 및 공정 맞춤형 국소배기장치(적정 제어풍속 이상) 최적화 가동${br}` +
+                                      `${tag('개인보호구')} ${ppeText}${br}` +
+                                      `${tag('교육및훈련')} 유해인자별 건강장해 예방 교육, 작업표준 준수 및 보호구 정기 점검 훈련`;
+                    }
+
+                    // 전문가 로직: 개선 후 위험성 평가 (대책 적용 시 노출수준(exLv)을 1등급으로 감소시켰을 때의 위험성. 단, 물질의 유해성(hzLv)은 불변)
+                    let postExLv = 1;
+                    let postRkLv = postExLv * hzLv; 
+                    let postJud = ''; let postJudColorClass = '';
+                    
+                    if (postRkLv >= 3) { postJud = '보통'; postJudColorClass = 'text-yellow-600'; }
+                    else { postJud = '낮음'; postJudColorClass = 'text-green-600'; }
+
+                    reductionRows.push({
+                        seq: rSeq++,
+                        company: r.company,
+                        department: r.mainKey,
+                        agent: r.agent,
+                        rkLv: rkLv,
+                        jud: jud,
+                        judColor: judColorClass,
+                        measure: measureText,
+                        postRkLv: postRkLv,
+                        postJud: postJud,
+                        postJudColor: postJudColorClass
+                    });
+                }
+            });
+
+            let reductionHtmlTbody = '';
+            if (reductionRows.length === 0) {
+                reductionHtmlTbody = `<tr><td colspan="9" class="border border-green-300 py-10 text-center text-gray-500 font-bold">위험성 판정이 '보통' 이상인 공정 및 유해인자가 없습니다.</td></tr>`;
+            } else {
+                reductionRows.forEach(row => {
+                    reductionHtmlTbody += `
+                    <tr>
+                        <td class="border border-green-300 py-2 text-center text-gray-700 font-medium">${row.seq}</td>
+                        <td class="border border-green-300 py-2 text-center text-gray-800 break-keep font-medium">${row.company}</td>
+                        <td class="border border-green-300 py-2 text-center text-gray-800 break-keep">${row.department}</td>
+                        <td class="border border-green-300 py-2 text-left text-gray-800 font-bold break-keep px-2">${row.agent}</td>
+                        <td class="border border-green-300 py-2 text-center font-bold bg-red-50">
+                            <span class="text-blue-600 text-[0.8rem]">${row.rkLv}</span><br>
+                            <span class="${row.judColor} text-[0.65rem]">${row.jud}</span>
+                        </td>
+                        <td class="border border-green-300 py-2.5 px-3 text-left text-gray-700 text-[0.65rem] break-keep leading-relaxed">${row.measure}</td>
+                        <td class="border border-green-300 py-2 text-center font-bold bg-green-50">
+                            <span class="text-green-700 text-[0.8rem]">${row.postRkLv}</span><br>
+                            <span class="${row.postJudColor} text-[0.65rem]">${row.postJud}</span>
+                        </td>
+                        <td class="border border-green-300 py-2 text-center bg-gray-50"></td>
+                        <td class="border border-green-300 py-2 text-center bg-gray-50"></td>
+                    </tr>
+                    `;
+                });
+            }
+
+            reportHtml += `
+                <div class="a4-page page-container flex flex-col justify-start major-section" data-section="6">
+                    <div class="section-title border-b-2 border-green-600 pb-2 mb-4 font-bold text-gray-900 text-xl"><span class="sec-num-badge-6" style="${num6?'':'display:none;'}">${num6}</span> 화학물질 위험성평가 감소대책 (실행계획서)</div>
+                    <div class="flex flex-col flex-1 w-full bg-white">
+                        <p class="text-[0.8rem] text-gray-600 mb-3 font-medium">※ 위험성평가 결과 판정이 '보통' 이상(위험성 3 이상)인 공정 및 유해인자에 한하여 우선적인 감소대책을 수립합니다.<br>※ <span class="text-blue-600 font-bold">개선 후 위험성</span>은 감소대책이 완벽히 이행되어 '노출수준(1등급)'으로 낮아졌을 때를 가정한 예측값입니다. (화학물질 고유의 유해성은 변하지 않음)</p>
+                        <table style="width: 100%; border-collapse: collapse; font-size: 0.75rem;" class="border border-green-300">
+                            <thead>
+                                <tr>
+                                    <th class="bg-green-100 border border-green-300 py-2 px-1 w-[4%] text-center font-bold text-gray-800">No.</th>
+                                    <th class="bg-green-100 border border-green-300 py-2 px-1 w-[9%] text-center font-bold text-gray-800">사업장명</th>
+                                    <th class="bg-green-100 border border-green-300 py-2 px-1 w-[10%] text-center font-bold text-gray-800">부서(공정)명</th>
+                                    <th class="bg-green-100 border border-green-300 py-2 px-1 w-[12%] text-center font-bold text-gray-800 break-keep">유해인자명</th>
+                                    <th class="bg-green-100 border border-green-300 py-2 px-1 w-[8%] text-center font-bold text-gray-800 whitespace-nowrap">위험성<br>(판정)</th>
+                                    <th class="bg-green-100 border border-green-300 py-2 px-1 w-[35%] text-center font-bold text-gray-800">위험성 감소대책(예시)</th>
+                                    <th class="bg-green-100 border border-green-300 py-2 px-1 w-[7%] text-center font-bold text-gray-800 break-keep">개선 후<br>위험성</th>
+                                    <th class="bg-green-100 border border-green-300 py-2 px-1 w-[10%] text-center font-bold text-gray-800 whitespace-nowrap">개선일정<br>(담당자)</th>
+                                    <th class="bg-green-100 border border-green-300 py-2 px-1 w-[5%] text-center font-bold text-gray-800 whitespace-nowrap">완료일</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${reductionHtmlTbody}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            `;
+
             // --- Section 7 ---
             let sec7Html = '';
             companies.forEach((comp, idx) => {

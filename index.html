@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>작업환경측정 위험성평가 및 분석 보고서</title>
+    <title>작업환경측정 통계 및 분석</title>
     <script src="https://cdn.tailwindcss.com"></script>
     
     <!-- 3D 입체 차트 구현을 위한 Highcharts 라이브러리 -->
@@ -140,7 +140,7 @@
                 <div class="bg-green-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-3">
                     <svg class="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>
                 </div>
-                <h2 class="text-xl font-bold text-gray-800">작업환경측정 분석 보고서</h2>
+                <h2 class="text-xl font-bold text-gray-800">작업환경측정 통계 및 분석</h2>
                 <p class="text-sm text-gray-500 mt-1">대시보드 접속을 위해 비밀번호를 입력해주세요.</p>
             </div>
             <div class="space-y-4">
@@ -297,7 +297,7 @@
                         </button>
                         
                         <div>
-                            <h1 id="main-report-title" class="text-xl font-bold text-gray-800">작업환경측정 위험성평가 및 분석 보고서</h1>
+                            <h1 id="main-report-title" class="text-xl font-bold text-gray-800">작업환경측정 통계 및 분석</h1>
                             <p class="text-xs text-gray-500" id="top-status-msg">※ 시트 주소와 측정 기간을 입력하고 분석을 실행해 주세요.</p>
                         </div>
                     </div>
@@ -488,7 +488,7 @@
             document.getElementById('input-total-days').value = '0';
             
             const titleEl = document.getElementById('main-report-title');
-            titleEl.innerHTML = '작업환경측정 위험성평가 및 분석 보고서';
+            titleEl.innerHTML = '작업환경측정 통계 및 분석';
             titleEl.removeAttribute('data-filename');
             
             document.getElementById('top-status-msg').innerText = '※ 시트 주소와 측정 기간을 입력하고 분석을 실행해 주세요.';
@@ -515,7 +515,7 @@
                 document.getElementById('input-total-days').value = '0';
                 
                 const titleEl = document.getElementById('main-report-title');
-                titleEl.innerHTML = '작업환경측정 위험성평가 및 분석 보고서';
+                titleEl.innerHTML = '작업환경측정 통계 및 분석';
                 titleEl.removeAttribute('data-filename');
                 
                 document.getElementById('top-status-msg').innerText = '※ 시트 주소와 측정 기간을 입력하고 분석을 실행해 주세요.';
@@ -974,7 +974,7 @@
                 periodText = `측정 기간: ${formatDate(startDateRaw)} ~ ${formatDate(endDateRaw)} (총 ${totalDays}일)`;
             }
             
-            const mainTitle = '작업환경측정 위험성평가 및 분석 보고서';
+            const mainTitle = '작업환경측정 통계 및 분석';
             const topHeaderTitle = subTitle ? `${mainTitle} <span class="text-sm font-normal text-blue-700 bg-blue-50 px-2.5 py-1 rounded-md ml-2 border border-blue-200 align-middle">${subTitle}</span>` : mainTitle;
             const titleEl = document.getElementById('main-report-title');
             titleEl.innerHTML = topHeaderTitle;
@@ -1664,12 +1664,12 @@
                                     <th class="bg-green-100 border border-green-300 py-1.5 px-1 w-[4%] text-center font-bold text-green-700 whitespace-nowrap">노출<br>수준</th>
                                     <th class="bg-green-100 border border-green-300 py-1.5 px-1 w-[4%] text-center font-bold text-blue-700 whitespace-nowrap">유해성</th>
                                     <th class="bg-green-100 border border-green-300 py-1.5 px-1 w-[6%] text-center font-bold text-gray-800 whitespace-nowrap" style="font-size: 13.5px;">위험성<br>(판정)</th>
-                                    <th class="bg-green-100 border border-green-300 py-1.5 px-1 w-[29%] text-center font-bold text-gray-800">위험성 감소대책(예시)</th>
+                                    <th class="bg-green-100 border border-green-300 py-1.5 px-1 w-[30%] text-center font-bold text-gray-800">위험성 감소대책(예시)</th>
                                     <th class="bg-green-100 border border-green-300 py-1.5 px-1 w-[6%] text-center font-bold text-green-700 whitespace-nowrap">개선 후<br>노출수준</th>
-                                    <th class="bg-green-100 border border-green-300 py-1.5 px-1 w-[6%] text-center font-bold text-blue-700 whitespace-nowrap">개선 후<br>유해성</th>
+                                    <th class="bg-green-100 border border-green-300 py-1.5 px-1 w-[6%] text-center font-bold text-blue-700 whitespace-nowrap">유해성</th>
                                     <th class="bg-green-100 border border-green-300 py-1.5 px-1 w-[6%] text-center font-bold text-gray-800 break-keep" style="font-size: 13.5px;">개선 후<br>위험성</th>
                                     <th class="bg-green-100 border border-green-300 py-1.5 px-1 w-[8%] text-center font-bold text-gray-800 whitespace-nowrap">개선일정<br>(담당자)</th>
-                                    <th class="bg-green-100 border border-green-300 py-1.5 px-1 w-[5%] text-center font-bold text-gray-800 whitespace-nowrap">완료일</th>
+                                    <th class="bg-green-100 border border-green-300 py-1.5 px-1 w-[4%] text-center font-bold text-gray-800 whitespace-nowrap">완료일</th>
                                 </tr>
                             </thead>
                             <tbody>

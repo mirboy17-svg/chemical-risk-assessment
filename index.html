@@ -217,14 +217,14 @@
                     <svg class="w-5 h-5 mr-2 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h7"></path></svg>
                     보고서 메뉴
                 </h2>
-                <p class="text-[0.7rem] text-gray-500 mt-1 tracking-tight">※ 숫자를 수정하여 맞춤형 제목을 만드세요.</p>
+                <p class="text-[0.7rem] text-gray-500 mt-1 tracking-tight">※ 체크 해제 시 보고서에서 제외됩니다.</p>
             </div>
             <button onclick="toggleSidebar()" class="text-gray-400 hover:text-gray-800 focus:outline-none lg:hidden">
                 <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
             </button>
         </div>
         
-        <div class="flex-1 overflow-y-auto p-4 space-y-1">
+        <div class="flex-1 overflow-y-auto p-4 space-y-1" id="sidebar-checkboxes">
             <div class="flex items-center px-2 py-1 hover:bg-blue-50 rounded transition">
                 <input type="checkbox" value="1" class="print-checkbox w-4 h-4 text-blue-600 rounded border-gray-300 cursor-pointer mr-2" checked>
                 <input type="text" id="menu-num-1" value="1" oninput="updateSectionNumber(1, this.value)" class="w-8 text-center text-sm font-bold bg-white border border-gray-300 rounded focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none py-0.5">
@@ -866,7 +866,7 @@
                     if (maxVal > first.limit) lightColor = 'bg-red-600'; else if (maxVal >= 85) lightColor = 'bg-orange-400'; else if (maxVal >= 80) lightColor = 'bg-yellow-400'; else lightColor = 'bg-green-500';
                 } else {
                     const ratio = (maxVal / first.limit) * 100;
-                    if (ratio > 100) lightColor = 'bg-red-600'; else if (ratio >= 50) lightColor = 'bg-orange-400'; else if (ratio >= 10) lightColor = 'bg-yellow-400'; else lightColor = 'bg-green-500';
+                    if (ratio >= 100) lightColor = 'bg-red-600'; else if (ratio >= 50) lightColor = 'bg-orange-400'; else if (ratio >= 10) lightColor = 'bg-yellow-400'; else lightColor = 'bg-green-500';
                 }
                 rows.push({ groupId: first.company + '|' + first[groupKeys[0]], mainKey: first[groupKeys[0]], subKey: first.category, cat: first.category, agent: first.agent, n: group.length, exc: excCount, maxVal: maxVal, lightColor: lightColor, limit: first.limit, rawLimit: first.rawLimit, company: first.company });
             }
@@ -982,11 +982,22 @@
 
             const companies = [...new Set(data.map(d => d.company))];
 
+            // 체크박스 상태 확인 함수
+            const isChecked = (val) => {
+                const cb = document.querySelector(`input.print-checkbox[value="${val}"]`);
+                return cb ? cb.checked : true;
+            };
+            const showSec1 = isChecked('1');
+            const showSec2 = isChecked('2');
+            const showSec3 = isChecked('3');
+            const showSec4 = isChecked('4');
+            const showSec5 = isChecked('5');
+            const showSec6 = isChecked('6');
+            const showSec7 = isChecked('7');
+
             let reportHtml = '';
 
-            // --- Section 1 ---
             const subTitleHtml = subTitle ? `<h2 class="text-[1.65rem] font-bold text-blue-800 mb-4 tracking-tight">${subTitle}</h2>` : '';
-            
             const prefixHtml = `
                 <div class="text-center mb-6 mt-2">
                     <h1 class="text-3xl font-extrabold text-gray-900 mb-2">${mainTitle}</h1>
@@ -995,25 +1006,8 @@
                     <p class="text-gray-600">총 측정 건수: ${totalCount.toLocaleString()}건 | 기준 초과: <span class="text-red-600 font-bold">${totalExceed.toLocaleString()}건</span></p>
                 </div>
                 <p class="prevent-break text-sm text-gray-600 mb-2">※ 데이터 N.D.(불검출) 및 검출한계 미만은 측정치를 0으로 처리하여 산출.</p>`;
-            
-            const agentGroups = data.reduce((res, obj) => { 
-                const key = obj.category + '|' + obj.agent + '|' + obj.limit; 
-                if (!res[key]) res[key] = []; 
-                res[key].push(obj); 
-                return res; 
-            }, {});
-            
-            let sec1Rows = [];
-            for(let key in agentGroups) {
-                const group = agentGroups[key]; const first = group[0]; const stats = calculateStats(group.map(d => d.value), first.limit);
-                sec1Rows.push({ mainKey: first.category, agent: first.agent, first, stats });
-            }
-            const sec1CatExc = {};
-            sec1Rows.forEach(r => { sec1CatExc[r.first.category] = (sec1CatExc[r.first.category] || 0) + r.stats.excCount; });
-            sec1Rows.sort((a, b) => (sec1CatExc[b.first.category] - sec1CatExc[a.first.category]) || (getCategoryOrder(a.first.category) - getCategoryOrder(b.first.category)) || (b.stats.excCount - a.stats.excCount) || a.first.agent.localeCompare(b.first.agent));
-            
-            const sec1Thead = `<tr><th width="10%">분류</th><th width="17%">세부 인자명</th><th width="5.5%">측정<br>건수</th><th width="5.5%">초과<br>건수</th><th width="7%">최대값</th><th width="7%">최소값</th><th width="7%">기하<br>평균</th><th width="7%">기하<br>표준편차</th><th width="7%">노출<br>배수</th><th width="9%">법적<br>준수율</th><th width="6%">신호등</th><th width="12%">노출기준<br>(단위)</th></tr>`;
-            
+
+            // --- 변수 사전 세팅 (어떤 섹션이 렌더링되든 공통으로 쓰일 수 있으므로) ---
             const num1 = document.getElementById('menu-num-1').value || '1';
             const num2 = document.getElementById('menu-num-2').value || '2';
             const num3 = document.getElementById('menu-num-3').value || '3';
@@ -1022,40 +1016,61 @@
             const num6 = document.getElementById('menu-num-6').value || '6';
             const num7 = document.getElementById('menu-num-7').value || '7';
 
-            const sec1Render = (r, isG, isNG, rs, isNSG, subRS) => {
-                let extractedUnit = r.first.rawLimit ? String(r.first.rawLimit).replace(/^[\d\.\,\s]+/g, '').trim() : '';
-                if (!extractedUnit) extractedUnit = (r.first.category === '물리적 인자') ? (r.first.agent.includes('고열') ? '℃' : 'dB(A)') : ((r.first.category === '분진' || r.first.category === '금속류' || r.first.category === '금속가공유') ? 'mg/㎥' : 'ppm');
+            // --- Section 1 ---
+            if (showSec1) {
+                const agentGroups = data.reduce((res, obj) => { 
+                    const key = obj.category + '|' + obj.agent + '|' + obj.limit; 
+                    if (!res[key]) res[key] = []; 
+                    res[key].push(obj); 
+                    return res; 
+                }, {});
                 
-                let limit = parseFloat(r.first.limit), maxVal = parseFloat(r.stats.max) || 0;
-                let expMult = limit > 0 ? (maxVal / limit).toFixed(2) : '-';
-                let compRate = r.stats.n > 0 ? (((r.stats.n - r.stats.excCount) / r.stats.n) * 100).toFixed(1) + '%' : '-';
-                let lightCol = '';
-                if (r.first.category === '물리적 인자' && r.first.agent.includes('고열')) {
-                    if (maxVal >= limit) lightCol = 'bg-red-600'; else if (maxVal >= 25) lightCol = 'bg-orange-400'; else if (maxVal >= 23) lightCol = 'bg-yellow-400'; else lightCol = 'bg-green-500';
-                } else if (r.first.category === '물리적 인자') {
-                    if (maxVal > limit) lightCol = 'bg-red-600'; else if (maxVal >= 85) lightCol = 'bg-orange-400'; else if (maxVal >= 80) lightCol = 'bg-yellow-400'; else lightCol = 'bg-green-500';
-                } else {
-                    const ratio = (maxVal / limit) * 100;
-                    if (ratio > 100) lightCol = 'bg-red-600'; else if (ratio >= 50) lightCol = 'bg-orange-400'; else if (ratio >= 10) lightCol = 'bg-yellow-400'; else lightCol = 'bg-green-500';
+                let sec1Rows = [];
+                for(let key in agentGroups) {
+                    const group = agentGroups[key]; const first = group[0]; const stats = calculateStats(group.map(d => d.value), first.limit);
+                    sec1Rows.push({ mainKey: first.category, agent: first.agent, first, stats });
                 }
+                const sec1CatExc = {};
+                sec1Rows.forEach(r => { sec1CatExc[r.first.category] = (sec1CatExc[r.first.category] || 0) + r.stats.excCount; });
+                sec1Rows.sort((a, b) => (sec1CatExc[b.first.category] - sec1CatExc[a.first.category]) || (getCategoryOrder(a.first.category) - getCategoryOrder(b.first.category)) || (b.stats.excCount - a.stats.excCount) || a.first.agent.localeCompare(b.first.agent));
                 
-                const agentTd = getAgentTdSec1(r.first.agent, 'text-left border-green-300 align-middle');
-                const limitText = r.first.rawLimit ? r.first.rawLimit : (r.first.limit === 9999 ? '기준없음' : r.first.limit);
+                const sec1Thead = `<tr><th width="10%">분류</th><th width="17%">세부 인자명</th><th width="5.5%">측정<br>건수</th><th width="5.5%">초과<br>건수</th><th width="7%">최대값</th><th width="7%">최소값</th><th width="7%">기하<br>평균</th><th width="7%">기하<br>표준편차</th><th width="7%">노출<br>배수</th><th width="9%">법적<br>준수율</th><th width="6%">신호등</th><th width="12%">노출기준<br>(단위)</th></tr>`;
                 
-                let groupTd = '';
-                if (isG) {
-                    if (isNG) {
-                        groupTd = `<td rowspan="${rs}" class="border-green-300 bg-white align-middle font-bold">${r.mainKey}</td>`;
+                const sec1Render = (r, isG, isNG, rs, isNSG, subRS) => {
+                    let extractedUnit = r.first.rawLimit ? String(r.first.rawLimit).replace(/^[\d\.\,\s]+/g, '').trim() : '';
+                    if (!extractedUnit) extractedUnit = (r.first.category === '물리적 인자') ? (r.first.agent.includes('고열') ? '℃' : 'dB(A)') : ((r.first.category === '분진' || r.first.category === '금속류' || r.first.category === '금속가공유') ? 'mg/㎥' : 'ppm');
+                    
+                    let limit = parseFloat(r.first.limit), maxVal = parseFloat(r.stats.max) || 0;
+                    let expMult = limit > 0 ? (maxVal / limit).toFixed(2) : '-';
+                    let compRate = r.stats.n > 0 ? (((r.stats.n - r.stats.excCount) / r.stats.n) * 100).toFixed(1) + '%' : '-';
+                    let lightCol = '';
+                    if (r.first.category === '물리적 인자' && r.first.agent.includes('고열')) {
+                        if (maxVal >= limit) lightCol = 'bg-red-600'; else if (maxVal >= 25) lightCol = 'bg-orange-400'; else if (maxVal >= 23) lightCol = 'bg-yellow-400'; else lightCol = 'bg-green-500';
+                    } else if (r.first.category === '물리적 인자') {
+                        if (maxVal > limit) lightCol = 'bg-red-600'; else if (maxVal >= 85) lightCol = 'bg-orange-400'; else if (maxVal >= 80) lightCol = 'bg-yellow-400'; else lightCol = 'bg-green-500';
+                    } else {
+                        const ratio = (maxVal / limit) * 100;
+                        if (ratio >= 100) lightCol = 'bg-red-600'; else if (ratio >= 50) lightCol = 'bg-orange-400'; else if (ratio >= 10) lightCol = 'bg-yellow-400'; else lightCol = 'bg-green-500';
                     }
-                }
+                    
+                    const agentTd = getAgentTdSec1(r.first.agent, 'text-left border-green-300 align-middle');
+                    const limitText = r.first.rawLimit ? r.first.rawLimit : (r.first.limit === 9999 ? '기준없음' : r.first.limit);
+                    
+                    let groupTd = '';
+                    if (isG) {
+                        if (isNG) {
+                            groupTd = `<td rowspan="${rs}" class="border-green-300 bg-white align-middle font-bold">${r.mainKey}</td>`;
+                        }
+                    }
+                    
+                    return `<tr>${groupTd}${agentTd}<td class="border-green-300">${r.stats.n}</td><td class="border-green-300 font-bold ${r.stats.excCount > 0 ? 'text-red-600' : ''}">${r.stats.excCount}</td><td class="border-green-300 ${parseFloat(r.stats.max) > limit ? 'text-red-600 font-bold' : ''}">${r.stats.max}</td><td class="border-green-300">${r.stats.min}</td><td class="border-green-300">${r.stats.gm}</td><td class="border-green-300">${r.stats.gsd}</td><td class="border-green-300 font-bold text-gray-700">${expMult}</td><td class="border-green-300 font-bold">${compRate}</td><td class="border-green-300"><span class="inline-block w-3.5 h-3.5 rounded-full ${lightCol} shadow-sm border border-gray-300"></span></td><td class="border-green-300 font-bold bg-green-50 break-keep">${limitText}</td></tr>`;
+                };
+                const sec1Legend = `<div class="prevent-break text-xs text-gray-700 mt-2 mb-4 space-y-1.5 bg-green-50 p-4 rounded border border-green-200"><p><span class="font-bold text-green-700">※ 기하평균(GM):</span> 대수정규분포를 따르는 측정 데이터의 중심경향 대푯값입니다.</p><p><span class="font-bold text-green-700">※ 노출배수:</span> 최대 측정치를 노출기준으로 나눈 비율입니다.</p><p><span class="font-bold text-green-700">※ 법적 준수율:</span> 총 측정건수 중 노출기준을 초과하지 않은(준수한) 건수의 백분율(%)입니다.</p></div>`;
                 
-                return `<tr>${groupTd}${agentTd}<td class="border-green-300">${r.stats.n}</td><td class="border-green-300 font-bold ${r.stats.excCount > 0 ? 'text-red-600' : ''}">${r.stats.excCount}</td><td class="border-green-300 ${parseFloat(r.stats.max) > limit ? 'text-red-600 font-bold' : ''}">${r.stats.max}</td><td class="border-green-300">${r.stats.min}</td><td class="border-green-300">${r.stats.gm}</td><td class="border-green-300">${r.stats.gsd}</td><td class="border-green-300 font-bold text-gray-700">${expMult}</td><td class="border-green-300 font-bold">${compRate}</td><td class="border-green-300"><span class="inline-block w-3.5 h-3.5 rounded-full ${lightCol} shadow-sm border border-gray-300"></span></td><td class="border-green-300 font-bold bg-green-50 break-keep">${limitText}</td></tr>`;
-            };
-            const sec1Legend = `<div class="prevent-break text-xs text-gray-700 mt-2 mb-4 space-y-1.5 bg-green-50 p-4 rounded border border-green-200"><p><span class="font-bold text-green-700">※ 기하평균(GM):</span> 대수정규분포를 따르는 측정 데이터의 중심경향 대푯값입니다.</p><p><span class="font-bold text-green-700">※ 노출배수:</span> 최대 측정치를 노출기준으로 나눈 비율입니다.</p><p><span class="font-bold text-green-700">※ 법적 준수율:</span> 총 측정건수 중 노출기준을 초과하지 않은(준수한) 건수의 백분율(%)입니다.</p></div>`;
-            
-            reportHtml += renderSectionStrict(1, `<span class="sec-num-badge-1" style="${num1?'':'display:none;'}">${num1}</span> 작업환경측정 통계 분석(전수 분석)`, sec1Thead, sec1Rows, sec1Render, true, prefixHtml, sec1Legend);
+                reportHtml += renderSectionStrict(1, `<span class="sec-num-badge-1" style="${num1?'':'display:none;'}">${num1}</span> 작업환경측정 통계 분석(전수 분석)`, sec1Thead, sec1Rows, sec1Render, true, prefixHtml, sec1Legend);
+            }
 
-            // --- Section 2 ---
+            // --- Section 2 Variables (Used in Sec 7 too) ---
             exceedData.sort((a, b) => {
                 let compA = companies.indexOf(a.company);
                 let compB = companies.indexOf(b.company);
@@ -1071,9 +1086,12 @@
                 const limitText = d.rawLimit ? d.rawLimit : (d.limit === 9999 ? '기준없음' : d.limit);
                 return `<tr><td class="border-green-300 break-keep">${d.company}</td><td class="border-green-300 break-keep">${d.location}</td>${agentTd}<td class="border-green-300">${d.prevValue === null ? '전회없음' : d.prevValue + ' ' + extractedUnit}</td><td class="text-red-600 font-bold border-green-300">${d.value} ${extractedUnit}</td><td class="border-green-300 break-keep">${limitText}</td></tr>`;
             };
-            
-            reportHtml += renderSectionStrict(2, `<span class="sec-num-badge-2" style="${num2?'':'display:none;'}">${num2}</span> 노출기준 초과 현황 상세 리스트`, sec2Thead, exceedData, sec2Render, false, '', '', '노출기준 초과 유해인자가 없습니다.');
 
+            if (showSec2) {
+                reportHtml += renderSectionStrict(2, `<span class="sec-num-badge-2" style="${num2?'':'display:none;'}">${num2}</span> 노출기준 초과 현황 상세 리스트`, sec2Thead, exceedData, sec2Render, false, '', '', '노출기준 초과 유해인자가 없습니다.');
+            }
+
+            // --- Section 3 Variables ---
             const createSection3ChartPageGlobal = (title, prefix, pagePart, isFirst) => {
                 let html = `<div class="a4-page page-container flex flex-col justify-start ${isFirst ? 'major-section' : ''}" data-section="3">`;
                 if (isFirst) {
@@ -1110,87 +1128,91 @@
                 return html;
             };
 
-            let sec3Html = '';
-            sec3Html += createSection3ChartPageGlobal('가. 전 공정 측정현황 (1/2)', 'global', 1, true);
-            sec3Html += createSection3ChartPageGlobal('가. 전 공정 측정현황 (2/2)', 'global', 2, false);
-            reportHtml += sec3Html;
+            if (showSec3) {
+                let sec3Html = '';
+                sec3Html += createSection3ChartPageGlobal('가. 전 공정 측정현황 (1/2)', 'global', 1, true);
+                sec3Html += createSection3ChartPageGlobal('가. 전 공정 측정현황 (2/2)', 'global', 2, false);
+                reportHtml += sec3Html;
+            }
 
-            // --- Section 4 ---
+            // --- Section 4 Variables (Used in Sec 7 too) ---
             const categoryMap = {}; 
             data.forEach(d => { 
                 if (!categoryMap[d.category]) categoryMap[d.category] = new Set(); 
                 categoryMap[d.category].add(d.agent); 
             });
             const sortedCats = Object.keys(categoryMap).sort((a,b) => getCategoryOrder(a) - getCategoryOrder(b));
-            
-            const chunkSize = 4;
-            const companyChunks = [];
-            for (let i = 0; i < companies.length; i += chunkSize) {
-                companyChunks.push(companies.slice(i, i + chunkSize));
-            }
 
-            if (companyChunks.length === 0) {
-                let sec4Thead = `<tr><th rowspan="2" width="15%" class="align-middle text-gray-800">분류</th><th rowspan="2" width="20%" class="align-middle text-gray-800">유해인자</th><th colspan="2" width="12%" class="bg-green-200 border-green-400 text-gray-800 font-bold">Total</th></tr><tr><th class="border-green-400 text-xs font-bold text-gray-800 p-1">측정</th><th class="border-green-400 text-xs font-bold text-gray-800 p-1">초과</th></tr>`;
-                reportHtml += renderSectionStrict(4, `<span class="sec-num-badge-4" style="${num4?'':'display:none;'}">${num4}</span> 단위사업체별 작업환경측정 종합 현황`, sec4Thead, [], () => '', true, '', '');
-            } else {
-                companyChunks.forEach((chunk, chunkIdx) => {
-                    let titleStr = `<span class="sec-num-badge-4" style="${num4?'':'display:none;'}">${num4}</span> 단위사업체별 작업환경측정 종합 현황`;
+            if (showSec4) {
+                const chunkSize = 4;
+                const companyChunks = [];
+                for (let i = 0; i < companies.length; i += chunkSize) {
+                    companyChunks.push(companies.slice(i, i + chunkSize));
+                }
 
-                    let paddedChunk = [...chunk];
-                    while (paddedChunk.length < chunkSize) {
-                        paddedChunk.push(null);
-                    }
+                if (companyChunks.length === 0) {
+                    let sec4Thead = `<tr><th rowspan="2" width="15%" class="align-middle text-gray-800">분류</th><th rowspan="2" width="20%" class="align-middle text-gray-800">유해인자</th><th colspan="2" width="12%" class="bg-green-200 border-green-400 text-gray-800 font-bold">Total</th></tr><tr><th class="border-green-400 text-xs font-bold text-gray-800 p-1">측정</th><th class="border-green-400 text-xs font-bold text-gray-800 p-1">초과</th></tr>`;
+                    reportHtml += renderSectionStrict(4, `<span class="sec-num-badge-4" style="${num4?'':'display:none;'}">${num4}</span> 단위사업체별 작업환경측정 종합 현황`, sec4Thead, [], () => '', true, '', '');
+                } else {
+                    companyChunks.forEach((chunk, chunkIdx) => {
+                        let titleStr = `<span class="sec-num-badge-4" style="${num4?'':'display:none;'}">${num4}</span> 단위사업체별 작업환경측정 종합 현황`;
 
-                    let sec4Thead = `<tr><th rowspan="2" width="15%" class="align-middle text-gray-800 border border-green-300">분류</th><th rowspan="2" width="20%" class="align-middle text-gray-800 border border-green-300">유해인자</th>${paddedChunk.map(c => `<th colspan="2" class="text-gray-800 break-keep border border-green-300">${c ? c : ''}</th>`).join('')}<th colspan="2" width="12%" class="bg-green-200 border-green-400 text-gray-800 font-bold border border-green-300">Total</th></tr><tr>${paddedChunk.map(() => `<th class="bg-green-50 text-xs text-gray-700 p-1 border border-green-300">측정</th><th class="bg-green-50 text-xs text-gray-700 p-1 border border-green-300">초과</th>`).join('')}<th class="border-green-400 text-xs font-bold text-gray-800 p-1 border border-green-300">측정</th><th class="border-green-400 text-xs font-bold text-gray-800 p-1 border border-green-300">초과</th></tr>`;
-                    
-                    let sec4Rows = [];
-                    sortedCats.forEach(cat => {
-                        Array.from(categoryMap[cat]).sort().forEach(agent => {
-                            let rowObj = { mainKey: cat, agent: agent, companyData: [], totalN: 0, totalExc: 0 };
-                            paddedChunk.forEach(comp => {
-                                if (comp) {
-                                    const filtered = data.filter(d => d.company === comp && d.category === cat && d.agent === agent);
-                                    const n = filtered.length;
-                                    const exc = filtered.filter(d => d.isExceed).length;
-                                    rowObj.companyData.push({ n, exc, isReal: true });
-                                    rowObj.totalN += n;
-                                    rowObj.totalExc += exc;
+                        let paddedChunk = [...chunk];
+                        while (paddedChunk.length < chunkSize) {
+                            paddedChunk.push(null);
+                        }
+
+                        let sec4Thead = `<tr><th rowspan="2" width="15%" class="align-middle text-gray-800 border border-green-300">분류</th><th rowspan="2" width="20%" class="align-middle text-gray-800 border border-green-300">유해인자</th>${paddedChunk.map(c => `<th colspan="2" class="text-gray-800 break-keep border border-green-300">${c ? c : ''}</th>`).join('')}<th colspan="2" width="12%" class="bg-green-200 border-green-400 text-gray-800 font-bold border border-green-300">Total</th></tr><tr>${paddedChunk.map(() => `<th class="bg-green-50 text-xs text-gray-700 p-1 border border-green-300">측정</th><th class="bg-green-50 text-xs text-gray-700 p-1 border border-green-300">초과</th>`).join('')}<th class="border-green-400 text-xs font-bold text-gray-800 p-1 border border-green-300">측정</th><th class="border-green-400 text-xs font-bold text-gray-800 p-1 border border-green-300">초과</th></tr>`;
+                        
+                        let sec4Rows = [];
+                        sortedCats.forEach(cat => {
+                            Array.from(categoryMap[cat]).sort().forEach(agent => {
+                                let rowObj = { mainKey: cat, agent: agent, companyData: [], totalN: 0, totalExc: 0 };
+                                paddedChunk.forEach(comp => {
+                                    if (comp) {
+                                        const filtered = data.filter(d => d.company === comp && d.category === cat && d.agent === agent);
+                                        const n = filtered.length;
+                                        const exc = filtered.filter(d => d.isExceed).length;
+                                        rowObj.companyData.push({ n, exc, isReal: true });
+                                        rowObj.totalN += n;
+                                        rowObj.totalExc += exc;
+                                    } else {
+                                        rowObj.companyData.push({ n: 0, exc: 0, isReal: false }); 
+                                    }
+                                });
+                                if (rowObj.totalN > 0) sec4Rows.push(rowObj);
+                            });
+                        });
+
+                        const sec4Render = (r, isG, isNG, rs, isNSG, subRS) => {
+                            const agentTd = getAgentTd(r.agent, 'text-left border-green-300 bg-white align-middle');
+                            
+                            let groupTd = '';
+                            if (isG) {
+                                if (isNG) {
+                                    groupTd = `<td rowspan="${rs}" class="border-green-300 bg-white align-middle font-bold break-keep">${r.mainKey}</td>`;
+                                }
+                            }
+                            
+                            let trHtml = `<tr>${groupTd}${agentTd}`;
+                            r.companyData.forEach(cell => { 
+                                if (cell.isReal) {
+                                    trHtml += `<td class="border-green-300 bg-white">${cell.n > 0 ? cell.n : '-'}</td><td class="border-green-300 bg-white">${cell.exc > 0 ? `<span class="text-red-600 font-bold">${cell.exc}</span>` : (cell.n > 0 ? '0' : '-')}</td>`; 
                                 } else {
-                                    rowObj.companyData.push({ n: 0, exc: 0, isReal: false }); 
+                                    trHtml += `<td class="border-green-300 bg-white"></td><td class="border-green-300 bg-white"></td>`;
                                 }
                             });
-                            if (rowObj.totalN > 0) sec4Rows.push(rowObj);
-                        });
+                            trHtml += `<td class="border-green-300 bg-green-50 font-bold">${r.totalN > 0 ? r.totalN : '-'}</td><td class="border-green-300 bg-green-50 font-bold">${r.totalExc > 0 ? `<span class="text-red-600 font-bold">${r.totalExc}</span>` : (r.totalN > 0 ? '0' : '-')}</td></tr>`;
+                            return trHtml;
+                        };
+                        
+                        let currentSecNum = chunkIdx === 0 ? 4 : `4-${chunkIdx}`;
+                        reportHtml += renderSectionStrict(currentSecNum, titleStr, sec4Thead, sec4Rows, sec4Render, true, '', '');
                     });
-
-                    const sec4Render = (r, isG, isNG, rs, isNSG, subRS) => {
-                        const agentTd = getAgentTd(r.agent, 'text-left border-green-300 bg-white align-middle');
-                        
-                        let groupTd = '';
-                        if (isG) {
-                            if (isNG) {
-                                groupTd = `<td rowspan="${rs}" class="border-green-300 bg-white align-middle font-bold break-keep">${r.mainKey}</td>`;
-                            }
-                        }
-                        
-                        let trHtml = `<tr>${groupTd}${agentTd}`;
-                        r.companyData.forEach(cell => { 
-                            if (cell.isReal) {
-                                trHtml += `<td class="border-green-300 bg-white">${cell.n > 0 ? cell.n : '-'}</td><td class="border-green-300 bg-white">${cell.exc > 0 ? `<span class="text-red-600 font-bold">${cell.exc}</span>` : (cell.n > 0 ? '0' : '-')}</td>`; 
-                            } else {
-                                trHtml += `<td class="border-green-300 bg-white"></td><td class="border-green-300 bg-white"></td>`;
-                            }
-                        });
-                        trHtml += `<td class="border-green-300 bg-green-50 font-bold">${r.totalN > 0 ? r.totalN : '-'}</td><td class="border-green-300 bg-green-50 font-bold">${r.totalExc > 0 ? `<span class="text-red-600 font-bold">${r.totalExc}</span>` : (r.totalN > 0 ? '0' : '-')}</td></tr>`;
-                        return trHtml;
-                    };
-                    
-                    let currentSecNum = chunkIdx === 0 ? 4 : `4-${chunkIdx}`;
-                    reportHtml += renderSectionStrict(currentSecNum, titleStr, sec4Thead, sec4Rows, sec4Render, true, '', '');
-                });
+                }
             }
 
-            // --- Section 5 ---
+            // --- Section 5 Variables ---
             const groupRender5 = (r, isG, isNG, rs, isNSG, subRS) => {
                 let note = r.lightColor === 'bg-green-500' ? '-' : (r.lightColor === 'bg-yellow-400' ? '관찰 필요' : (r.lightColor === 'bg-orange-400' ? '개선 필요' : '개선 대상'));
                 const agentTd = getAgentTd(r.agent, 'text-left border-green-300 align-middle');
@@ -1209,12 +1231,13 @@
                 return `<tr>${companyTd}${groupTd}${subGroupTd}${agentTd}<td class="border-green-300">${r.n}</td><td class="border-green-300 ${r.exc > 0 ? 'text-red-600 font-bold' : ''}">${r.exc}</td><td class="border-green-300"><span class="inline-block w-3.5 h-3.5 rounded-full ${r.lightColor} shadow-sm border border-gray-300"></span></td><td class="text-left text-xs border-green-300 font-bold ${r.lightColor === 'bg-red-600' ? 'text-red-600' : ''}">${note}</td></tr>`;
             };
             const trafficLegend5 = `<div class="prevent-break text-xs text-gray-600 mt-2 mb-4 p-3 bg-gray-50 border border-gray-200 rounded text-left"><p><strong>※ 신호등 범례 (일반유해물질):</strong> <span class="bg-green-500 w-2.5 h-2.5 inline-block rounded-full"></span> 10% 미만 &nbsp; <span class="bg-yellow-400 w-2.5 h-2.5 inline-block rounded-full"></span> 10~50% 미만 &nbsp; <span class="bg-orange-400 w-2.5 h-2.5 inline-block rounded-full"></span> 50~100% 이하 &nbsp; <span class="bg-red-600 w-2.5 h-2.5 inline-block rounded-full"></span> 노출기준 초과</p><p class="mt-1"><strong>※ 신호등 범례 (소음):</strong> <span class="bg-green-500 w-2.5 h-2.5 inline-block rounded-full"></span> 80dB 미만 &nbsp; <span class="bg-yellow-400 w-2.5 h-2.5 inline-block rounded-full"></span> 80~85dB 미만 &nbsp; <span class="bg-orange-400 w-2.5 h-2.5 inline-block rounded-full"></span> 85~기준치 이하 &nbsp; <span class="bg-red-600 w-2.5 h-2.5 inline-block rounded-full"></span> 노출기준 초과</p><p class="mt-1"><strong>※ 신호등 범례 (고열):</strong> <span class="bg-green-500 w-2.5 h-2.5 inline-block rounded-full"></span> 23℃ 미만 &nbsp; <span class="bg-yellow-400 w-2.5 h-2.5 inline-block rounded-full"></span> 23~25℃ 미만 &nbsp; <span class="bg-orange-400 w-2.5 h-2.5 inline-block rounded-full"></span> 25~노출기준 이하 &nbsp; <span class="bg-red-600 w-2.5 h-2.5 inline-block rounded-full"></span> 노출기준 초과</p></div>`;
-            
             const sec5Thead = `<tr><th width="15%">단위사업체명</th><th width="15%">단위작업장소</th><th width="12%">분류</th><th width="20%">세부 유해인자명</th><th width="8%">측정건수</th><th width="8%">초과건수</th><th width="7%">신호등</th><th width="15%">비고</th></tr>`;
-            
-            reportHtml += renderSectionStrict(5, `<span class="sec-num-badge-5" style="${num5?'':'display:none;'}">${num5}</span> 단위작업장소별 유해인자 측정 및 초과 현황`, sec5Thead, buildGroupRows(data, ['location', 'category', 'agent', 'limit'], companies), groupRender5, true, '', trafficLegend5);
 
-            // --- Section 6 ---
+            if (showSec5) {
+                reportHtml += renderSectionStrict(5, `<span class="sec-num-badge-5" style="${num5?'':'display:none;'}">${num5}</span> 단위작업장소별 유해인자 측정 및 초과 현황`, sec5Thead, buildGroupRows(data, ['location', 'category', 'agent', 'limit'], companies), groupRender5, true, '', trafficLegend5);
+            }
+
+            // --- Section 6 Variables ---
             const sec6Data = data.filter(d => d.category !== '물리적 인자' && !d.agent.replace(/\s+/g, '').includes('혼합물질'));
             
             const sec6Thead = `<tr style="font-size: 12px;">
@@ -1295,25 +1318,14 @@
                     }
                 }
                 
-                // ★ 측정치 퍼센트 평가 및 색상 적용 
                 let ratio = r.limit && r.limit !== 9999 ? (r.maxVal / parseFloat(r.limit)) * 100 : 0;
                 let evalText = '-';
-                let evalColorClass = 'text-gray-800'; // 기본 글자색
-
+                let evalColorClass = 'text-gray-800'; 
                 if (r.limit && r.limit !== 9999) {
-                    if (ratio >= 100) {
-                        evalText = '100% 이상';
-                        evalColorClass = 'text-red-600'; // 빨간색
-                    } else if (ratio >= 50) {
-                        evalText = '50% 이상';
-                        evalColorClass = 'text-orange-400'; // 연한주황
-                    } else if (ratio >= 10) {
-                        evalText = '10% 이상';
-                        evalColorClass = 'text-yellow-500'; // 연한노란색
-                    } else {
-                        evalText = '10% 미만';
-                        evalColorClass = 'text-gray-800'; // 기본 (요청 사항에 특별한 언급이 없으므로 검정/회색 유지)
-                    }
+                    if (ratio >= 100) { evalText = '100% 이상'; evalColorClass = 'text-red-600'; }
+                    else if (ratio >= 50) { evalText = '50% 이상'; evalColorClass = 'text-orange-400'; }
+                    else if (ratio >= 10) { evalText = '10% 이상'; evalColorClass = 'text-yellow-500'; }
+                    else { evalText = '10% 미만'; evalColorClass = 'text-gray-800'; }
                 } else {
                     evalText = '기준없음';
                     evalColorClass = 'text-gray-500';
@@ -1463,303 +1475,306 @@
                 </div>
             `;
 
-            reportHtml += renderSectionStrict(6, `<span class="sec-num-badge-6" style="${num6?'':'display:none;'}">${num6}</span> 작업환경측정 화학물질 위험성 평가`, sec6Thead, buildGroupRows(sec6Data, ['department', 'category', 'agent'], companies), groupRender6, true, '', '', "데이터가 없습니다.", true);
-            
-            reportHtml += `
-                <div class="a4-page page-container flex flex-col justify-start major-section" data-section="6">
-                    <div class="section-title border-b-2 border-green-600 pb-2 mb-4 font-bold text-gray-900 text-xl"><span class="sec-num-badge-6" style="${num6?'':'display:none;'}">${num6}</span> 작업환경측정 화학물질 위험성 평가 (참고자료)</div>
-                    ${extra6Content}
-                </div>
-            `;
-
-            const reductionGrouped = buildGroupRows(sec6Data, ['department', 'category', 'agent'], companies);
-            let reductionRows = [];
-            let rSeq = 1;
-            
-            reductionGrouped.forEach(r => {
-                let extractedUnit = r.rawLimit ? String(r.rawLimit).replace(/^[\d\.\,\s]+/g, '').trim().toLowerCase() : '';
-                let exLv = r.lightColor === 'bg-green-500' ? 1 : (r.lightColor === 'bg-yellow-400' ? 2 : (r.lightColor === 'bg-orange-400' ? 3 : 4));
-                let limit = parseFloat(r.limit);
-                let hzLv = 1;
-                if (extractedUnit.includes('mg') || r.cat === '분진' || r.cat === '금속류' || r.cat === '금속가공유') {
-                    hzLv = limit > 1 ? 1 : (limit > 0.1 ? 2 : (limit > 0.01 ? 3 : 4));
-                } else {
-                    hzLv = limit > 50 ? 1 : (limit > 5 ? 2 : (limit > 0.5 ? 3 : 4));
-                }
-
-                let cmrList = getCMRInfo(r.agent);
-                // ★ CMR 물질인 경우 유해성 점수를 무조건 4(최고 수준)로 고정
-                if (cmrList.length > 0) {
-                    hzLv = 4;
-                }
-
-                let rkLv = exLv * hzLv;
+            if (showSec6) {
+                reportHtml += renderSectionStrict(6, `<span class="sec-num-badge-6" style="${num6?'':'display:none;'}">${num6}</span> 작업환경측정 화학물질 위험성 평가`, sec6Thead, buildGroupRows(sec6Data, ['department', 'category', 'agent'], companies), groupRender6, true, '', '', "데이터가 없습니다.", true);
                 
-                let jud = '';
-                let judColorClass = '';
-                let riskBgClass = 'bg-gray-50';
-                
-                if (rkLv >= 12) { jud = '매우 높음'; judColorClass = 'text-red-600'; riskBgClass = 'bg-red-50'; }
-                else if (rkLv >= 5) { jud = '높음'; judColorClass = 'text-orange-500'; riskBgClass = 'bg-orange-50'; }
-                else if (rkLv >= 3) { jud = '보통'; judColorClass = 'text-yellow-600'; riskBgClass = 'bg-yellow-50'; }
-                else { jud = '낮음'; judColorClass = 'text-green-600'; riskBgClass = 'bg-green-50'; }
-                
-                if (rkLv >= 3) {
-                    let measureText = '';
-                    const tag = (name) => `<span class="font-bold text-blue-700">[${name}]</span>`;
-                    const br = `<br>`;
-
-                    let ppeText = '';
-                    let agentName = r.agent.replace(/\s+/g, '');
-
-                    if (r.cat === '금속가공유') {
-                        ppeText = '방진마스크(특급/1급/2급 이상) 및 내유성 장갑 착용';
-                    } else if (agentName.includes('수산화나트륨') || agentName.includes('수산화칼륨') || agentName.includes('황산')) {
-                        ppeText = '내산성/내화학성 보호의/장갑, 보안경 및 방진마스크(특급/1급 이상) 착용';
-                    } else if (agentName.includes('염화비닐') || agentName.includes('톨리딘') || agentName.includes('불소') || agentName.includes('삼수소화비소') || agentName.includes('이산화질소') || agentName.includes('일산화질소') || agentName.includes('일산화탄소') || agentName.includes('포스겐') || agentName.includes('포스핀') || agentName.includes('메틸클로라이드') || agentName.includes('브롬화메틸') || agentName.includes('요오드화메틸') || agentName.includes('메탄올') || agentName.includes('질산')) {
-                        ppeText = '전면형 송기식 마스크 또는 자급식 공기호흡기, 보호복 착용';
-                    } else if (agentName.includes('암모니아') || agentName.includes('디메틸아민') || agentName.includes('메틸아민') || agentName.includes('에틸아민') || agentName.includes('트리에틸아민') || agentName.includes('히드라진')) {
-                        ppeText = '방독마스크(암모니아용) 및 화학물질용 보호장갑 착용';
-                    } else if (agentName.includes('염소')) {
-                        ppeText = '방독마스크(할로겐용) 및 화학물질용 보호장갑 착용';
-                    } else if (agentName.includes('이산화황') || agentName.includes('불화수소') || agentName.includes('브롬화수소') || agentName.includes('염화수소')) {
-                        ppeText = '방독마스크(아황산가스용) 및 화학물질용 보호장갑 착용';
-                    } else if (agentName.includes('시안화수소')) {
-                        ppeText = '방독마스크(시안화수소용) 및 화학물질용 보호장갑 착용';
-                    } else if (agentName.includes('석면') || agentName.includes('나프틸아민') || agentName.includes('디아니시딘') || agentName.includes('디클로로벤지딘') || agentName.includes('베릴륨') || agentName.includes('비소') || agentName.includes('크롬') || agentName.includes('황화니켈') || agentName.includes('사붕소산나트륨') || agentName.includes('인산') || agentName.includes('에틸헥실프탈레이트')) {
-                        ppeText = '특급/1급 방진마스크 및 적절한 보호복 착용';
-                    } else if (r.cat === '분진' || r.cat === '금속류') {
-                        ppeText = '특급 또는 1급 방진마스크(안면부 여과식/반면형) 지급 및 밀착 착용';
-                    } else if (r.cat === '유기화합물') {
-                        if (agentName.includes('에틸렌글리콜') || agentName.includes('무수말레산') || agentName.includes('무수프탈산') || agentName.includes('톨루엔디이소시아네이트') || agentName.includes('크레졸') || agentName.includes('콜타르피치') || agentName.includes('오존')) {
-                            ppeText = '겸용 마스크(유기화합물/방진), 불침투성 보호복/장갑 착용';
-                        } else {
-                            ppeText = '방독마스크(유기화합물용, KCs인증), 불침투성 보호복/장갑 착용';
-                        }
-                    } else if (r.cat === '산 및 알칼리류') {
-                        ppeText = '내산성/내화학성 보호의, 보호장갑, 보안경 및 방독마스크(산성용) 착용';
-                    } else if (r.cat === '허가 대상 유해물질') {
-                        ppeText = '전면형 방독/방진 투과식 마스크 또는 송기마스크 등 최고 수준 보호구 지급';
-                    } else {
-                        ppeText = '취급 물질의 물리화학적 특성에 적합한 KCs 인증 호흡기/피부 보호구 지급';
-                    }
-
-                    if(r.cat === '유기화합물') {
-                        measureText = `${tag('제거')} 해당 물질의 유해성이 낮은 유사/친환경 물질로의 대체(Substitution) 다각적 검토${br}` +
-                                      `${tag('격리')} 유기화합물 취급 공정 분리 및 작업자 원격 조작 전환${br}` +
-                                      `${tag('공학적대책')} 발생원 밀폐, 국소배기장치(적정 제어풍속 이상) 가동 및 활성탄 흡착탑 효율 유지${br}` +
-                                      `${tag('개인보호구')} ${ppeText}${br}` +
-                                      `${tag('교육및훈련')} 취급물질 MSDS 유해성 주지, 환기설비 사용법 및 보호구 밀착도 검사(Fit Test) 실습`;
-                    } else if(r.cat === '금속가공유') {
-                        measureText = `${tag('제거')} 인체 친화적 및 저독성 수용성 가공유로 대체 검토${br}` +
-                                      `${tag('격리')} 가공 기계(CNC 등) 완전 밀폐화 및 칩 컨베이어 자동화${br}` +
-                                      `${tag('공학적대책')} 국소배기장치(적정 제어풍속 이상) 및 오일미스트 집진기 필수 설치/가동${br}` +
-                                      `${tag('개인보호구')} ${ppeText}${br}` +
-                                      `${tag('교육및훈련')} 오일미스트 피부염 및 호흡기 질환 예방 교육, 작업 후 위생 관리 철저`;
-                    } else if(r.cat === '분진') {
-                        measureText = `${tag('제거')} 분말/가루 형태를 과립상 또는 액상 형태로 변경하여 원천적 비산 억제${br}` +
-                                      `${tag('격리')} 분진 발생 공정(분쇄/혼합 등) 격리실 운영 및 무인화 검토${br}` +
-                                      `${tag('공학적대책')} 비산원 밀폐, 국소배기장치(적정 제어풍속 이상) 가동 및 백필터/집진기 차압 점검${br}` +
-                                      `${tag('개인보호구')} ${ppeText}${br}` +
-                                      `${tag('교육및훈련')} 진폐증 예방 교육, 작업장 진공청소(건식청소 금지) 절차 및 필터 교체주기 교육`;
-                    } else if(r.cat === '금속류') {
-                        measureText = `${tag('제거')} 유해성이 낮은 용접봉/와이어로 대체 및 공법 변경(예: 아크→레이저) 검토${br}` +
-                                      `${tag('격리')} 흄 발생 공정 방진막/차광막 설치 및 작업 공간 완전 분리${br}` +
-                                      `${tag('공학적대책')} 발생원 밀폐화, 이동/고정식 국소배기장치(적정 제어풍속 이상) 적극 가동${br}` +
-                                      `${tag('개인보호구')} ${ppeText}${br}` +
-                                      `${tag('교육및훈련')} 금속열(Metal Fume Fever) 및 중독 예방 교육, 호흡기 보호구 올바른 착용법 실습`;
-                    } else if(r.cat === '산 및 알칼리류') {
-                        measureText = `${tag('제거')} 고농도 취급을 피하고 약산성/약알칼리성 등 상대적 안전 물질로 대체 검토${br}` +
-                                      `${tag('격리')} 부식성 물질 취급 탱크/배관 밀폐화 및 원격 제어 시스템 도입${br}` +
-                                      `${tag('공학적대책')} 내부식성 국소배기장치(적정 제어풍속 이상) 가동, 스크러버(세정식 집진기) pH 관리${br}` +
-                                      `${tag('개인보호구')} ${ppeText}${br}` +
-                                      `${tag('교육및훈련')} 누출 시 비상대응조치(비상샤워기/세안설비 사용법), 화학화상 예방 교육`;
-                    } else if(r.cat === '허가 대상 유해물질') {
-                        measureText = `${tag('제거')} 발암성/생식독성(CMR) 물질 사용 취소 및 비발암성 안전 물질로 즉각적 대체 최우선 검토${br}` +
-                                      `${tag('격리')} 취급 공정 완전 격리(밀폐실) 및 관계자 외 출입 엄격 통제${br}` +
-                                      `${tag('공학적대책')} 내부 음압 유지, 배기구 고효율 필터(HEPA) 장착된 국소배기장치(적정 제어풍속 이상) 가동${br}` +
-                                      `${tag('개인보호구')} ${ppeText}${br}` +
-                                      `${tag('교육및훈련')} 발암/생식독성 특별 유해성 주지, 작업 전후 탈의/샤워 절차 및 오염 세탁물 분리 교육`;
-                    } else {
-                        measureText = `${tag('제거')} 해당 물질의 유해성이 낮은 유사/친환경 물질로의 대체(Substitution) 다각적 검토${br}` +
-                                      `${tag('격리')} 발생원 격리 및 취급 구역 제한을 통한 비노출 근로자 철저 보호${br}` +
-                                      `${tag('공학적대책')} 발생원 밀폐 및 공정 맞춤형 국소배기장치(적정 제어풍속 이상) 최적화 가동${br}` +
-                                      `${tag('개인보호구')} ${ppeText}${br}` +
-                                      `${tag('교육및훈련')} 유해인자별 건강장해 예방 교육, 작업표준 준수 및 보호구 정기 점검 훈련`;
-                    }
-
-                    let postExLv = 1;
-                    let postHzLv = hzLv;
-                    let postRkLv = postExLv * postHzLv; 
-                    let postJud = ''; let postJudColorClass = ''; let postJudBgClass = 'bg-gray-50';
-                    
-                    if (postRkLv >= 12) { postJud = '매우 높음'; postJudColorClass = 'text-red-600'; postJudBgClass = 'bg-red-50'; }
-                    else if (postRkLv >= 5) { postJud = '높음'; postJudColorClass = 'text-orange-500'; postJudBgClass = 'bg-orange-50'; }
-                    else if (postRkLv >= 3) { postJud = '보통'; postJudColorClass = 'text-yellow-600'; postJudBgClass = 'bg-yellow-50'; }
-                    else { postJud = '낮음'; postJudColorClass = 'text-green-600'; postJudBgClass = 'bg-green-50'; }
-
-                    reductionRows.push({
-                        seq: rSeq++,
-                        company: r.company,
-                        department: r.mainKey,
-                        agent: r.agent,
-                        exLv: exLv,
-                        hzLv: hzLv,
-                        rkLv: rkLv,
-                        jud: jud,
-                        judColor: judColorClass,
-                        judBg: riskBgClass,
-                        measure: measureText,
-                        postExLv: postExLv,
-                        postHzLv: postHzLv,
-                        postRkLv: postRkLv,
-                        postJud: postJud,
-                        postJudColor: postJudColorClass,
-                        postJudBg: postJudBgClass
-                    });
-                }
-            });
-
-            let reductionHtmlTbody = '';
-            if (reductionRows.length === 0) {
-                reductionHtmlTbody = `<tr><td colspan="13" class="border border-green-300 py-10 text-center text-gray-500 font-bold">위험성 판정이 '보통' 이상인 공정 및 유해인자가 없습니다.</td></tr>`;
-            } else {
-                reductionRows.forEach(row => {
-                    reductionHtmlTbody += `
-                    <tr style="font-size: 12px;">
-                        <td class="border border-green-300 py-2 text-center text-gray-700 font-medium">${row.seq}</td>
-                        <td class="border border-green-300 py-2 text-center text-gray-800 break-keep font-medium">${row.company}</td>
-                        <td class="border border-green-300 py-2 text-center text-gray-800 break-keep">${row.department}</td>
-                        <td class="border border-green-300 py-2 text-left text-gray-800 font-bold break-keep px-2">${row.agent}</td>
-                        <td class="border border-green-300 py-2 text-center text-green-600 font-bold bg-green-50/30">${row.exLv}</td>
-                        <td class="border border-green-300 py-2 text-center text-blue-600 font-bold bg-blue-50/30">${row.hzLv}</td>
-                        <td class="border border-green-300 py-2 text-center font-extrabold ${row.judBg} tracking-tight" style="font-size: 13.5px;">
-                            <span class="${row.judColor}">${row.rkLv}(${row.jud})</span>
-                        </td>
-                        <td class="border border-green-300 py-2.5 px-3 text-left text-gray-700 break-keep leading-relaxed">${row.measure}</td>
-                        <td class="border border-green-300 py-2 text-center text-green-600 font-bold bg-green-50/30">${row.postExLv}</td>
-                        <td class="border border-green-300 py-2 text-center text-blue-600 font-bold bg-blue-50/30">${row.postHzLv}</td>
-                        <td class="border border-green-300 py-2 text-center font-extrabold ${row.postJudBg} tracking-tight" style="font-size: 13.5px;">
-                            <span class="${row.postJudColor}">${row.postRkLv}(${row.postJud})</span>
-                        </td>
-                        <td class="border border-green-300 py-2 text-center bg-white"></td>
-                        <td class="border border-green-300 py-2 text-center bg-white"></td>
-                    </tr>
-                    `;
-                });
-            }
-
-            reportHtml += `
-                <div class="a4-page-landscape page-container-landscape flex flex-col justify-start major-section" data-section="6">
-                    <div class="section-title border-b-2 border-green-600 pb-2 mb-4 font-bold text-gray-900 text-xl"><span class="sec-num-badge-6" style="${num6?'':'display:none;'}">${num6}</span> 화학물질 위험성평가 감소대책 (실행계획서)</div>
-                    <div class="flex flex-col flex-1 w-full bg-white">
-                        <p class="text-[0.8rem] text-gray-600 mb-3 font-medium">※ 위험성평가 결과 판정이 '보통' 이상(위험성 3 이상)인 공정 및 유해인자에 한하여 우선적인 감소대책을 수립합니다.<br>※ <span class="text-blue-600 font-bold">개선 후 위험성</span>은 감소대책이 완벽히 이행되어 '노출수준(1등급)'으로 낮아졌을 때를 가정한 예측값입니다. (화학물질 고유의 유해성은 변하지 않음)</p>
-                        <table style="width: 100%; border-collapse: collapse; font-size: 12px;" class="border border-green-300">
-                            <thead>
-                                <tr style="font-size: 12px;">
-                                    <th class="bg-green-100 border border-green-300 py-1.5 px-1 w-[3%] text-center font-bold text-gray-800">No.</th>
-                                    <th class="bg-green-100 border border-green-300 py-1.5 px-1 w-[6%] text-center font-bold text-gray-800">사업장명</th>
-                                    <th class="bg-green-100 border border-green-300 py-1.5 px-1 w-[7%] text-center font-bold text-gray-800">부서(공정)명</th>
-                                    <th class="bg-green-100 border border-green-300 py-1.5 px-1 w-[10%] text-center font-bold text-gray-800 break-keep">유해인자명</th>
-                                    <th class="bg-green-100 border border-green-300 py-1.5 px-1 w-[4%] text-center font-bold text-green-700 whitespace-nowrap">노출<br>수준</th>
-                                    <th class="bg-green-100 border border-green-300 py-1.5 px-1 w-[4%] text-center font-bold text-blue-700 whitespace-nowrap">유해성</th>
-                                    <th class="bg-green-100 border border-green-300 py-1.5 px-1 w-[6%] text-center font-bold text-gray-800 whitespace-nowrap" style="font-size: 13.5px;">위험성<br>(판정)</th>
-                                    <th class="bg-green-100 border border-green-300 py-1.5 px-1 w-[30%] text-center font-bold text-gray-800">위험성 감소대책(예시)</th>
-                                    <th class="bg-green-100 border border-green-300 py-1.5 px-1 w-[6%] text-center font-bold text-green-700 whitespace-nowrap">개선 후<br>노출수준</th>
-                                    <th class="bg-green-100 border border-green-300 py-1.5 px-1 w-[6%] text-center font-bold text-blue-700 whitespace-nowrap">유해성</th>
-                                    <th class="bg-green-100 border border-green-300 py-1.5 px-1 w-[6%] text-center font-bold text-gray-800 break-keep" style="font-size: 13.5px;">개선 후<br>위험성</th>
-                                    <th class="bg-green-100 border border-green-300 py-1.5 px-1 w-[8%] text-center font-bold text-gray-800 whitespace-nowrap">개선일정<br>(담당자)</th>
-                                    <th class="bg-green-100 border border-green-300 py-1.5 px-1 w-[4%] text-center font-bold text-gray-800 whitespace-nowrap">완료일</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                ${reductionHtmlTbody}
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            `;
-
-            // --- Section 7 ---
-            let sec7Html = '';
-            companies.forEach((comp, idx) => {
-                const compData = data.filter(d => d.company === comp);
-                const compExcData = compData.filter(d => d.isExceed);
-                const compSec6Data = compData.filter(d => d.category !== '물리적 인자' && !d.agent.replace(/\s+/g, '').includes('혼합물질'));
-
-                let compSec4Rows = [];
-                sortedCats.forEach(cat => {
-                    Array.from(categoryMap[cat]).sort().forEach(agent => {
-                        const filtered = compData.filter(d => d.category === cat && d.agent === agent);
-                        const n = filtered.length;
-                        const exc = filtered.filter(d => d.isExceed).length;
-                        if (n > 0) {
-                            compSec4Rows.push({ mainKey: cat, agent: agent, n, exc, groupId: cat, subKey: cat }); 
-                        }
-                    });
-                });
-                
-                const sec7_1_Thead = `<tr><th width="20%">분류</th><th width="40%">유해인자</th><th width="20%">측정건수</th><th width="20%">초과건수</th></tr>`;
-                const sec7_1_Render = (r, isG, isNG, rs) => {
-                    let groupTd = '';
-                    if (isG && isNG) {
-                        groupTd = `<td rowspan="${rs}" class="border-green-300 bg-white align-middle font-bold break-keep">${r.mainKey}</td>`;
-                    }
-                    const agentTd = getAgentTd(r.agent, 'text-left border-green-300 bg-white align-middle');
-                    return `<tr>${groupTd}${agentTd}<td class="border-green-300 bg-white">${r.n}</td><td class="border-green-300 bg-white font-bold ${r.exc > 0 ? 'text-red-600' : ''}">${r.exc}</td></tr>`;
-                };
-                sec7Html += renderSectionStrict(7, `<span class="sec-num-badge-7" style="${num7?'':'display:none;'}">${num7}</span> 단위사업체별 종합 보고서 - ${comp} (종합 현황)`, sec7_1_Thead, compSec4Rows, sec7_1_Render, true, '', '');
-
-                sec7Html += renderSectionStrict(7, `<span class="sec-num-badge-7" style="${num7?'':'display:none;'}">${num7}</span> 단위사업체별 종합 보고서 - ${comp} (초과 현황 리스트)`, sec2Thead, compExcData, sec2Render, false, '', '', '노출기준 초과 유해인자가 없습니다.');
-
-                const createSection7ChartPage = (title, prefix, pagePart) => {
-                    let html = `<div class="a4-page page-container flex flex-col justify-start major-section" data-section="7">`;
-                    html += `<div class="section-title mt-4 border-b-2 border-green-600 pb-2 mb-4 font-bold text-gray-900 text-xl"><span class="sec-num-badge-7" style="${num7?'':'display:none;'}">${num7}</span> ${title}</div>`;
-                    
-                    html += `<div class="flex flex-col gap-6 w-full mb-2">`;
-                    
-                    if (pagePart === 1) {
-                        html += `
-                            <div class="prevent-break bg-white p-4 border border-green-300 rounded-xl shadow-lg flex flex-col items-center w-full">
-                                <h3 class="text-[1rem] font-bold text-center mb-3 bg-gradient-to-r from-green-50 to-green-100 w-full py-2 rounded-lg border border-green-200">1) 측정항목 분포도 <span id="title_${prefix}_1" class="ml-1"></span></h3>
-                                <div id="chart_${prefix}_1" style="height: 340px; width: 100%;"></div>
-                            </div>
-                            <div class="prevent-break bg-white p-4 border border-green-300 rounded-xl shadow-lg flex flex-col items-center w-full">
-                                <h3 class="text-[1rem] font-bold text-center mb-3 bg-gradient-to-r from-green-50 to-green-100 w-full py-2 rounded-lg border border-green-200">2) 총 측정건수 대비 분류별 초과 건수 <span id="title_${prefix}_2" class="ml-1"></span></h3>
-                                <div id="chart_${prefix}_2" style="height: 340px; width: 100%;"></div>
-                            </div>
-                        `;
-                    } else {
-                        html += `
-                            <div class="prevent-break bg-white p-4 border border-green-300 rounded-xl shadow-lg flex flex-col items-center w-full">
-                                <h3 class="text-[1rem] font-bold text-center mb-3 bg-gradient-to-r from-green-50 to-green-100 w-full py-2 rounded-lg border border-green-200">3) 분류별 최대 노출 분포(노출기준=100%)</h3>
-                                <div id="chart_${prefix}_3" style="height: 340px; width: 100%;"></div>
-                            </div>
-                            <div class="prevent-break bg-white p-4 border border-green-300 rounded-xl shadow-lg flex flex-col items-center w-full">
-                                <h3 class="text-[1rem] font-bold text-center mb-3 bg-gradient-to-r from-green-50 to-green-100 w-full py-2 rounded-lg border border-green-200">4) 소음 발생수준별 분포도 <span id="title_${prefix}_4" class="ml-1"></span></h3>
-                                <div id="chart_${prefix}_4" style="height: 340px; width: 100%;"></div>
-                            </div>
-                        `;
-                    }
-                    html += `</div></div>`;
-                    return html;
-                };
-
-                sec7Html += createSection7ChartPage(`단위사업체별 종합 보고서 - ${comp} (측정 분포 및 초과 현황 1/2)`, `sec7_${idx}`, 1);
-                sec7Html += createSection7ChartPage(`단위사업체별 종합 보고서 - ${comp} (측정 분포 및 초과 현황 2/2)`, `sec7_${idx}`, 2);
-
-                sec7Html += renderSectionStrict(7, `<span class="sec-num-badge-7" style="${num7?'':'display:none;'}">${num7}</span> 단위사업체별 종합 보고서 - ${comp} (단위작업장소별 측정 현황)`, sec5Thead, buildGroupRows(compData, ['location', 'category', 'agent', 'limit'], companies), groupRender5, true, '', trafficLegend5);
-
-                sec7Html += renderSectionStrict(7, `<span class="sec-num-badge-7" style="${num7?'':'display:none;'}">${num7}</span> 단위사업체별 종합 보고서 - ${comp} (화학물질 위험성 평가)`, sec6Thead, buildGroupRows(compSec6Data, ['department', 'category', 'agent'], companies), groupRender6, true, '', '', "데이터가 없습니다.", true);
-                
-                sec7Html += `
-                    <div class="a4-page page-container flex flex-col justify-start major-section" data-section="7">
-                        <div class="section-title border-b-2 border-green-600 pb-2 mb-4 font-bold text-gray-900 text-xl"><span class="sec-num-badge-7" style="${num7?'':'display:none;'}">${num7}</span> 단위사업체별 종합 보고서 - ${comp} (위험성 평가 참고자료)</div>
+                reportHtml += `
+                    <div class="a4-page page-container flex flex-col justify-start major-section" data-section="6">
+                        <div class="section-title border-b-2 border-green-600 pb-2 mb-4 font-bold text-gray-900 text-xl"><span class="sec-num-badge-6" style="${num6?'':'display:none;'}">${num6}</span> 작업환경측정 화학물질 위험성 평가 (참고자료)</div>
                         ${extra6Content}
                     </div>
                 `;
-            });
-            reportHtml += sec7Html;
+
+                const reductionGrouped = buildGroupRows(sec6Data, ['department', 'category', 'agent'], companies);
+                let reductionRows = [];
+                let rSeq = 1;
+                
+                reductionGrouped.forEach(r => {
+                    let extractedUnit = r.rawLimit ? String(r.rawLimit).replace(/^[\d\.\,\s]+/g, '').trim().toLowerCase() : '';
+                    let exLv = r.lightColor === 'bg-green-500' ? 1 : (r.lightColor === 'bg-yellow-400' ? 2 : (r.lightColor === 'bg-orange-400' ? 3 : 4));
+                    let limit = parseFloat(r.limit);
+                    let hzLv = 1;
+                    if (extractedUnit.includes('mg') || r.cat === '분진' || r.cat === '금속류' || r.cat === '금속가공유') {
+                        hzLv = limit > 1 ? 1 : (limit > 0.1 ? 2 : (limit > 0.01 ? 3 : 4));
+                    } else {
+                        hzLv = limit > 50 ? 1 : (limit > 5 ? 2 : (limit > 0.5 ? 3 : 4));
+                    }
+
+                    let cmrList = getCMRInfo(r.agent);
+                    if (cmrList.length > 0) {
+                        hzLv = 4;
+                    }
+
+                    let rkLv = exLv * hzLv;
+                    
+                    let jud = '';
+                    let judColorClass = '';
+                    let riskBgClass = 'bg-gray-50';
+                    
+                    if (rkLv >= 12) { jud = '매우 높음'; judColorClass = 'text-red-600'; riskBgClass = 'bg-red-50'; }
+                    else if (rkLv >= 5) { jud = '높음'; judColorClass = 'text-orange-500'; riskBgClass = 'bg-orange-50'; }
+                    else if (rkLv >= 3) { jud = '보통'; judColorClass = 'text-yellow-600'; riskBgClass = 'bg-yellow-50'; }
+                    else { jud = '낮음'; judColorClass = 'text-green-600'; riskBgClass = 'bg-green-50'; }
+                    
+                    if (rkLv >= 3) {
+                        let measureText = '';
+                        const tag = (name) => `<span class="font-bold text-blue-700">[${name}]</span>`;
+                        const br = `<br>`;
+
+                        let ppeText = '';
+                        let agentName = r.agent.replace(/\s+/g, '');
+
+                        if (r.cat === '금속가공유') {
+                            ppeText = '방진마스크(특급/1급/2급 이상) 및 내유성 장갑 착용';
+                        } else if (agentName.includes('수산화나트륨') || agentName.includes('수산화칼륨') || agentName.includes('황산')) {
+                            ppeText = '내산성/내화학성 보호의/장갑, 보안경 및 방진마스크(특급/1급 이상) 착용';
+                        } else if (agentName.includes('염화비닐') || agentName.includes('톨리딘') || agentName.includes('불소') || agentName.includes('삼수소화비소') || agentName.includes('이산화질소') || agentName.includes('일산화질소') || agentName.includes('일산화탄소') || agentName.includes('포스겐') || agentName.includes('포스핀') || agentName.includes('메틸클로라이드') || agentName.includes('브롬화메틸') || agentName.includes('요오드화메틸') || agentName.includes('메탄올') || agentName.includes('질산')) {
+                            ppeText = '전면형 송기식 마스크 또는 자급식 공기호흡기, 보호복 착용';
+                        } else if (agentName.includes('암모니아') || agentName.includes('디메틸아민') || agentName.includes('메틸아민') || agentName.includes('에틸아민') || agentName.includes('트리에틸아민') || agentName.includes('히드라진')) {
+                            ppeText = '방독마스크(암모니아용) 및 화학물질용 보호장갑 착용';
+                        } else if (agentName.includes('염소')) {
+                            ppeText = '방독마스크(할로겐용) 및 화학물질용 보호장갑 착용';
+                        } else if (agentName.includes('이산화황') || agentName.includes('불화수소') || agentName.includes('브롬화수소') || agentName.includes('염화수소')) {
+                            ppeText = '방독마스크(아황산가스용) 및 화학물질용 보호장갑 착용';
+                        } else if (agentName.includes('시안화수소')) {
+                            ppeText = '방독마스크(시안화수소용) 및 화학물질용 보호장갑 착용';
+                        } else if (agentName.includes('석면') || agentName.includes('나프틸아민') || agentName.includes('디아니시딘') || agentName.includes('디클로로벤지딘') || agentName.includes('베릴륨') || agentName.includes('비소') || agentName.includes('크롬') || agentName.includes('황화니켈') || agentName.includes('사붕소산나트륨') || agentName.includes('인산') || agentName.includes('에틸헥실프탈레이트')) {
+                            ppeText = '특급/1급 방진마스크 및 적절한 보호복 착용';
+                        } else if (r.cat === '분진' || r.cat === '금속류') {
+                            ppeText = '특급 또는 1급 방진마스크(안면부 여과식/반면형) 지급 및 밀착 착용';
+                        } else if (r.cat === '유기화합물') {
+                            if (agentName.includes('에틸렌글리콜') || agentName.includes('무수말레산') || agentName.includes('무수프탈산') || agentName.includes('톨루엔디이소시아네이트') || agentName.includes('크레졸') || agentName.includes('콜타르피치') || agentName.includes('오존')) {
+                                ppeText = '겸용 마스크(유기화합물/방진), 불침투성 보호복/장갑 착용';
+                            } else {
+                                ppeText = '방독마스크(유기화합물용, KCs인증), 불침투성 보호복/장갑 착용';
+                            }
+                        } else if (r.cat === '산 및 알칼리류') {
+                            ppeText = '내산성/내화학성 보호의, 보호장갑, 보안경 및 방독마스크(산성용) 착용';
+                        } else if (r.cat === '허가 대상 유해물질') {
+                            ppeText = '전면형 방독/방진 투과식 마스크 또는 송기마스크 등 최고 수준 보호구 지급';
+                        } else {
+                            ppeText = '취급 물질의 물리화학적 특성에 적합한 KCs 인증 호흡기/피부 보호구 지급';
+                        }
+
+                        if(r.cat === '유기화합물') {
+                            measureText = `${tag('제거')} 해당 물질의 유해성이 낮은 유사/친환경 물질로의 대체(Substitution) 다각적 검토${br}` +
+                                          `${tag('격리')} 유기화합물 취급 공정 분리 및 작업자 원격 조작 전환${br}` +
+                                          `${tag('공학적대책')} 발생원 밀폐, 국소배기장치(적정 제어풍속 이상) 가동 및 활성탄 흡착탑 효율 유지${br}` +
+                                          `${tag('개인보호구')} ${ppeText}${br}` +
+                                          `${tag('교육및훈련')} 취급물질 MSDS 유해성 주지, 환기설비 사용법 및 보호구 밀착도 검사(Fit Test) 실습`;
+                        } else if(r.cat === '금속가공유') {
+                            measureText = `${tag('제거')} 인체 친화적 및 저독성 수용성 가공유로 대체 검토${br}` +
+                                          `${tag('격리')} 가공 기계(CNC 등) 완전 밀폐화 및 칩 컨베이어 자동화${br}` +
+                                          `${tag('공학적대책')} 국소배기장치(적정 제어풍속 이상) 및 오일미스트 집진기 필수 설치/가동${br}` +
+                                          `${tag('개인보호구')} ${ppeText}${br}` +
+                                          `${tag('교육및훈련')} 오일미스트 피부염 및 호흡기 질환 예방 교육, 작업 후 위생 관리 철저`;
+                        } else if(r.cat === '분진') {
+                            measureText = `${tag('제거')} 분말/가루 형태를 과립상 또는 액상 형태로 변경하여 원천적 비산 억제${br}` +
+                                          `${tag('격리')} 분진 발생 공정(분쇄/혼합 등) 격리실 운영 및 무인화 검토${br}` +
+                                          `${tag('공학적대책')} 비산원 밀폐, 국소배기장치(적정 제어풍속 이상) 가동 및 백필터/집진기 차압 점검${br}` +
+                                          `${tag('개인보호구')} ${ppeText}${br}` +
+                                          `${tag('교육및훈련')} 진폐증 예방 교육, 작업장 진공청소(건식청소 금지) 절차 및 필터 교체주기 교육`;
+                        } else if(r.cat === '금속류') {
+                            measureText = `${tag('제거')} 유해성이 낮은 용접봉/와이어로 대체 및 공법 변경(예: 아크→레이저) 검토${br}` +
+                                          `${tag('격리')} 흄 발생 공정 방진막/차광막 설치 및 작업 공간 완전 분리${br}` +
+                                          `${tag('공학적대책')} 발생원 밀폐화, 이동/고정식 국소배기장치(적정 제어풍속 이상) 적극 가동${br}` +
+                                          `${tag('개인보호구')} ${ppeText}${br}` +
+                                          `${tag('교육및훈련')} 금속열(Metal Fume Fever) 및 중독 예방 교육, 호흡기 보호구 올바른 착용법 실습`;
+                        } else if(r.cat === '산 및 알칼리류') {
+                            measureText = `${tag('제거')} 고농도 취급을 피하고 약산성/약알칼리성 등 상대적 안전 물질로 대체 검토${br}` +
+                                          `${tag('격리')} 부식성 물질 취급 탱크/배관 밀폐화 및 원격 제어 시스템 도입${br}` +
+                                          `${tag('공학적대책')} 내부식성 국소배기장치(적정 제어풍속 이상) 가동, 스크러버(세정식 집진기) pH 관리${br}` +
+                                          `${tag('개인보호구')} ${ppeText}${br}` +
+                                          `${tag('교육및훈련')} 누출 시 비상대응조치(비상샤워기/세안설비 사용법), 화학화상 예방 교육`;
+                        } else if(r.cat === '허가 대상 유해물질') {
+                            measureText = `${tag('제거')} 발암성/생식독성(CMR) 물질 사용 취소 및 비발암성 안전 물질로 즉각적 대체 최우선 검토${br}` +
+                                          `${tag('격리')} 취급 공정 완전 격리(밀폐실) 및 관계자 외 출입 엄격 통제${br}` +
+                                          `${tag('공학적대책')} 내부 음압 유지, 배기구 고효율 필터(HEPA) 장착된 국소배기장치(적정 제어풍속 이상) 가동${br}` +
+                                          `${tag('개인보호구')} ${ppeText}${br}` +
+                                          `${tag('교육및훈련')} 발암/생식독성 특별 유해성 주지, 작업 전후 탈의/샤워 절차 및 오염 세탁물 분리 교육`;
+                        } else {
+                            measureText = `${tag('제거')} 해당 물질의 유해성이 낮은 유사/친환경 물질로의 대체(Substitution) 다각적 검토${br}` +
+                                          `${tag('격리')} 발생원 격리 및 취급 구역 제한을 통한 비노출 근로자 철저 보호${br}` +
+                                          `${tag('공학적대책')} 발생원 밀폐 및 공정 맞춤형 국소배기장치(적정 제어풍속 이상) 최적화 가동${br}` +
+                                          `${tag('개인보호구')} ${ppeText}${br}` +
+                                          `${tag('교육및훈련')} 유해인자별 건강장해 예방 교육, 작업표준 준수 및 보호구 정기 점검 훈련`;
+                        }
+
+                        let postExLv = 1;
+                        let postHzLv = hzLv;
+                        let postRkLv = postExLv * postHzLv; 
+                        let postJud = ''; let postJudColorClass = ''; let postJudBgClass = 'bg-gray-50';
+                        
+                        if (postRkLv >= 12) { postJud = '매우 높음'; postJudColorClass = 'text-red-600'; postJudBgClass = 'bg-red-50'; }
+                        else if (postRkLv >= 5) { postJud = '높음'; postJudColorClass = 'text-orange-500'; postJudBgClass = 'bg-orange-50'; }
+                        else if (postRkLv >= 3) { postJud = '보통'; postJudColorClass = 'text-yellow-600'; postJudBgClass = 'bg-yellow-50'; }
+                        else { postJud = '낮음'; postJudColorClass = 'text-green-600'; postJudBgClass = 'bg-green-50'; }
+
+                        reductionRows.push({
+                            seq: rSeq++,
+                            company: r.company,
+                            department: r.mainKey,
+                            agent: r.agent,
+                            exLv: exLv,
+                            hzLv: hzLv,
+                            rkLv: rkLv,
+                            jud: jud,
+                            judColor: judColorClass,
+                            judBg: riskBgClass,
+                            measure: measureText,
+                            postExLv: postExLv,
+                            postHzLv: postHzLv,
+                            postRkLv: postRkLv,
+                            postJud: postJud,
+                            postJudColor: postJudColorClass,
+                            postJudBg: postJudBgClass
+                        });
+                    }
+                });
+
+                let reductionHtmlTbody = '';
+                if (reductionRows.length === 0) {
+                    reductionHtmlTbody = `<tr><td colspan="13" class="border border-green-300 py-10 text-center text-gray-500 font-bold">위험성 판정이 '보통' 이상인 공정 및 유해인자가 없습니다.</td></tr>`;
+                } else {
+                    reductionRows.forEach(row => {
+                        reductionHtmlTbody += `
+                        <tr style="font-size: 12px;">
+                            <td class="border border-green-300 py-2 text-center text-gray-700 font-medium">${row.seq}</td>
+                            <td class="border border-green-300 py-2 text-center text-gray-800 break-keep font-medium">${row.company}</td>
+                            <td class="border border-green-300 py-2 text-center text-gray-800 break-keep">${row.department}</td>
+                            <td class="border border-green-300 py-2 text-left text-gray-800 font-bold break-keep px-2">${row.agent}</td>
+                            <td class="border border-green-300 py-2 text-center text-green-600 font-bold bg-green-50/30">${row.exLv}</td>
+                            <td class="border border-green-300 py-2 text-center text-blue-600 font-bold bg-blue-50/30">${row.hzLv}</td>
+                            <td class="border border-green-300 py-2 text-center font-extrabold ${row.judBg} tracking-tight" style="font-size: 13.5px;">
+                                <span class="${row.judColor}">${row.rkLv}(${row.jud})</span>
+                            </td>
+                            <td class="border border-green-300 py-2.5 px-3 text-left text-gray-700 break-keep leading-relaxed">${row.measure}</td>
+                            <td class="border border-green-300 py-2 text-center text-green-600 font-bold bg-green-50/30">${row.postExLv}</td>
+                            <td class="border border-green-300 py-2 text-center text-blue-600 font-bold bg-blue-50/30">${row.postHzLv}</td>
+                            <td class="border border-green-300 py-2 text-center font-extrabold ${row.postJudBg} tracking-tight" style="font-size: 13.5px;">
+                                <span class="${row.postJudColor}">${row.postRkLv}(${row.postJud})</span>
+                            </td>
+                            <td class="border border-green-300 py-2 text-center bg-white"></td>
+                            <td class="border border-green-300 py-2 text-center bg-white"></td>
+                        </tr>
+                        `;
+                    });
+                }
+
+                reportHtml += `
+                    <div class="a4-page-landscape page-container-landscape flex flex-col justify-start major-section" data-section="6">
+                        <div class="section-title border-b-2 border-green-600 pb-2 mb-4 font-bold text-gray-900 text-xl"><span class="sec-num-badge-6" style="${num6?'':'display:none;'}">${num6}</span> 화학물질 위험성평가 감소대책 (실행계획서)</div>
+                        <div class="flex flex-col flex-1 w-full bg-white">
+                            <p class="text-[0.8rem] text-gray-600 mb-3 font-medium">※ 위험성평가 결과 판정이 '보통' 이상(위험성 3 이상)인 공정 및 유해인자에 한하여 우선적인 감소대책을 수립합니다.<br>※ <span class="text-blue-600 font-bold">개선 후 위험성</span>은 감소대책이 완벽히 이행되어 '노출수준(1등급)'으로 낮아졌을 때를 가정한 예측값입니다. (화학물질 고유의 유해성은 변하지 않음)</p>
+                            <table style="width: 100%; border-collapse: collapse; font-size: 12px;" class="border border-green-300">
+                                <thead>
+                                    <tr style="font-size: 12px;">
+                                        <th class="bg-green-100 border border-green-300 py-1.5 px-1 w-[3%] text-center font-bold text-gray-800">No.</th>
+                                        <th class="bg-green-100 border border-green-300 py-1.5 px-1 w-[6%] text-center font-bold text-gray-800">사업장명</th>
+                                        <th class="bg-green-100 border border-green-300 py-1.5 px-1 w-[7%] text-center font-bold text-gray-800">부서(공정)명</th>
+                                        <th class="bg-green-100 border border-green-300 py-1.5 px-1 w-[10%] text-center font-bold text-gray-800 break-keep">유해인자명</th>
+                                        <th class="bg-green-100 border border-green-300 py-1.5 px-1 w-[4%] text-center font-bold text-green-700 whitespace-nowrap">노출<br>수준</th>
+                                        <th class="bg-green-100 border border-green-300 py-1.5 px-1 w-[4%] text-center font-bold text-blue-700 whitespace-nowrap">유해성</th>
+                                        <th class="bg-green-100 border border-green-300 py-1.5 px-1 w-[6%] text-center font-bold text-gray-800 whitespace-nowrap" style="font-size: 13.5px;">위험성<br>(판정)</th>
+                                        <th class="bg-green-100 border border-green-300 py-1.5 px-1 w-[30%] text-center font-bold text-gray-800">위험성 감소대책(예시)</th>
+                                        <th class="bg-green-100 border border-green-300 py-1.5 px-1 w-[6%] text-center font-bold text-green-700 whitespace-nowrap">노출<br>수준</th>
+                                        <th class="bg-green-100 border border-green-300 py-1.5 px-1 w-[6%] text-center font-bold text-blue-700 whitespace-nowrap">유해성</th>
+                                        <th class="bg-green-100 border border-green-300 py-1.5 px-1 w-[6%] text-center font-bold text-gray-800 break-keep" style="font-size: 13.5px;">개선 후<br>위험성</th>
+                                        <th class="bg-green-100 border border-green-300 py-1.5 px-1 w-[8%] text-center font-bold text-gray-800 whitespace-nowrap">개선일정<br>(담당자)</th>
+                                        <th class="bg-green-100 border border-green-300 py-1.5 px-1 w-[4%] text-center font-bold text-gray-800 whitespace-nowrap">완료일</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    ${reductionHtmlTbody}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                `;
+            }
+
+            // --- Section 7 ---
+            if (showSec7) {
+                let sec7Html = '';
+                companies.forEach((comp, idx) => {
+                    const compData = data.filter(d => d.company === comp);
+                    const compExcData = compData.filter(d => d.isExceed);
+                    const compSec6Data = compData.filter(d => d.category !== '물리적 인자' && !d.agent.replace(/\s+/g, '').includes('혼합물질'));
+
+                    let compSec4Rows = [];
+                    sortedCats.forEach(cat => {
+                        Array.from(categoryMap[cat]).sort().forEach(agent => {
+                            const filtered = compData.filter(d => d.category === cat && d.agent === agent);
+                            const n = filtered.length;
+                            const exc = filtered.filter(d => d.isExceed).length;
+                            if (n > 0) {
+                                compSec4Rows.push({ mainKey: cat, agent: agent, n, exc, groupId: cat, subKey: cat }); 
+                            }
+                        });
+                    });
+                    
+                    const sec7_1_Thead = `<tr><th width="20%">분류</th><th width="40%">유해인자</th><th width="20%">측정건수</th><th width="20%">초과건수</th></tr>`;
+                    const sec7_1_Render = (r, isG, isNG, rs) => {
+                        let groupTd = '';
+                        if (isG && isNG) {
+                            groupTd = `<td rowspan="${rs}" class="border-green-300 bg-white align-middle font-bold break-keep">${r.mainKey}</td>`;
+                        }
+                        const agentTd = getAgentTd(r.agent, 'text-left border-green-300 bg-white align-middle');
+                        return `<tr>${groupTd}${agentTd}<td class="border-green-300 bg-white">${r.n}</td><td class="border-green-300 bg-white font-bold ${r.exc > 0 ? 'text-red-600' : ''}">${r.exc}</td></tr>`;
+                    };
+                    sec7Html += renderSectionStrict(7, `<span class="sec-num-badge-7" style="${num7?'':'display:none;'}">${num7}</span> 단위사업체별 종합 보고서 - ${comp} (종합 현황)`, sec7_1_Thead, compSec4Rows, sec7_1_Render, true, '', '');
+
+                    sec7Html += renderSectionStrict(7, `<span class="sec-num-badge-7" style="${num7?'':'display:none;'}">${num7}</span> 단위사업체별 종합 보고서 - ${comp} (초과 현황 리스트)`, sec2Thead, compExcData, sec2Render, false, '', '', '노출기준 초과 유해인자가 없습니다.');
+
+                    const createSection7ChartPage = (title, prefix, pagePart) => {
+                        let html = `<div class="a4-page page-container flex flex-col justify-start major-section" data-section="7">`;
+                        html += `<div class="section-title mt-4 border-b-2 border-green-600 pb-2 mb-4 font-bold text-gray-900 text-xl"><span class="sec-num-badge-7" style="${num7?'':'display:none;'}">${num7}</span> ${title}</div>`;
+                        
+                        html += `<div class="flex flex-col gap-6 w-full mb-2">`;
+                        
+                        if (pagePart === 1) {
+                            html += `
+                                <div class="prevent-break bg-white p-4 border border-green-300 rounded-xl shadow-lg flex flex-col items-center w-full">
+                                    <h3 class="text-[1rem] font-bold text-center mb-3 bg-gradient-to-r from-green-50 to-green-100 w-full py-2 rounded-lg border border-green-200">1) 측정항목 분포도 <span id="title_${prefix}_1" class="ml-1"></span></h3>
+                                    <div id="chart_${prefix}_1" style="height: 340px; width: 100%;"></div>
+                                </div>
+                                <div class="prevent-break bg-white p-4 border border-green-300 rounded-xl shadow-lg flex flex-col items-center w-full">
+                                    <h3 class="text-[1rem] font-bold text-center mb-3 bg-gradient-to-r from-green-50 to-green-100 w-full py-2 rounded-lg border border-green-200">2) 총 측정건수 대비 분류별 초과 건수 <span id="title_${prefix}_2" class="ml-1"></span></h3>
+                                    <div id="chart_${prefix}_2" style="height: 340px; width: 100%;"></div>
+                                </div>
+                            `;
+                        } else {
+                            html += `
+                                <div class="prevent-break bg-white p-4 border border-green-300 rounded-xl shadow-lg flex flex-col items-center w-full">
+                                    <h3 class="text-[1rem] font-bold text-center mb-3 bg-gradient-to-r from-green-50 to-green-100 w-full py-2 rounded-lg border border-green-200">3) 분류별 최대 노출 분포(노출기준=100%)</h3>
+                                    <div id="chart_${prefix}_3" style="height: 340px; width: 100%;"></div>
+                                </div>
+                                <div class="prevent-break bg-white p-4 border border-green-300 rounded-xl shadow-lg flex flex-col items-center w-full">
+                                    <h3 class="text-[1rem] font-bold text-center mb-3 bg-gradient-to-r from-green-50 to-green-100 w-full py-2 rounded-lg border border-green-200">4) 소음 발생수준별 분포도 <span id="title_${prefix}_4" class="ml-1"></span></h3>
+                                    <div id="chart_${prefix}_4" style="height: 340px; width: 100%;"></div>
+                                </div>
+                            `;
+                        }
+                        html += `</div></div>`;
+                        return html;
+                    };
+
+                    sec7Html += createSection7ChartPage(`단위사업체별 종합 보고서 - ${comp} (측정 분포 및 초과 현황 1/2)`, `sec7_${idx}`, 1);
+                    sec7Html += createSection7ChartPage(`단위사업체별 종합 보고서 - ${comp} (측정 분포 및 초과 현황 2/2)`, `sec7_${idx}`, 2);
+
+                    sec7Html += renderSectionStrict(7, `<span class="sec-num-badge-7" style="${num7?'':'display:none;'}">${num7}</span> 단위사업체별 종합 보고서 - ${comp} (단위작업장소별 측정 현황)`, sec5Thead, buildGroupRows(compData, ['location', 'category', 'agent', 'limit'], companies), groupRender5, true, '', trafficLegend5);
+
+                    sec7Html += renderSectionStrict(7, `<span class="sec-num-badge-7" style="${num7?'':'display:none;'}">${num7}</span> 단위사업체별 종합 보고서 - ${comp} (화학물질 위험성 평가)`, sec6Thead, buildGroupRows(compSec6Data, ['department', 'category', 'agent'], companies), groupRender6, true, '', '', "데이터가 없습니다.", true);
+                    
+                    sec7Html += `
+                        <div class="a4-page page-container flex flex-col justify-start major-section" data-section="7">
+                            <div class="section-title border-b-2 border-green-600 pb-2 mb-4 font-bold text-gray-900 text-xl"><span class="sec-num-badge-7" style="${num7?'':'display:none;'}">${num7}</span> 단위사업체별 종합 보고서 - ${comp} (위험성 평가 참고자료)</div>
+                            ${extra6Content}
+                        </div>
+                    `;
+                });
+                reportHtml += sec7Html;
+            }
 
             document.getElementById('report-content').innerHTML = reportHtml;
             updateCharts(data, companies);
@@ -1951,14 +1966,23 @@
             });
             allChartInstances = [];
 
-            const globalStats = getChartStats(data);
-            renderFourCharts(globalStats, 'global');
+            const isChecked = (val) => {
+                const cb = document.querySelector(`input.print-checkbox[value="${val}"]`);
+                return cb ? cb.checked : true;
+            };
 
-            companies.forEach((comp, idx) => {
-                const compData = data.filter(d => d.company === comp);
-                const compStats = getChartStats(compData);
-                renderFourCharts(compStats, `sec7_${idx}`);
-            });
+            if (isChecked('3')) {
+                const globalStats = getChartStats(data);
+                renderFourCharts(globalStats, 'global');
+            }
+
+            if (isChecked('7')) {
+                companies.forEach((comp, idx) => {
+                    const compData = data.filter(d => d.company === comp);
+                    const compStats = getChartStats(compData);
+                    renderFourCharts(compStats, `sec7_${idx}`);
+                });
+            }
         }
 
         function executeNativePrint() {
@@ -1974,7 +1998,7 @@
                 return;
             }
 
-            const allPages = document.querySelectorAll('.page-container');
+            const allPages = document.querySelectorAll('.a4-page, .a4-page-landscape');
             
             allPages.forEach(page => { 
                 const section = parseInt(page.getAttribute('data-section'));

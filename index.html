@@ -778,6 +778,9 @@
             const n = group.length;
             if (n === 0) return { n:0, excCount:0, max:0, min:0, gm:0, gsd:0, rawMaxNum: 0 };
             
+            const first = group[0];
+            const isPhysical = first && first.category === '물리적 인자';
+            
             let maxVal = -Infinity;
             let minVal = Infinity;
             let maxRaw = '';
@@ -811,6 +814,10 @@
                 const upperRaw = String(raw).toUpperCase().replace(/\s+/g, '');
                 if (upperRaw.includes('N.D') || upperRaw.includes('ND') || upperRaw.includes('불검출')) return '불검출';
                 if (upperRaw.includes('<')) return '검출한계';
+                
+                if (isPhysical) {
+                    return val.toFixed(2);
+                }
                 return val.toFixed(4);
             };
 

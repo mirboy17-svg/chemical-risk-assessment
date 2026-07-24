@@ -739,12 +739,12 @@
 
                 let value = parseFloat(valStr);
                 
-                if (valStr.toUpperCase().includes('N.D') || valStr.includes('불검출') || valStr.includes('ND') || valStr.includes('<')) value = 0; 
+                if (valStr.toUpperCase().includes('N.D') || valStr.includes('불검출') || valStr.includes('ND') || valStr.includes('<') || valStr.includes('검출한계')) value = 0; 
                 else if (isNaN(value)) value = 0;
 
                 const prevValStr = prevValKey && row[prevValKey] ? String(row[prevValKey]).trim() : '';
                 let prevValue = parseFloat(prevValStr);
-                if (prevValStr.toUpperCase().includes('N.D') || prevValStr.includes('불검출') || prevValStr.includes('ND') || prevValStr.includes('<')) prevValue = 0; 
+                if (prevValStr.toUpperCase().includes('N.D') || prevValStr.includes('불검출') || prevValStr.includes('ND') || prevValStr.includes('<') || prevValStr.includes('검출한계')) prevValue = 0; 
                 else if (isNaN(prevValue) || prevValStr === '') prevValue = null; 
 
                 let rowDate = null;
@@ -794,8 +794,28 @@
                 if (isNaN(v) || v < 0) v = 0;
                 numValues.push(v);
                 
-                if (v > maxVal) { maxVal = v; maxRaw = d.rawValStr || String(d.value); }
-                if (v < minVal) { minVal = v; minRaw = d.rawValStr || String(d.value); }
+                if (v > maxVal) { 
+                    maxVal = v; 
+                    maxRaw = d.rawValStr || String(d.value); 
+                } else if (v === maxVal) {
+                    const curStr = String(d.rawValStr || '').toUpperCase().replace(/\s+/g, '');
+                    const oldStr = String(maxRaw).toUpperCase().replace(/\s+/g, '');
+                    if (!oldStr.match(/N\.D|ND|불검출|<|검출한계/) && curStr.match(/N\.D|ND|불검출|<|검출한계/)) {
+                        maxRaw = d.rawValStr;
+                    }
+                }
+
+                if (v < minVal) { 
+                    minVal = v; 
+                    minRaw = d.rawValStr || String(d.value); 
+                } else if (v === minVal) {
+                    const curStr = String(d.rawValStr || '').toUpperCase().replace(/\s+/g, '');
+                    const oldStr = String(minRaw).toUpperCase().replace(/\s+/g, '');
+                    if (!oldStr.match(/N\.D|ND|불검출|<|검출한계/) && curStr.match(/N\.D|ND|불검출|<|검출한계/)) {
+                        minRaw = d.rawValStr;
+                    }
+                }
+                
                 if (v > (parseFloat(limit) || 999999)) excCount++;
                 
                 logSum += Math.log(v <= 0 ? 0.0001 : v);
@@ -813,7 +833,8 @@
             const formatValue = (val, raw) => {
                 const upperRaw = String(raw).toUpperCase().replace(/\s+/g, '');
                 if (upperRaw.includes('N.D') || upperRaw.includes('ND') || upperRaw.includes('불검출')) return '불검출';
-                if (upperRaw.includes('<')) return '검출한계';
+                // ★ '검출한계' 텍스트에 HTML span 태그를 적용하여 글자 크기와 줄바꿈 속성을 조절
+                if (upperRaw.includes('<') || upperRaw.includes('검출한계')) return '<span style="font-size: 0.65rem; letter-spacing: -0.05em; white-space: nowrap;">검출한계</span>';
                 
                 if (isPhysical) {
                     return val.toFixed(2);

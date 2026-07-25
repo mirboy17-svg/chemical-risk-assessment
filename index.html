@@ -124,7 +124,8 @@
         .text-red-600 { color: #dc2626; }
         
         .section-title { font-size: 1.25rem; font-weight: 700; color: #111827; border-bottom: 2px solid #16a34a; padding-bottom: 0.5rem; margin-bottom: 1rem; display: flex; align-items: center; margin-top: 1rem; }
-        .section-title span { background-color: #16a34a; color: white; padding: 0.1rem 0.5rem; border-radius: 4px; margin-right: 0.5rem; font-size: 1rem; }
+        .section-title span[class*="sec-num-badge"] { background-color: #16a34a; color: white; padding: 0.1rem 0.5rem; border-radius: 4px; margin-right: 0.5rem; font-size: 1rem; }
+        .section-title span[class*="sec-title-text"] { background-color: transparent; color: #000000; padding: 0; border-radius: 0; margin: 0; font-size: inherit; }
         
         #loading-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255,255,255,0.95); z-index: 9999; flex-direction: column; justify-content: center; align-items: center; text-align: center; }
         .loader { border: 8px solid #f3f3f3; border-top: 8px solid #dc2626; border-radius: 50%; width: 60px; height: 60px; animation: spin 1s linear infinite; }
@@ -222,37 +223,44 @@
             <div class="flex items-center px-2 py-1 hover:bg-blue-50 rounded transition">
                 <input type="checkbox" value="1" class="print-checkbox w-4 h-4 text-blue-600 rounded border-gray-300 cursor-pointer mr-2" checked>
                 <input type="text" id="menu-num-1" value="1" oninput="updateSectionNumber(1, this.value)" class="w-8 text-center text-sm font-bold bg-white border border-gray-300 rounded focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none py-0.5">
-                <a href="#section-1" onclick="if(window.innerWidth < 1024) toggleSidebar()" class="block py-1.5 px-2 flex-1 text-sm font-bold text-gray-700 hover:text-blue-600 truncate">작업환경측정 통계 분석</a>
+                <input type="text" id="menu-title-input-1" value="작업환경측정 통계 분석" oninput="updateMenuTitle(1, this.value)" class="flex-1 min-w-0 ml-1 py-1 px-1.5 text-sm font-bold text-gray-700 bg-transparent border border-transparent hover:border-gray-300 focus:bg-white focus:border-blue-500 rounded outline-none truncate transition">
+                <a href="#section-1" title="해당 섹션으로 이동" onclick="if(window.innerWidth < 1024) toggleSidebar()" class="p-1 ml-1 text-gray-400 hover:text-blue-600 rounded hover:bg-blue-100 transition"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg></a>
             </div>
             <div class="flex items-center px-2 py-1 hover:bg-blue-50 rounded transition">
                 <input type="checkbox" value="2" class="print-checkbox w-4 h-4 text-blue-600 rounded border-gray-300 cursor-pointer mr-2" checked>
                 <input type="text" id="menu-num-2" value="2" oninput="updateSectionNumber(2, this.value)" class="w-8 text-center text-sm font-bold bg-white border border-gray-300 rounded focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none py-0.5">
-                <a href="#section-2" onclick="if(window.innerWidth < 1024) toggleSidebar()" class="block py-1.5 px-2 flex-1 text-sm font-bold text-gray-700 hover:text-blue-600 truncate">노출기준 초과 현황 리스트</a>
+                <input type="text" id="menu-title-input-2" value="노출기준 초과 현황 리스트" oninput="updateMenuTitle(2, this.value)" class="flex-1 min-w-0 ml-1 py-1 px-1.5 text-sm font-bold text-gray-700 bg-transparent border border-transparent hover:border-gray-300 focus:bg-white focus:border-blue-500 rounded outline-none truncate transition">
+                <a href="#section-2" title="해당 섹션으로 이동" onclick="if(window.innerWidth < 1024) toggleSidebar()" class="p-1 ml-1 text-gray-400 hover:text-blue-600 rounded hover:bg-blue-100 transition"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg></a>
             </div>
             <div class="flex items-center px-2 py-1 hover:bg-blue-50 rounded transition">
                 <input type="checkbox" value="3" class="print-checkbox w-4 h-4 text-blue-600 rounded border-gray-300 cursor-pointer mr-2" checked>
                 <input type="text" id="menu-num-3" value="3" oninput="updateSectionNumber(3, this.value)" class="w-8 text-center text-sm font-bold bg-white border border-gray-300 rounded focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none py-0.5">
-                <a href="#section-3" onclick="if(window.innerWidth < 1024) toggleSidebar()" class="block py-1.5 px-2 flex-1 text-sm font-bold text-gray-700 hover:text-blue-600 truncate">분류별 측정 분포 및 초과 현황</a>
+                <input type="text" id="menu-title-input-3" value="분류별 측정 분포 및 초과 현황" oninput="updateMenuTitle(3, this.value)" class="flex-1 min-w-0 ml-1 py-1 px-1.5 text-sm font-bold text-gray-700 bg-transparent border border-transparent hover:border-gray-300 focus:bg-white focus:border-blue-500 rounded outline-none truncate transition">
+                <a href="#section-3" title="해당 섹션으로 이동" onclick="if(window.innerWidth < 1024) toggleSidebar()" class="p-1 ml-1 text-gray-400 hover:text-blue-600 rounded hover:bg-blue-100 transition"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg></a>
             </div>
             <div class="flex items-center px-2 py-1 hover:bg-blue-50 rounded transition">
                 <input type="checkbox" value="4" class="print-checkbox w-4 h-4 text-blue-600 rounded border-gray-300 cursor-pointer mr-2" checked>
                 <input type="text" id="menu-num-4" value="4" oninput="updateSectionNumber(4, this.value)" class="w-8 text-center text-sm font-bold bg-white border border-gray-300 rounded focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none py-0.5">
-                <a href="#section-4" onclick="if(window.innerWidth < 1024) toggleSidebar()" class="block py-1.5 px-2 flex-1 text-sm font-bold text-gray-700 hover:text-blue-600 truncate">단위사업체별 종합 현황</a>
+                <input type="text" id="menu-title-input-4" value="단위사업체별 종합 현황" oninput="updateMenuTitle(4, this.value)" class="flex-1 min-w-0 ml-1 py-1 px-1.5 text-sm font-bold text-gray-700 bg-transparent border border-transparent hover:border-gray-300 focus:bg-white focus:border-blue-500 rounded outline-none truncate transition">
+                <a href="#section-4" title="해당 섹션으로 이동" onclick="if(window.innerWidth < 1024) toggleSidebar()" class="p-1 ml-1 text-gray-400 hover:text-blue-600 rounded hover:bg-blue-100 transition"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg></a>
             </div>
             <div class="flex items-center px-2 py-1 hover:bg-blue-50 rounded transition">
                 <input type="checkbox" value="5" class="print-checkbox w-4 h-4 text-blue-600 rounded border-gray-300 cursor-pointer mr-2" checked>
                 <input type="text" id="menu-num-5" value="5" oninput="updateSectionNumber(5, this.value)" class="w-8 text-center text-sm font-bold bg-white border border-gray-300 rounded focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none py-0.5">
-                <a href="#section-5" onclick="if(window.innerWidth < 1024) toggleSidebar()" class="block py-1.5 px-2 flex-1 text-sm font-bold text-gray-700 hover:text-blue-600 truncate">단위작업장소별 측정 현황</a>
+                <input type="text" id="menu-title-input-5" value="단위작업장소별 측정 현황" oninput="updateMenuTitle(5, this.value)" class="flex-1 min-w-0 ml-1 py-1 px-1.5 text-sm font-bold text-gray-700 bg-transparent border border-transparent hover:border-gray-300 focus:bg-white focus:border-blue-500 rounded outline-none truncate transition">
+                <a href="#section-5" title="해당 섹션으로 이동" onclick="if(window.innerWidth < 1024) toggleSidebar()" class="p-1 ml-1 text-gray-400 hover:text-blue-600 rounded hover:bg-blue-100 transition"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg></a>
             </div>
             <div class="flex items-center px-2 py-1 hover:bg-blue-50 rounded transition">
                 <input type="checkbox" value="6" class="print-checkbox w-4 h-4 text-blue-600 rounded border-gray-300 cursor-pointer mr-2" checked>
                 <input type="text" id="menu-num-6" value="6" oninput="updateSectionNumber(6, this.value)" class="w-8 text-center text-sm font-bold bg-white border border-gray-300 rounded focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none py-0.5">
-                <a href="#section-6" onclick="if(window.innerWidth < 1024) toggleSidebar()" class="block py-1.5 px-2 flex-1 text-sm font-bold text-gray-700 hover:text-blue-600 truncate">화학물질 위험성 평가</a>
+                <input type="text" id="menu-title-input-6" value="화학물질 위험성 평가" oninput="updateMenuTitle(6, this.value)" class="flex-1 min-w-0 ml-1 py-1 px-1.5 text-sm font-bold text-gray-700 bg-transparent border border-transparent hover:border-gray-300 focus:bg-white focus:border-blue-500 rounded outline-none truncate transition">
+                <a href="#section-6" title="해당 섹션으로 이동" onclick="if(window.innerWidth < 1024) toggleSidebar()" class="p-1 ml-1 text-gray-400 hover:text-blue-600 rounded hover:bg-blue-100 transition"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg></a>
             </div>
             <div class="flex items-center px-2 py-1 hover:bg-blue-50 rounded transition">
                 <input type="checkbox" value="7" class="print-checkbox w-4 h-4 text-blue-600 rounded border-gray-300 cursor-pointer mr-2" checked>
                 <input type="text" id="menu-num-7" value="7" oninput="updateSectionNumber(7, this.value)" class="w-8 text-center text-sm font-bold bg-white border border-gray-300 rounded focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none py-0.5">
-                <a href="#section-7" onclick="if(window.innerWidth < 1024) toggleSidebar()" class="block py-1.5 px-2 flex-1 text-sm font-bold text-gray-700 hover:text-blue-600 truncate">단위사업체별 종합 보고서</a>
+                <input type="text" id="menu-title-input-7" value="단위사업체별 종합 보고서" oninput="updateMenuTitle(7, this.value)" class="flex-1 min-w-0 ml-1 py-1 px-1.5 text-sm font-bold text-gray-700 bg-transparent border border-transparent hover:border-gray-300 focus:bg-white focus:border-blue-500 rounded outline-none truncate transition">
+                <a href="#section-7" title="해당 섹션으로 이동" onclick="if(window.innerWidth < 1024) toggleSidebar()" class="p-1 ml-1 text-gray-400 hover:text-blue-600 rounded hover:bg-blue-100 transition"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg></a>
             </div>
         </div>
 
@@ -361,13 +369,13 @@
                     출력할 보고서 항목 선택
                 </h4>
                 <div class="grid grid-cols-2 gap-x-2 gap-y-2 text-xs text-gray-800">
-                    <label class="flex items-center cursor-pointer hover:bg-blue-100 p-1.5 rounded border border-transparent transition" id="modal-item-1"><input type="checkbox" value="1" class="pdf-checkbox mr-2 w-4 h-4 text-blue-600 rounded border-gray-400 focus:ring-blue-500" checked> <span id="modal-num-1" class="font-bold mr-1">1.</span> 작업환경측정 통계 분석</label>
-                    <label class="flex items-center cursor-pointer hover:bg-blue-100 p-1.5 rounded border border-transparent transition" id="modal-item-2"><input type="checkbox" value="2" class="pdf-checkbox mr-2 w-4 h-4 text-blue-600 rounded border-gray-400 focus:ring-blue-500" checked> <span id="modal-num-2" class="font-bold mr-1">2.</span> 노출기준 초과 현황</label>
-                    <label class="flex items-center cursor-pointer hover:bg-blue-100 p-1.5 rounded border border-transparent transition" id="modal-item-3"><input type="checkbox" value="3" class="pdf-checkbox mr-2 w-4 h-4 text-blue-600 rounded border-gray-400 focus:ring-blue-500" checked> <span id="modal-num-3" class="font-bold mr-1">3.</span> 분류별 측정 분포 차트</label>
-                    <label class="flex items-center cursor-pointer hover:bg-blue-100 p-1.5 rounded border border-transparent transition" id="modal-item-4"><input type="checkbox" value="4" class="pdf-checkbox mr-2 w-4 h-4 text-blue-600 rounded border-gray-400 focus:ring-blue-500" checked> <span id="modal-num-4" class="font-bold mr-1">4.</span> 단위사업체별 종합 현황</label>
-                    <label class="flex items-center cursor-pointer hover:bg-blue-100 p-1.5 rounded border border-transparent transition" id="modal-item-5"><input type="checkbox" value="5" class="pdf-checkbox mr-2 w-4 h-4 text-blue-600 rounded border-gray-400 focus:ring-blue-500" checked> <span id="modal-num-5" class="font-bold mr-1">5.</span> 단위작업장소별 측정 현황</label>
-                    <label class="flex items-center cursor-pointer hover:bg-blue-100 p-1.5 rounded border border-transparent transition" id="modal-item-6"><input type="checkbox" value="6" class="pdf-checkbox mr-2 w-4 h-4 text-blue-600 rounded border-gray-400 focus:ring-blue-500" checked> <span id="modal-num-6" class="font-bold mr-1">6.</span> 화학물질 위험성 평가</label>
-                    <label class="flex items-center cursor-pointer hover:bg-blue-100 p-1.5 rounded border border-blue-300 bg-white transition col-span-2 shadow-sm font-bold mt-1" id="modal-item-7"><input type="checkbox" value="7" class="pdf-checkbox mr-2 w-4 h-4 text-blue-600 rounded border-gray-400 focus:ring-blue-500"> <span id="modal-num-7" class="font-bold mr-1">7.</span> 단위사업체별 종합 보고서 (개별 인쇄용)</label>
+                    <label class="flex items-center cursor-pointer hover:bg-blue-100 p-1.5 rounded border border-transparent transition" id="modal-item-1"><input type="checkbox" value="1" class="pdf-checkbox mr-2 w-4 h-4 text-blue-600 rounded border-gray-400 focus:ring-blue-500" checked> <span id="modal-num-1" class="font-bold mr-1">1.</span> <span id="modal-title-1">작업환경측정 통계 분석</span></label>
+                    <label class="flex items-center cursor-pointer hover:bg-blue-100 p-1.5 rounded border border-transparent transition" id="modal-item-2"><input type="checkbox" value="2" class="pdf-checkbox mr-2 w-4 h-4 text-blue-600 rounded border-gray-400 focus:ring-blue-500" checked> <span id="modal-num-2" class="font-bold mr-1">2.</span> <span id="modal-title-2">노출기준 초과 현황 리스트</span></label>
+                    <label class="flex items-center cursor-pointer hover:bg-blue-100 p-1.5 rounded border border-transparent transition" id="modal-item-3"><input type="checkbox" value="3" class="pdf-checkbox mr-2 w-4 h-4 text-blue-600 rounded border-gray-400 focus:ring-blue-500" checked> <span id="modal-num-3" class="font-bold mr-1">3.</span> <span id="modal-title-3">분류별 측정 분포 및 초과 현황</span></label>
+                    <label class="flex items-center cursor-pointer hover:bg-blue-100 p-1.5 rounded border border-transparent transition" id="modal-item-4"><input type="checkbox" value="4" class="pdf-checkbox mr-2 w-4 h-4 text-blue-600 rounded border-gray-400 focus:ring-blue-500" checked> <span id="modal-num-4" class="font-bold mr-1">4.</span> <span id="modal-title-4">단위사업체별 종합 현황</span></label>
+                    <label class="flex items-center cursor-pointer hover:bg-blue-100 p-1.5 rounded border border-transparent transition" id="modal-item-5"><input type="checkbox" value="5" class="pdf-checkbox mr-2 w-4 h-4 text-blue-600 rounded border-gray-400 focus:ring-blue-500" checked> <span id="modal-num-5" class="font-bold mr-1">5.</span> <span id="modal-title-5">단위작업장소별 측정 현황</span></label>
+                    <label class="flex items-center cursor-pointer hover:bg-blue-100 p-1.5 rounded border border-transparent transition" id="modal-item-6"><input type="checkbox" value="6" class="pdf-checkbox mr-2 w-4 h-4 text-blue-600 rounded border-gray-400 focus:ring-blue-500" checked> <span id="modal-num-6" class="font-bold mr-1">6.</span> <span id="modal-title-6">화학물질 위험성 평가</span></label>
+                    <label class="flex items-center cursor-pointer hover:bg-blue-100 p-1.5 rounded border border-blue-300 bg-white transition col-span-2 shadow-sm font-bold mt-1" id="modal-item-7"><input type="checkbox" value="7" class="pdf-checkbox mr-2 w-4 h-4 text-blue-600 rounded border-gray-400 focus:ring-blue-500"> <span id="modal-num-7" class="font-bold mr-1">7.</span> <span id="modal-title-7">단위사업체별 종합 보고서 (개별 인쇄용)</span></label>
                 </div>
             </div>
 
@@ -429,6 +437,15 @@
                 b.innerText = val;
                 b.style.display = val ? 'inline-block' : 'none';
             });
+        }
+
+        function updateMenuTitle(secIdx, val) {
+            const titleSpans = document.querySelectorAll('.sec-title-text-' + secIdx);
+            titleSpans.forEach(span => {
+                span.innerText = val;
+            });
+            const modalTitle = document.getElementById('modal-title-' + secIdx);
+            if(modalTitle) modalTitle.innerText = val;
         }
 
         document.addEventListener('DOMContentLoaded', () => {
@@ -739,12 +756,12 @@
 
                 let value = parseFloat(valStr);
                 
-                if (valStr.toUpperCase().includes('N.D') || valStr.includes('불검출') || valStr.includes('ND') || valStr.includes('<') || valStr.includes('검출한계')) value = 0; 
+                if (valStr.toUpperCase().includes('N.D') || valStr.includes('불검출') || valStr.includes('ND') || valStr.includes('<')) value = 0; 
                 else if (isNaN(value)) value = 0;
 
                 const prevValStr = prevValKey && row[prevValKey] ? String(row[prevValKey]).trim() : '';
                 let prevValue = parseFloat(prevValStr);
-                if (prevValStr.toUpperCase().includes('N.D') || prevValStr.includes('불검출') || prevValStr.includes('ND') || prevValStr.includes('<') || prevValStr.includes('검출한계')) prevValue = 0; 
+                if (prevValStr.toUpperCase().includes('N.D') || prevValStr.includes('불검출') || prevValStr.includes('ND') || prevValStr.includes('<')) prevValue = 0; 
                 else if (isNaN(prevValue) || prevValStr === '') prevValue = null; 
 
                 let rowDate = null;
@@ -794,28 +811,8 @@
                 if (isNaN(v) || v < 0) v = 0;
                 numValues.push(v);
                 
-                if (v > maxVal) { 
-                    maxVal = v; 
-                    maxRaw = d.rawValStr || String(d.value); 
-                } else if (v === maxVal) {
-                    const curStr = String(d.rawValStr || '').toUpperCase().replace(/\s+/g, '');
-                    const oldStr = String(maxRaw).toUpperCase().replace(/\s+/g, '');
-                    if (!oldStr.match(/N\.D|ND|불검출|<|검출한계/) && curStr.match(/N\.D|ND|불검출|<|검출한계/)) {
-                        maxRaw = d.rawValStr;
-                    }
-                }
-
-                if (v < minVal) { 
-                    minVal = v; 
-                    minRaw = d.rawValStr || String(d.value); 
-                } else if (v === minVal) {
-                    const curStr = String(d.rawValStr || '').toUpperCase().replace(/\s+/g, '');
-                    const oldStr = String(minRaw).toUpperCase().replace(/\s+/g, '');
-                    if (!oldStr.match(/N\.D|ND|불검출|<|검출한계/) && curStr.match(/N\.D|ND|불검출|<|검출한계/)) {
-                        minRaw = d.rawValStr;
-                    }
-                }
-                
+                if (v > maxVal) { maxVal = v; maxRaw = d.rawValStr || String(d.value); }
+                if (v < minVal) { minVal = v; minRaw = d.rawValStr || String(d.value); }
                 if (v > (parseFloat(limit) || 999999)) excCount++;
                 
                 logSum += Math.log(v <= 0 ? 0.0001 : v);
@@ -833,8 +830,7 @@
             const formatValue = (val, raw) => {
                 const upperRaw = String(raw).toUpperCase().replace(/\s+/g, '');
                 if (upperRaw.includes('N.D') || upperRaw.includes('ND') || upperRaw.includes('불검출')) return '불검출';
-                // ★ '검출한계' 텍스트에 HTML span 태그를 적용하여 글자 크기와 줄바꿈 속성을 조절
-                if (upperRaw.includes('<') || upperRaw.includes('검출한계')) return '<span style="font-size: 0.65rem; letter-spacing: -0.05em; white-space: nowrap;">검출한계</span>';
+                if (upperRaw.includes('<')) return '검출한계';
                 
                 if (isPhysical) {
                     return val.toFixed(2);
@@ -1102,6 +1098,14 @@
             const num6 = document.getElementById('menu-num-6').value || '6';
             const num7 = document.getElementById('menu-num-7').value || '7';
 
+            const t1 = document.getElementById('menu-title-input-1') ? document.getElementById('menu-title-input-1').value : '작업환경측정 통계 분석';
+            const t2 = document.getElementById('menu-title-input-2') ? document.getElementById('menu-title-input-2').value : '노출기준 초과 현황 리스트';
+            const t3 = document.getElementById('menu-title-input-3') ? document.getElementById('menu-title-input-3').value : '분류별 측정 분포 및 초과 현황';
+            const t4 = document.getElementById('menu-title-input-4') ? document.getElementById('menu-title-input-4').value : '단위사업체별 종합 현황';
+            const t5 = document.getElementById('menu-title-input-5') ? document.getElementById('menu-title-input-5').value : '단위작업장소별 측정 현황';
+            const t6 = document.getElementById('menu-title-input-6') ? document.getElementById('menu-title-input-6').value : '화학물질 위험성 평가';
+            const t7 = document.getElementById('menu-title-input-7') ? document.getElementById('menu-title-input-7').value : '단위사업체별 종합 보고서';
+
             const sec1Render = (r, isG, isNG, rs, isNSG, subRS) => {
                 let extractedUnit = r.first.rawLimit ? String(r.first.rawLimit).replace(/^[\d\.\,\s]+/g, '').trim() : '';
                 if (!extractedUnit) extractedUnit = (r.first.category === '물리적 인자') ? (r.first.agent.includes('고열') ? '℃' : 'dB(A)') : ((r.first.category === '분진' || r.first.category === '금속류' || r.first.category === '금속가공유') ? 'mg/㎥' : 'ppm');
@@ -1133,12 +1137,7 @@
             };
             const sec1Legend = `<div class="prevent-break text-xs text-gray-700 mt-2 mb-4 space-y-1.5 bg-green-50 p-4 rounded border border-green-200"><p><span class="font-bold text-green-700">※ 기하평균(GM):</span> 대수정규분포를 따르는 측정 데이터의 중심경향 대푯값입니다.</p><p><span class="font-bold text-green-700">※ 노출배수:</span> 최대 측정치를 노출기준으로 나눈 비율입니다.</p><p><span class="font-bold text-green-700">※ 법적 준수율:</span> 총 측정건수 중 노출기준을 초과하지 않은(준수한) 건수의 백분율(%)입니다.</p></div>`;
             
-            if (showSec1) {
-                reportHtml += renderSectionStrict(1, `<span class="sec-num-badge-1" style="${num1?'':'display:none;'}">${num1}</span> 작업환경측정 통계 분석(전수 분석)`, sec1Thead, sec1Rows, sec1Render, true, prefixHtml, sec1Legend);
-            } else {
-                // 1번 항목 체크 해제 시에도 보고서 타이틀은 보이도록 타이틀 부분만 렌더링
-                reportHtml += `<div class="a4-page page-container flex flex-col justify-start major-section" data-section="1">${prefixHtml}</div>`;
-            }
+            reportHtml += renderSectionStrict(1, `<span class="sec-num-badge-1" style="${num1?'':'display:none;'}">${num1}</span> <span class="sec-title-text-1">${t1}</span>`, sec1Thead, sec1Rows, sec1Render, true, prefixHtml, sec1Legend);
 
             // --- Section 2 ---
             exceedData.sort((a, b) => {
@@ -1156,16 +1155,13 @@
                 const limitText = d.rawLimit ? d.rawLimit : (d.limit === 9999 ? '기준없음' : d.limit);
                 return `<tr><td class="border-green-300 break-keep">${d.company}</td><td class="border-green-300 break-keep">${d.location}</td>${agentTd}<td class="border-green-300">${d.prevValue === null ? '전회없음' : d.prevValue + ' ' + extractedUnit}</td><td class="text-red-600 font-bold border-green-300">${d.value} ${extractedUnit}</td><td class="border-green-300 break-keep">${limitText}</td></tr>`;
             };
+            
+            reportHtml += renderSectionStrict(2, `<span class="sec-num-badge-2" style="${num2?'':'display:none;'}">${num2}</span> <span class="sec-title-text-2">${t2}</span>`, sec2Thead, exceedData, sec2Render, false, '', '', '노출기준 초과 유해인자가 없습니다.');
 
-            if (showSec2) {
-                reportHtml += renderSectionStrict(2, `<span class="sec-num-badge-2" style="${num2?'':'display:none;'}">${num2}</span> 노출기준 초과 현황 상세 리스트`, sec2Thead, exceedData, sec2Render, false, '', '', '노출기준 초과 유해인자가 없습니다.');
-            }
-
-            // --- Section 3 ---
             const createSection3ChartPageGlobal = (title, prefix, pagePart, isFirst) => {
                 let html = `<div class="a4-page page-container flex flex-col justify-start ${isFirst ? 'major-section' : ''}" data-section="3">`;
                 if (isFirst) {
-                    html += `<div class="section-title mt-4 border-b-2 border-green-600 pb-2 mb-4 font-bold text-gray-900 text-xl"><span class="sec-num-badge-3" style="${num3?'':'display:none;'}">${num3}</span> 분류별 측정 분포 및 초과 현황</div>`;
+                    html += `<div class="section-title mt-4 border-b-2 border-green-600 pb-2 mb-4 font-bold text-gray-900 text-xl"><span class="sec-num-badge-3" style="${num3?'':'display:none;'}">${num3}</span> <span class="sec-title-text-3">${t3}</span></div>`;
                 }
                 html += `<h2 class="text-lg font-bold text-gray-800 mb-3 ml-1 border-b border-gray-200 pb-1">${title}</h2>`;
                 
@@ -1221,13 +1217,13 @@
                 }
 
                 if (companyChunks.length === 0) {
-                    let sec4Thead = `<tr><th rowspan="2" width="15%" class="align-middle text-gray-800">분류</th><th rowspan="2" width="20%" class="align-middle text-gray-800">유해인자</th><th colspan="2" width="12%" class="bg-green-200 border-green-400 text-gray-800 font-bold">Total</th></tr><tr><th class="border-green-400 text-xs font-bold text-gray-800 p-1">측정</th><th class="border-green-400 text-xs font-bold text-gray-800 p-1">초과</th></tr>`;
-                    reportHtml += renderSectionStrict(4, `<span class="sec-num-badge-4" style="${num4?'':'display:none;'}">${num4}</span> 단위사업체별 작업환경측정 종합 현황`, sec4Thead, [], () => '', true, '', '');
-                } else {
-                    companyChunks.forEach((chunk, chunkIdx) => {
-                        let titleStr = `<span class="sec-num-badge-4" style="${num4?'':'display:none;'}">${num4}</span> 단위사업체별 작업환경측정 종합 현황`;
+                let sec4Thead = `<tr><th rowspan="2" width="15%" class="align-middle text-gray-800">분류</th><th rowspan="2" width="20%" class="align-middle text-gray-800">유해인자</th><th colspan="2" width="12%" class="bg-green-200 border-green-400 text-gray-800 font-bold">Total</th></tr><tr><th class="border-green-400 text-xs font-bold text-gray-800 p-1">측정</th><th class="border-green-400 text-xs font-bold text-gray-800 p-1">초과</th></tr>`;
+                reportHtml += renderSectionStrict(4, `<span class="sec-num-badge-4" style="${num4?'':'display:none;'}">${num4}</span> <span class="sec-title-text-4">${t4}</span>`, sec4Thead, [], () => '', true, '', '');
+            } else {
+                companyChunks.forEach((chunk, chunkIdx) => {
+                    let titleStr = `<span class="sec-num-badge-4" style="${num4?'':'display:none;'}">${num4}</span> <span class="sec-title-text-4">${t4}</span>`;
 
-                        let paddedChunk = [...chunk];
+                    let paddedChunk = [...chunk];
                         while (paddedChunk.length < chunkSize) {
                             paddedChunk.push(null);
                         }
@@ -1303,10 +1299,8 @@
             const trafficLegend5 = `<div class="prevent-break text-xs text-gray-600 mt-2 mb-4 p-3 bg-gray-50 border border-gray-200 rounded text-left"><p><strong>※ 신호등 범례 (일반유해물질):</strong> <span class="bg-green-500 w-2.5 h-2.5 inline-block rounded-full"></span> 10% 미만 &nbsp; <span class="bg-yellow-400 w-2.5 h-2.5 inline-block rounded-full"></span> 10~50% 미만 &nbsp; <span class="bg-orange-400 w-2.5 h-2.5 inline-block rounded-full"></span> 50~100% 이하 &nbsp; <span class="bg-red-600 w-2.5 h-2.5 inline-block rounded-full"></span> 노출기준 초과</p><p class="mt-1"><strong>※ 신호등 범례 (소음):</strong> <span class="bg-green-500 w-2.5 h-2.5 inline-block rounded-full"></span> 80dB 미만 &nbsp; <span class="bg-yellow-400 w-2.5 h-2.5 inline-block rounded-full"></span> 80~85dB 미만 &nbsp; <span class="bg-orange-400 w-2.5 h-2.5 inline-block rounded-full"></span> 85~기준치 이하 &nbsp; <span class="bg-red-600 w-2.5 h-2.5 inline-block rounded-full"></span> 노출기준 초과</p><p class="mt-1"><strong>※ 신호등 범례 (고열):</strong> <span class="bg-green-500 w-2.5 h-2.5 inline-block rounded-full"></span> 23℃ 미만 &nbsp; <span class="bg-yellow-400 w-2.5 h-2.5 inline-block rounded-full"></span> 23~25℃ 미만 &nbsp; <span class="bg-orange-400 w-2.5 h-2.5 inline-block rounded-full"></span> 25~노출기준 이하 &nbsp; <span class="bg-red-600 w-2.5 h-2.5 inline-block rounded-full"></span> 노출기준 초과</p></div>`;
             
             const sec5Thead = `<tr><th width="15%">단위사업체명</th><th width="15%">단위작업장소</th><th width="12%">분류</th><th width="20%">세부 유해인자명</th><th width="8%">측정건수</th><th width="8%">초과건수</th><th width="7%">신호등</th><th width="15%">비고</th></tr>`;
-
-            if (showSec5) {
-                reportHtml += renderSectionStrict(5, `<span class="sec-num-badge-5" style="${num5?'':'display:none;'}">${num5}</span> 단위작업장소별 유해인자 측정 및 초과 현황`, sec5Thead, buildGroupRows(data, ['location', 'category', 'agent', 'limit'], companies), groupRender5, true, '', trafficLegend5);
-            }
+            
+            reportHtml += renderSectionStrict(5, `<span class="sec-num-badge-5" style="${num5?'':'display:none;'}">${num5}</span> <span class="sec-title-text-5">${t5}</span>`, sec5Thead, buildGroupRows(data, ['location', 'category', 'agent', 'limit'], companies), groupRender5, true, '', trafficLegend5);
 
             // --- Section 6 ---
             const sec6Data = data.filter(d => d.category !== '물리적 인자' && !d.agent.replace(/\s+/g, '').includes('혼합물질'));
@@ -1552,16 +1546,14 @@
                 </div>
             `;
 
-            if (showSec6) {
-                reportHtml += renderSectionStrict(6, `<span class="sec-num-badge-6" style="${num6?'':'display:none;'}">${num6}</span> 작업환경측정 화학물질 위험성 평가`, sec6Thead, buildGroupRows(sec6Data, ['department', 'category', 'agent'], companies), groupRender6, true, '', '', "데이터가 없습니다.", true);
-                
-                reportHtml += `
+            reportHtml += renderSectionStrict(6, `<span class="sec-num-badge-6" style="${num6?'':'display:none;'}">${num6}</span> <span class="sec-title-text-6">${t6}</span>`, sec6Thead, buildGroupRows(sec6Data, ['department', 'category', 'agent'], companies), groupRender6, true, '', '', "데이터가 없습니다.", true);
+            
+            reportHtml += `
                 <div class="a4-page page-container flex flex-col justify-start major-section" data-section="6">
-                    <div class="section-title border-b-2 border-green-600 pb-2 mb-4 font-bold text-gray-900 text-xl"><span class="sec-num-badge-6" style="${num6?'':'display:none;'}">${num6}</span> 작업환경측정 화학물질 위험성 평가 (참고자료)</div>
+                    <div class="section-title border-b-2 border-green-600 pb-2 mb-4 font-bold text-gray-900 text-xl"><span class="sec-num-badge-6" style="${num6?'':'display:none;'}">${num6}</span> <span class="sec-title-text-6">${t6}</span> (참고자료)</div>
                     ${extra6Content}
                 </div>
             `;
-            }
 
             const reductionGrouped = buildGroupRows(sec6Data, ['department', 'category', 'agent'], companies);
             let reductionRows = [];
@@ -1742,7 +1734,7 @@
             if (showSec6) {
                 reportHtml += `
                 <div class="a4-page-landscape page-container-landscape flex flex-col justify-start major-section" data-section="6">
-                    <div class="section-title border-b-2 border-green-600 pb-2 mb-4 font-bold text-gray-900 text-xl"><span class="sec-num-badge-6" style="${num6?'':'display:none;'}">${num6}</span> 화학물질 위험성평가 감소대책 (실행계획서)</div>
+                    <div class="section-title border-b-2 border-green-600 pb-2 mb-4 font-bold text-gray-900 text-xl"><span class="sec-num-badge-6" style="${num6?'':'display:none;'}">${num6}</span> <span class="sec-title-text-6">${t6}</span> 감소대책 (실행계획서)</div>
                     <div class="flex flex-col flex-1 w-full bg-white">
                         <p class="text-[0.8rem] text-gray-600 mb-3 font-medium">※ 위험성평가 결과 판정이 '보통' 이상(위험성 3 이상)인 공정 및 유해인자에 한하여 우선적인 감소대책을 수립합니다.<br>※ <span class="text-blue-600 font-bold">개선 후 위험성</span>은 감소대책이 완벽히 이행되어 '노출수준(1등급)'으로 낮아졌을 때를 가정한 예측값입니다. (화학물질 고유의 유해성은 변하지 않음)</p>
                         <table style="width: 100%; border-collapse: collapse; font-size: 12px;" class="border border-green-300">
@@ -1799,17 +1791,17 @@
                             groupTd = `<td rowspan="${rs}" class="border-green-300 bg-white align-middle font-bold break-keep">${r.mainKey}</td>`;
                         }
                         const agentTd = getAgentTd(r.agent, 'text-left border-green-300 bg-white align-middle');
-                        return `<tr>${groupTd}${agentTd}<td class="border-green-300 bg-white">${r.n}</td><td class="border-green-300 bg-white font-bold ${r.exc > 0 ? 'text-red-600' : ''}">${r.exc}</td></tr>`;
-                    };
-                    sec7Html += renderSectionStrict(7, `<span class="sec-num-badge-7" style="${num7?'':'display:none;'}">${num7}</span> 단위사업체별 종합 보고서 - ${comp} (종합 현황)`, sec7_1_Thead, compSec4Rows, sec7_1_Render, true, '', '');
+                    return `<tr>${groupTd}${agentTd}<td class="border-green-300 bg-white">${r.n}</td><td class="border-green-300 bg-white font-bold ${r.exc > 0 ? 'text-red-600' : ''}">${r.exc}</td></tr>`;
+                };
+                sec7Html += renderSectionStrict(7, `<span class="sec-num-badge-7" style="${num7?'':'display:none;'}">${num7}</span> <span class="sec-title-text-7">${t7}</span> - ${comp} (종합 현황)`, sec7_1_Thead, compSec4Rows, sec7_1_Render, true, '', '');
 
-                    sec7Html += renderSectionStrict(7, `<span class="sec-num-badge-7" style="${num7?'':'display:none;'}">${num7}</span> 단위사업체별 종합 보고서 - ${comp} (초과 현황 리스트)`, sec2Thead, compExcData, sec2Render, false, '', '', '노출기준 초과 유해인자가 없습니다.');
+                sec7Html += renderSectionStrict(7, `<span class="sec-num-badge-7" style="${num7?'':'display:none;'}">${num7}</span> <span class="sec-title-text-7">${t7}</span> - ${comp} (초과 현황 리스트)`, sec2Thead, compExcData, sec2Render, false, '', '', '노출기준 초과 유해인자가 없습니다.');
 
-                    const createSection7ChartPage = (title, prefix, pagePart) => {
-                        let html = `<div class="a4-page page-container flex flex-col justify-start major-section" data-section="7">`;
-                        html += `<div class="section-title mt-4 border-b-2 border-green-600 pb-2 mb-4 font-bold text-gray-900 text-xl"><span class="sec-num-badge-7" style="${num7?'':'display:none;'}">${num7}</span> ${title}</div>`;
-                        
-                        html += `<div class="flex flex-col gap-6 w-full mb-2">`;
+                const createSection7ChartPage = (title, prefix, pagePart) => {
+                    let html = `<div class="a4-page page-container flex flex-col justify-start major-section" data-section="7">`;
+                    html += `<div class="section-title mt-4 border-b-2 border-green-600 pb-2 mb-4 font-bold text-gray-900 text-xl"><span class="sec-num-badge-7" style="${num7?'':'display:none;'}">${num7}</span> <span class="sec-title-text-7">${t7}</span> - ${comp} ${title}</div>`;
+                    
+                    html += `<div class="flex flex-col gap-6 w-full mb-2">`;
                         
                         if (pagePart === 1) {
                             html += `
@@ -1835,22 +1827,22 @@
                             `;
                         }
                         html += `</div></div>`;
-                        return html;
-                    };
+                    return html;
+                };
 
-                    sec7Html += createSection7ChartPage(`단위사업체별 종합 보고서 - ${comp} (측정 분포 및 초과 현황 1/2)`, `sec7_${idx}`, 1);
-                    sec7Html += createSection7ChartPage(`단위사업체별 종합 보고서 - ${comp} (측정 분포 및 초과 현황 2/2)`, `sec7_${idx}`, 2);
+                sec7Html += createSection7ChartPage(`(측정 분포 및 초과 현황 1/2)`, `sec7_${idx}`, 1);
+                sec7Html += createSection7ChartPage(`(측정 분포 및 초과 현황 2/2)`, `sec7_${idx}`, 2);
 
-                    sec7Html += renderSectionStrict(7, `<span class="sec-num-badge-7" style="${num7?'':'display:none;'}">${num7}</span> 단위사업체별 종합 보고서 - ${comp} (단위작업장소별 측정 현황)`, sec5Thead, buildGroupRows(compData, ['location', 'category', 'agent', 'limit'], companies), groupRender5, true, '', trafficLegend5);
+                sec7Html += renderSectionStrict(7, `<span class="sec-num-badge-7" style="${num7?'':'display:none;'}">${num7}</span> <span class="sec-title-text-7">${t7}</span> - ${comp} (단위작업장소별 측정 현황)`, sec5Thead, buildGroupRows(compData, ['location', 'category', 'agent', 'limit'], companies), groupRender5, true, '', trafficLegend5);
 
-                    sec7Html += renderSectionStrict(7, `<span class="sec-num-badge-7" style="${num7?'':'display:none;'}">${num7}</span> 단위사업체별 종합 보고서 - ${comp} (화학물질 위험성 평가)`, sec6Thead, buildGroupRows(compSec6Data, ['department', 'category', 'agent'], companies), groupRender6, true, '', '', "데이터가 없습니다.", true);
-                    
-                    sec7Html += `
-                        <div class="a4-page page-container flex flex-col justify-start major-section" data-section="7">
-                            <div class="section-title border-b-2 border-green-600 pb-2 mb-4 font-bold text-gray-900 text-xl"><span class="sec-num-badge-7" style="${num7?'':'display:none;'}">${num7}</span> 단위사업체별 종합 보고서 - ${comp} (위험성 평가 참고자료)</div>
-                            ${extra6Content}
-                        </div>
-                    `;
+                sec7Html += renderSectionStrict(7, `<span class="sec-num-badge-7" style="${num7?'':'display:none;'}">${num7}</span> <span class="sec-title-text-7">${t7}</span> - ${comp} (화학물질 위험성 평가)`, sec6Thead, buildGroupRows(compSec6Data, ['department', 'category', 'agent'], companies), groupRender6, true, '', '', "데이터가 없습니다.", true);
+                
+                sec7Html += `
+                    <div class="a4-page page-container flex flex-col justify-start major-section" data-section="7">
+                        <div class="section-title border-b-2 border-green-600 pb-2 mb-4 font-bold text-gray-900 text-xl"><span class="sec-num-badge-7" style="${num7?'':'display:none;'}">${num7}</span> <span class="sec-title-text-7">${t7}</span> - ${comp} (위험성 평가 참고자료)</div>
+                        ${extra6Content}
+                    </div>
+                `;
 
                     // 각 사업체별 개별 실행계획서 페이지 추가
                     const compReductionGrouped = buildGroupRows(compSec6Data, ['department', 'category', 'agent'], companies);
@@ -1919,7 +1911,7 @@
 
                     sec7Html += `
                     <div class="a4-page-landscape page-container-landscape flex flex-col justify-start major-section" data-section="7">
-                        <div class="section-title border-b-2 border-green-600 pb-2 mb-4 font-bold text-gray-900 text-xl"><span class="sec-num-badge-7" style="${num7?'':'display:none;'}">${num7}</span> 화학물질 위험성평가 감소대책 (실행계획서) - ${comp}</div>
+                        <div class="section-title border-b-2 border-green-600 pb-2 mb-4 font-bold text-gray-900 text-xl"><span class="sec-num-badge-7" style="${num7?'':'display:none;'}">${num7}</span> <span class="sec-title-text-7">${t7}</span> 감소대책 (실행계획서) - ${comp}</div>
                         <div class="flex flex-col flex-1 w-full bg-white">
                             <p class="text-[0.8rem] text-gray-600 mb-3 font-medium">※ 위험성평가 결과 판정이 '보통' 이상(위험성 3 이상)인 공정 및 유해인자에 한하여 우선적인 감소대책을 수립합니다.<br>※ <span class="text-blue-600 font-bold">개선 후 위험성</span>은 감소대책이 완벽히 이행되어 '노출수준(1등급)'으로 낮아졌을 때를 가정한 예측값입니다. (화학물질 고유의 유해성은 변하지 않음)</p>
                             <table style="width: 100%; border-collapse: collapse; font-size: 12px;" class="border border-green-300">

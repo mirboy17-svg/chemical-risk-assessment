@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>작업환경측정 통계 및 화학물질 위험성평가</title>
+    <title>작업환경측정 통계 및 분석</title>
     <script src="https://cdn.tailwindcss.com"></script>
     
     <!-- 3D 입체 차트 구현을 위한 Highcharts 라이브러리 -->
@@ -306,7 +306,7 @@
                         
                         <div class="flex flex-col">
                             <div class="flex items-center">
-                                <input type="text" id="custom-main-title" value="작업환경측정 통계 및 화학물질 위험성평가" class="text-xl font-bold text-gray-800 bg-transparent border-b-2 border-transparent hover:border-gray-300 focus:border-blue-500 outline-none transition w-[350px] print:border-none" oninput="updateMainTitle()">
+                                <input type="text" id="custom-main-title" value="작업환경측정 통계 및 분석" class="text-xl font-bold text-gray-800 bg-transparent border-b-2 border-transparent hover:border-gray-300 focus:border-blue-500 outline-none transition w-[350px] print:border-none" oninput="updateMainTitle()">
                                 <span id="top-subtitle-badge" class="hidden text-sm font-normal text-blue-700 bg-blue-50 px-2.5 py-1 rounded-md ml-2 border border-blue-200 align-middle"></span>
                             </div>
                             <p class="text-xs text-gray-500 mt-1" id="top-status-msg">※ 시트 주소와 측정 기간을 입력하고 분석을 실행해 주세요.</p>
@@ -1575,8 +1575,8 @@
                 `;
 
                 const reductionGrouped = buildGroupRows(sec6Data, ['department', 'category', 'agent'], companies);
-                let reductionRows = [];
-                let rSeq = 1;
+            let reductionRows = [];
+            let rSeq = 1;
                 
                 reductionGrouped.forEach(r => {
                     let extractedUnit = r.rawLimit ? String(r.rawLimit).replace(/^[\d\.\,\s]+/g, '').trim().toLowerCase() : '';
@@ -1782,34 +1782,48 @@
             `;
             }
 
-            const sec7Thead = `<tr><th width="15%">단위사업체명</th><th width="15%">단위작업장소</th><th width="15%">유해인자</th><th width="10%">전회치</th><th width="15%">금회치</th><th width="15%">노출기준</th><th width="15%">대상유무</th></tr>`;
+            const sec7Thead = `<tr style="line-height: 1.3;"><th width="15%" class="break-keep">단위사업체명</th><th width="15%" class="break-keep">단위작업장소</th><th width="11%" class="break-keep">유해인자</th><th width="11%" class="break-keep">전회치</th><th width="12%" class="break-keep">전회<br>대상유무</th><th width="12%" class="break-keep">금회치</th><th width="12%" class="break-keep">금회<br>대상유무</th><th width="12%" class="break-keep">노출기준</th></tr>`;
             const sec7Render = (d) => {
                 let extractedUnit = 'dB(A)';
                 const agentTd = getAgentTd(d.agent, 'border-green-300 align-middle');
                 const limitText = d.rawLimit ? d.rawLimit : (d.limit === 9999 ? '기준없음' : d.limit);
                 
-                let targetStatus = '';
-                if (d.value >= 85 && d.value <= 90) {
-                    targetStatus = '<span class="text-blue-600 font-bold">소음작업</span>';
-                } else if (d.value > 90) {
-                    targetStatus = '<span class="text-red-600 font-bold" style="font-size: 0.75rem; letter-spacing: -0.05em; white-space: nowrap;">강렬한소음작업</span>';
+                // 금회치 대상유무
+                let targetStatus = '-';
+                if (d.value > 90) {
+                    targetStatus = '<span class="text-red-600 font-bold whitespace-nowrap" style="font-size: 0.75rem; letter-spacing: -0.05em;">강렬한소음작업</span>';
+                } else if (d.value >= 85) {
+                    targetStatus = '<span class="text-blue-600 font-bold whitespace-nowrap">소음작업</span>';
+                }
+
+                // 전회치 대상유무
+                let prevTargetStatus = '-';
+                if (d.prevValue !== null) {
+                    if (d.prevValue > 90) {
+                        prevTargetStatus = '<span class="text-red-600 font-bold whitespace-nowrap" style="font-size: 0.75rem; letter-spacing: -0.05em;">강렬한소음작업</span>';
+                    } else if (d.prevValue >= 85) {
+                        prevTargetStatus = '<span class="text-blue-600 font-bold whitespace-nowrap">소음작업</span>';
+                    }
                 }
 
                 // 값에 소수점 1자리를 고정으로 표시 (.toFixed(1) 사용)
                 const formattedValue = Number(d.value).toFixed(1);
                 const prevValueText = d.prevValue === null ? '전회없음' : Number(d.prevValue).toFixed(1) + ' ' + extractedUnit;
 
-                return `<tr><td class="border-green-300 break-keep">${d.company}</td><td class="border-green-300 break-keep">${d.location}</td>${agentTd}<td class="border-green-300">${prevValueText}</td><td class="font-bold border-green-300">${formattedValue} ${extractedUnit}</td><td class="border-green-300 break-keep">${limitText}</td><td class="border-green-300">${targetStatus}</td></tr>`;
+                return `<tr><td class="border-green-300 break-keep">${d.company}</td><td class="border-green-300 break-keep">${d.location}</td>${agentTd}<td class="border-green-300 whitespace-nowrap">${prevValueText}</td><td class="border-green-300 bg-gray-50">${prevTargetStatus}</td><td class="font-bold border-green-300 whitespace-nowrap">${formattedValue} ${extractedUnit}</td><td class="border-green-300 bg-gray-50">${targetStatus}</td><td class="border-green-300 break-keep">${limitText}</td></tr>`;
             };
 
             if (showSec7) {
-                const sec7Data = data.filter(d => (d.category === '물리적 인자' || d.agent.includes('소음')) && d.agent.includes('소음') && d.value >= 85);
+                const sec7Data = data.filter(d => (d.category === '물리적 인자' || d.agent.includes('소음')) && d.agent.includes('소음') && (d.value >= 85 || (d.prevValue !== null && d.prevValue >= 85)));
                 
                 sec7Data.sort((a, b) => {
                     let compA = companies.indexOf(a.company);
                     let compB = companies.indexOf(b.company);
                     if(compA !== compB) return compA - compB;
-                    return b.value - a.value;
+                    
+                    let maxA = Math.max(a.value || 0, a.prevValue !== null ? a.prevValue : 0);
+                    let maxB = Math.max(b.value || 0, b.prevValue !== null ? b.prevValue : 0);
+                    return maxB - maxA;
                 });
 
                 reportHtml += renderSectionStrict(7, `<span class="sec-num-badge-7" style="${num7?'':'display:none;'}">${num7}</span> <span class="sec-title-text-7">${t7}</span>`, sec7Thead, sec7Data, sec7Render, false, '', '', '소음작업 및 강렬한 소음작업이 없습니다.');

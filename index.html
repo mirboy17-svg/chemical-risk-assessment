@@ -140,7 +140,7 @@
                 <div class="bg-green-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-3">
                     <svg class="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>
                 </div>
-                <h2 class="text-xl font-bold text-gray-800">작업환경측정 통계 및 화학물질 위험성평가</h2>
+                <h2 class="text-xl font-bold text-gray-800">작업환경측정 통계 및 분석</h2>
                 <p class="text-sm text-gray-500 mt-1">대시보드 접속을 위해 비밀번호를 입력해주세요.</p>
             </div>
             <div class="space-y-4">
@@ -259,7 +259,7 @@
             <div class="flex items-center px-2 py-1 hover:bg-blue-50 rounded transition">
                 <input type="checkbox" value="7" class="print-checkbox w-4 h-4 text-blue-600 rounded border-gray-300 cursor-pointer mr-2" checked>
                 <input type="text" id="menu-num-7" value="7" oninput="updateSectionNumber(7, this.value)" class="w-8 text-center text-sm font-bold bg-white border border-gray-300 rounded focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none py-0.5">
-                <input type="text" id="menu-title-input-7" value="소음작업 및 강렬한 소음작업" oninput="updateMenuTitle(7, this.value)" class="flex-1 min-w-0 ml-1 py-1 px-1.5 text-sm font-bold text-gray-700 bg-transparent border border-transparent hover:border-gray-300 focus:bg-white focus:border-blue-500 rounded outline-none truncate transition">
+                <input type="text" id="menu-title-input-7" value="청력보존프로그램 대상(소음작업 및 강렬한 소음작업)" oninput="updateMenuTitle(7, this.value)" class="flex-1 min-w-0 ml-1 py-1 px-1.5 text-sm font-bold text-gray-700 bg-transparent border border-transparent hover:border-gray-300 focus:bg-white focus:border-blue-500 rounded outline-none truncate transition">
                 <a href="#section-7" title="해당 섹션으로 이동" onclick="if(window.innerWidth < 1024) toggleSidebar()" class="p-1 ml-1 text-gray-400 hover:text-blue-600 rounded hover:bg-blue-100 transition"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg></a>
             </div>
             
@@ -306,7 +306,7 @@
                         
                         <div class="flex flex-col">
                             <div class="flex items-center">
-                                <input type="text" id="custom-main-title" value="작업환경측정 통계 및 분석" class="text-xl font-bold text-gray-800 bg-transparent border-b-2 border-transparent hover:border-gray-300 focus:border-blue-500 outline-none transition w-[350px] print:border-none" oninput="updateMainTitle()">
+                                <input type="text" id="custom-main-title" value="작업환경측정 통계 및 화학물질 위험성평가" class="text-xl font-bold text-gray-800 bg-transparent border-b-2 border-transparent hover:border-gray-300 focus:border-blue-500 outline-none transition w-[350px] print:border-none" oninput="updateMainTitle()">
                                 <span id="top-subtitle-badge" class="hidden text-sm font-normal text-blue-700 bg-blue-50 px-2.5 py-1 rounded-md ml-2 border border-blue-200 align-middle"></span>
                             </div>
                             <p class="text-xs text-gray-500 mt-1" id="top-status-msg">※ 시트 주소와 측정 기간을 입력하고 분석을 실행해 주세요.</p>
@@ -382,7 +382,7 @@
                     <label class="flex items-center cursor-pointer hover:bg-blue-100 p-1.5 rounded border border-transparent transition" id="modal-item-4"><input type="checkbox" value="4" class="pdf-checkbox mr-2 w-4 h-4 text-blue-600 rounded border-gray-400 focus:ring-blue-500" checked> <span id="modal-num-4" class="font-bold mr-1">4.</span> <span id="modal-title-4">단위사업체별 종합 현황</span></label>
                     <label class="flex items-center cursor-pointer hover:bg-blue-100 p-1.5 rounded border border-transparent transition" id="modal-item-5"><input type="checkbox" value="5" class="pdf-checkbox mr-2 w-4 h-4 text-blue-600 rounded border-gray-400 focus:ring-blue-500" checked> <span id="modal-num-5" class="font-bold mr-1">5.</span> <span id="modal-title-5">단위작업장소별 측정 현황</span></label>
                     <label class="flex items-center cursor-pointer hover:bg-blue-100 p-1.5 rounded border border-transparent transition" id="modal-item-6"><input type="checkbox" value="6" class="pdf-checkbox mr-2 w-4 h-4 text-blue-600 rounded border-gray-400 focus:ring-blue-500" checked> <span id="modal-num-6" class="font-bold mr-1">6.</span> <span id="modal-title-6">화학물질 위험성 평가</span></label>
-                    <label class="flex items-center cursor-pointer hover:bg-blue-100 p-1.5 rounded border border-transparent transition" id="modal-item-7"><input type="checkbox" value="7" class="pdf-checkbox mr-2 w-4 h-4 text-blue-600 rounded border-gray-400 focus:ring-blue-500" checked> <span id="modal-num-7" class="font-bold mr-1">7.</span> <span id="modal-title-7">청력보존프로그램 대상유무(소음작업 및 강렬한 소음작업)</span></label>
+                    <label class="flex items-center cursor-pointer hover:bg-blue-100 p-1.5 rounded border border-transparent transition" id="modal-item-7"><input type="checkbox" value="7" class="pdf-checkbox mr-2 w-4 h-4 text-blue-600 rounded border-gray-400 focus:ring-blue-500" checked> <span id="modal-num-7" class="font-bold mr-1">7.</span> <span id="modal-title-7">소음작업 및 강렬한 소음작업</span></label>
                     <label class="flex items-center cursor-pointer hover:bg-blue-100 p-1.5 rounded border border-blue-300 bg-white transition col-span-2 shadow-sm font-bold mt-1" id="modal-item-8"><input type="checkbox" value="8" class="pdf-checkbox mr-2 w-4 h-4 text-blue-600 rounded border-gray-400 focus:ring-blue-500"> <span id="modal-num-8" class="font-bold mr-1">8.</span> <span id="modal-title-8">단위사업체별 보고서 (개별 인쇄용)</span></label>
                 </div>
             </div>

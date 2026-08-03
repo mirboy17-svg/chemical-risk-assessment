@@ -5,6 +5,38 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>작업환경측정 통계 및 분석</title>
     <script src="https://cdn.tailwindcss.com"></script>
+
+     <!-- 개발자 도구 및 소스보기 방지 스크립트 -->
+  <script>
+    // 마우스 우클릭 방지
+    document.addEventListener('contextmenu', function(e) {
+      e.preventDefault();
+    });
+
+    // 키보드 단축키 방지 (F12, Ctrl+Shift+I, Ctrl+Shift+J, Ctrl+U)
+    document.addEventListener('keydown', function(e) {
+      // F12 방지
+      if (e.keyCode === 123 || e.key === 'F12') {
+        e.preventDefault();
+        e.returnValue = false;
+      }
+      // Ctrl+Shift+I (개발자 도구) 방지
+      if (e.ctrlKey && e.shiftKey && (e.keyCode === 73 || e.key === 'I' || e.key === 'i')) {
+        e.preventDefault();
+        e.returnValue = false;
+      }
+      // Ctrl+Shift+J (개발자 도구 콘솔) 방지
+      if (e.ctrlKey && e.shiftKey && (e.keyCode === 74 || e.key === 'J' || e.key === 'j')) {
+        e.preventDefault();
+        e.returnValue = false;
+      }
+      // Ctrl+U (페이지 소스 보기) 방지
+      if (e.ctrlKey && (e.keyCode === 85 || e.key === 'U' || e.key === 'u')) {
+        e.preventDefault();
+        e.returnValue = false;
+      }
+    });
+  </script>
     
     <!-- 3D 입체 차트 구현을 위한 Highcharts 라이브러리 -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/highcharts/11.4.0/highcharts.js"></script>

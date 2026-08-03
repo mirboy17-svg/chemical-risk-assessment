@@ -6,36 +6,45 @@
     <title>작업환경측정 통계 및 분석</title>
     <script src="https://cdn.tailwindcss.com"></script>
 
-     <!-- 개발자 도구 및 소스보기 방지 스크립트 -->
+    <!-- 강력한 보안 및 안티 디버깅 스크립트 -->
   <script>
-    // 마우스 우클릭 방지
+    // 1. 마우스 우클릭 방지
     document.addEventListener('contextmenu', function(e) {
       e.preventDefault();
     });
 
-    // 키보드 단축키 방지 (F12, Ctrl+Shift+I, Ctrl+Shift+J, Ctrl+U)
+    // 2. 키보드 단축키 방지 (F12, Ctrl+Shift+I, Ctrl+Shift+J, Ctrl+U 등)
     document.addEventListener('keydown', function(e) {
-      // F12 방지
-      if (e.keyCode === 123 || e.key === 'F12') {
-        e.preventDefault();
-        e.returnValue = false;
-      }
-      // Ctrl+Shift+I (개발자 도구) 방지
-      if (e.ctrlKey && e.shiftKey && (e.keyCode === 73 || e.key === 'I' || e.key === 'i')) {
-        e.preventDefault();
-        e.returnValue = false;
-      }
-      // Ctrl+Shift+J (개발자 도구 콘솔) 방지
-      if (e.ctrlKey && e.shiftKey && (e.keyCode === 74 || e.key === 'J' || e.key === 'j')) {
-        e.preventDefault();
-        e.returnValue = false;
-      }
-      // Ctrl+U (페이지 소스 보기) 방지
-      if (e.ctrlKey && (e.keyCode === 85 || e.key === 'U' || e.key === 'u')) {
+      if (
+        e.keyCode === 123 || // F12
+        (e.ctrlKey && e.shiftKey && (e.keyCode === 73 || e.keyCode === 74)) || // Ctrl+Shift+I/J
+        (e.ctrlKey && (e.keyCode === 85 || e.keyCode === 83)) // Ctrl+U(소스보기), Ctrl+S(저장)
+      ) {
         e.preventDefault();
         e.returnValue = false;
       }
     });
+
+    // 3. 안티 디버깅 (Sources 탭 강제 마비 및 코드 은닉)
+    // 개발자 도구가 열리면 무한 루프에 빠지게 하여 Sources 탭 분석을 원천적으로 방해합니다.
+    setInterval(function() {
+      var before = new Date().getTime();
+      (function() { return false; }['constructor']('debugger')());
+      var after = new Date().getTime();
+      
+      // 디버거가 멈춰서 시간이 지연된 경우 = 개발자 도구가 열려있음
+      if (after - before > 100) {
+        // 화면을 즉시 하얗게 지워버리거나 경고 메시지 출력
+        document.body.innerHTML = '<div style="display:flex; justify-content:center; align-items:center; height:100vh; background:#f8fafc; color:#0f172a; font-size:1.2rem; font-weight:bold; font-family:sans-serif;">보안 정책에 의해 개발자 도구를 사용할 수 없습니다.</div>';
+      }
+    }, 50);
+
+    // 4. 콘솔(Console) 기록 지우기
+    setInterval(function() {
+      console.clear();
+      console.log("%c경고!", "color: red; font-size: 50px; font-weight: bold;");
+      console.log("%c이곳은 개발자 전용 공간입니다. 보안 정책에 의해 모든 기능이 차단됩니다.", "color: #333; font-size: 16px;");
+    }, 1000);
   </script>
     
     <!-- 3D 입체 차트 구현을 위한 Highcharts 라이브러리 -->

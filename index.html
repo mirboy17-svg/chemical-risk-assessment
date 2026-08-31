@@ -5,47 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>작업환경측정 통계 및 분석</title>
     <script src="https://cdn.tailwindcss.com"></script>
-
-    <!-- 강력한 보안 및 안티 디버깅 스크립트 -->
-  <script>
-    // 1. 마우스 우클릭 방지
-    document.addEventListener('contextmenu', function(e) {
-      e.preventDefault();
-    });
-
-    // 2. 키보드 단축키 방지 (F12, Ctrl+Shift+I, Ctrl+Shift+J, Ctrl+U 등)
-    document.addEventListener('keydown', function(e) {
-      if (
-        e.keyCode === 123 || // F12
-        (e.ctrlKey && e.shiftKey && (e.keyCode === 73 || e.keyCode === 74)) || // Ctrl+Shift+I/J
-        (e.ctrlKey && (e.keyCode === 85 || e.keyCode === 83)) // Ctrl+U(소스보기), Ctrl+S(저장)
-      ) {
-        e.preventDefault();
-        e.returnValue = false;
-      }
-    });
-
-    // 3. 안티 디버깅 (Sources 탭 강제 마비 및 코드 은닉)
-    // 개발자 도구가 열리면 무한 루프에 빠지게 하여 Sources 탭 분석을 원천적으로 방해합니다.
-    setInterval(function() {
-      var before = new Date().getTime();
-      (function() { return false; }['constructor']('debugger')());
-      var after = new Date().getTime();
-      
-      // 디버거가 멈춰서 시간이 지연된 경우 = 개발자 도구가 열려있음
-      if (after - before > 100) {
-        // 화면을 즉시 하얗게 지워버리거나 경고 메시지 출력
-        document.body.innerHTML = '<div style="display:flex; justify-content:center; align-items:center; height:100vh; background:#f8fafc; color:#0f172a; font-size:1.2rem; font-weight:bold; font-family:sans-serif;">보안 정책에 의해 개발자 도구를 사용할 수 없습니다.</div>';
-      }
-    }, 50);
-
-    // 4. 콘솔(Console) 기록 지우기
-    setInterval(function() {
-      console.clear();
-      console.log("%c경고!", "color: red; font-size: 50px; font-weight: bold;");
-      console.log("%c이곳은 개발자 전용 공간입니다. 보안 정책에 의해 모든 기능이 차단됩니다.", "color: #333; font-size: 16px;");
-    }, 1000);
-  </script>
     
     <!-- 3D 입체 차트 구현을 위한 Highcharts 라이브러리 -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/highcharts/11.4.0/highcharts.js"></script>
@@ -207,7 +166,7 @@
                     aniag000@kiha21.or.kr
                 </span>
             </div>
-            <p class="text-[0.7rem] text-[#9ba9bd] font-normal mt-6 tracking-normal">© Copyright 2026.08 aniag000@kiha21.or.kr. All rights reserved.</p>
+            <p class="text-[0.7rem] text-[#9ba9bd] font-normal mt-6 tracking-normal">© Copyright 2026 aniag000@kiha21.or.kr. All rights reserved.</p>
         </div>
     </div>
 
@@ -300,7 +259,7 @@
             <div class="flex items-center px-2 py-1 hover:bg-blue-50 rounded transition">
                 <input type="checkbox" value="7" class="print-checkbox w-4 h-4 text-blue-600 rounded border-gray-300 cursor-pointer mr-2" checked>
                 <input type="text" id="menu-num-7" value="7" oninput="updateSectionNumber(7, this.value)" class="w-8 text-center text-sm font-bold bg-white border border-gray-300 rounded focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none py-0.5">
-                <input type="text" id="menu-title-input-7" value="청력보존프로그램 대상유무(소음작업 및 강렬한 소음작업)" oninput="updateMenuTitle(7, this.value)" class="flex-1 min-w-0 ml-1 py-1 px-1.5 text-sm font-bold text-gray-700 bg-transparent border border-transparent hover:border-gray-300 focus:bg-white focus:border-blue-500 rounded outline-none truncate transition">
+                <input type="text" id="menu-title-input-7" value="소음작업 및 강렬한 소음작업" oninput="updateMenuTitle(7, this.value)" class="flex-1 min-w-0 ml-1 py-1 px-1.5 text-sm font-bold text-gray-700 bg-transparent border border-transparent hover:border-gray-300 focus:bg-white focus:border-blue-500 rounded outline-none truncate transition">
                 <a href="#section-7" title="해당 섹션으로 이동" onclick="if(window.innerWidth < 1024) toggleSidebar()" class="p-1 ml-1 text-gray-400 hover:text-blue-600 rounded hover:bg-blue-100 transition"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg></a>
             </div>
             
@@ -1795,7 +1754,7 @@
                 <div class="a4-page-landscape page-container-landscape flex flex-col justify-start major-section" data-section="6">
                     <div class="section-title border-b-2 border-green-600 pb-2 mb-4 font-bold text-gray-900 text-xl"><span class="sec-num-badge-6" style="${num6?'':'display:none;'}">${num6}</span> <span class="sec-title-text-6">${t6}</span> 감소대책 (실행계획서)</div>
                     <div class="flex flex-col flex-1 w-full bg-white">
-                        <p class="text-[0.8rem] text-gray-600 mb-3 font-medium">※ 위험성평가 결과 판정이 '보통' 이상(위험성 3 이상)인 공정 및 유해인자에 한하여 우선적인 감소대책을 수립합니다.<br>※ <span class="text-blue-600 font-bold">개선 후 위험성</span>은 감소대책이 완벽히 이행되어 '노출수준(1등급)'으로 낮아졌을 때를 가정한 예측값입니다. (화학물질 고유의 유해성은 변하지 않음)</p>
+                        <p class="text-[0.8rem] text-gray-600 mb-3 font-medium">※ 위험성평가 결과 판정이 '보통' 이상(위험성 3 이상)인 공정 및 유해인자에 한하여 우선적인 감소대책을 수립합니다.<br>※ <span class="text-blue-600 font-bold">개선 후 위험성</span>은 감소대책이 완벽히 이행되어 '노출수준(1등급)'으로 낮아졌을 때를 가정한 예측값입니다. (화학물질 고유의 유해성은 변하지 않음)<br>※ 감소대책 이행(실행) 결과 양식은 [https://bit.ly/경남보건] -> [고용노동부 전파사항] -> [위험성평가(화학물질) 관련] 자료집에서 다운받아 활용하시기 바랍니다.</p>
                         <table style="width: 100%; border-collapse: collapse; font-size: 12px;" class="border border-green-300">
                             <thead>
                                 <tr style="font-size: 12px;">
@@ -2101,7 +2060,7 @@
                     <div class="a4-page-landscape page-container-landscape flex flex-col justify-start major-section" data-section="8">
                         <div class="section-title border-b-2 border-green-600 pb-2 mb-4 font-bold text-gray-900 text-xl"><span class="sec-num-badge-8" style="${num8?'':'display:none;'}">${num8}</span> <span class="sec-title-text-8">${t8}</span> 감소대책 (실행계획서) - ${comp}</div>
                         <div class="flex flex-col flex-1 w-full bg-white">
-                            <p class="text-[0.8rem] text-gray-600 mb-3 font-medium">※ 위험성평가 결과 판정이 '보통' 이상(위험성 3 이상)인 공정 및 유해인자에 한하여 우선적인 감소대책을 수립합니다.<br>※ <span class="text-blue-600 font-bold">개선 후 위험성</span>은 감소대책이 완벽히 이행되어 '노출수준(1등급)'으로 낮아졌을 때를 가정한 예측값입니다. (화학물질 고유의 유해성은 변하지 않음)</p>
+                            <p class="text-[0.8rem] text-gray-600 mb-3 font-medium">※ 위험성평가 결과 판정이 '보통' 이상(위험성 3 이상)인 공정 및 유해인자에 한하여 우선적인 감소대책을 수립합니다.<br>※ <span class="text-blue-600 font-bold">개선 후 위험성</span>은 감소대책이 완벽히 이행되어 '노출수준(1등급)'으로 낮아졌을 때를 가정한 예측값입니다. (화학물질 고유의 유해성은 변하지 않음)<br>※ 감소대책 이행(실행) 결과 양식은 [biy.ly/경남보건] -> [고용노동부 전파사항] -> [위험성평가(화학물질) 관련] 자료에서 다운로드하여 사용바랍니다.</p>
                             <table style="width: 100%; border-collapse: collapse; font-size: 12px;" class="border border-green-300">
                                 <thead>
                                     <tr style="font-size: 12px;">

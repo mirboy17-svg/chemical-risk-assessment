@@ -1023,12 +1023,17 @@
             return rows;
         }
 
-        function renderSectionStrict(sectionNum, title, thead, rows, renderRow, isGrouped, prefixHtml, suffixHtml, emptyMsg = "데이터가 없습니다.", isLandscape = false) {
+        function renderSectionStrict(sectionNum, title, thead, rows, renderRow, isGrouped, prefixHtml, suffixHtml, emptyMsg = "데이터가 없습니다.", isLandscape = false, prefixPosition = 'bottom') {
             let titleRow = `<tr><th colspan="100" class="bg-white text-left p-0 pt-3 pb-3 print:bg-white print:border-none" style="border: none !important; background-color: white !important;"><div class="section-title" style="margin-top: 0; margin-bottom: 0; padding-bottom: 0.2rem; border-bottom: 2px solid #16a34a; font-size: 1.25rem; font-weight: bold;">${title}</div></th></tr>`;
             
             let prefixRow = prefixHtml ? `<tr><th colspan="100" class="bg-white text-left p-0 pb-2 print:bg-white print:border-none" style="border: none !important; background-color: white !important; font-weight: normal;">${prefixHtml}</th></tr>` : '';
 
-            let enhancedThead = titleRow + prefixRow + thead;
+            let enhancedThead = '';
+            if (prefixPosition === 'top') {
+                enhancedThead = prefixRow + titleRow + thead;
+            } else {
+                enhancedThead = titleRow + prefixRow + thead;
+            }
             
             let html = '';
             
@@ -1262,7 +1267,7 @@
             const sec1Legend = `<div class="prevent-break text-xs text-gray-700 mt-2 mb-4 space-y-1.5 bg-green-50 p-4 rounded border border-green-200"><p><span class="font-bold text-green-700">※ 기하평균(GM):</span> 대수정규분포를 따르는 측정 데이터의 중심경향 대푯값입니다.</p><p><span class="font-bold text-green-700">※ 노출배수:</span> 최대 측정치를 노출기준으로 나눈 비율입니다.</p><p><span class="font-bold text-green-700">※ 법적 준수율:</span> 총 측정건수 중 노출기준을 초과하지 않은(준수한) 건수의 백분율(%)입니다.</p></div>`;
             
             if (showSec1) {
-                reportHtml += renderSectionStrict(1, `<span class="sec-num-badge-1" style="${num1?'':'display:none;'}">${num1}</span> <span class="sec-title-text-1">${t1}</span>`, sec1Thead, sec1Rows, sec1Render, true, prefixHtml, sec1Legend);
+                reportHtml += renderSectionStrict(1, `<span class="sec-num-badge-1" style="${num1?'':'display:none;'}">${num1}</span> <span class="sec-title-text-1">${t1}</span>`, sec1Thead, sec1Rows, sec1Render, true, prefixHtml, sec1Legend, "데이터가 없습니다.", false, 'top');
             }
 
             exceedData.sort((a, b) => {

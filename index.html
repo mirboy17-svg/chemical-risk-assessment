@@ -230,11 +230,11 @@
         </div>
         
         <div class="flex-1 overflow-y-auto p-4 space-y-1">
-            <div class="flex items-center px-2 py-1 hover:bg-blue-50 rounded transition bg-indigo-50/60 border border-indigo-100 mb-1">
-                <input type="checkbox" value="0" class="print-checkbox w-4 h-4 text-indigo-600 rounded border-gray-300 cursor-pointer mr-2" checked>
-                <input type="text" id="menu-num-0" value="★" oninput="updateSectionNumber(0, this.value)" class="w-8 text-center text-sm font-bold bg-white border border-indigo-300 text-indigo-700 rounded focus:border-indigo-500 outline-none py-0.5">
-                <input type="text" id="menu-title-input-0" value="작업환경측정 결과 요약 보고서 (종합평가)" oninput="updateMenuTitle(0, this.value)" class="flex-1 min-w-0 ml-1 py-1 px-1.5 text-sm font-bold text-indigo-900 bg-transparent border border-transparent hover:border-indigo-300 focus:bg-white focus:border-indigo-500 rounded outline-none truncate transition">
-                <a href="#section-0" title="해당 섹션으로 이동" onclick="if(window.innerWidth < 1024) toggleSidebar()" class="p-1 ml-1 text-indigo-500 hover:text-indigo-700 rounded hover:bg-indigo-100 transition"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg></a>
+            <div class="flex items-center px-2 py-1 hover:bg-green-50 rounded transition bg-green-50/70 border border-green-200 mb-1">
+                <input type="checkbox" value="0" class="print-checkbox w-4 h-4 text-green-600 rounded border-gray-300 cursor-pointer mr-2" checked>
+                <input type="text" id="menu-num-0" value="★" oninput="updateSectionNumber(0, this.value)" class="w-8 text-center text-sm font-bold bg-white border border-green-300 text-green-700 rounded focus:border-green-500 outline-none py-0.5">
+                <input type="text" id="menu-title-input-0" value="작업환경측정 결과 요약 보고서" oninput="updateMenuTitle(0, this.value)" class="flex-1 min-w-0 ml-1 py-1 px-1.5 text-sm font-bold text-green-900 bg-transparent border border-transparent hover:border-green-300 focus:bg-white focus:border-green-500 rounded outline-none truncate transition">
+                <a href="#section-0" title="해당 섹션으로 이동" onclick="if(window.innerWidth < 1024) toggleSidebar()" class="p-1 ml-1 text-green-600 hover:text-green-800 rounded hover:bg-green-100 transition"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg></a>
             </div>
             <div class="flex items-center px-2 py-1 hover:bg-blue-50 rounded transition">
                 <input type="checkbox" value="1" class="print-checkbox w-4 h-4 text-blue-600 rounded border-gray-300 cursor-pointer mr-2" checked>
@@ -391,7 +391,7 @@
                     출력할 보고서 항목 선택
                 </h4>
                 <div class="grid grid-cols-2 gap-x-2 gap-y-2 text-xs text-gray-800">
-                    <label class="flex items-center cursor-pointer hover:bg-indigo-100 p-1.5 rounded border border-indigo-300 bg-indigo-50/70 transition col-span-2 shadow-sm font-bold mb-1 text-indigo-950" id="modal-item-0"><input type="checkbox" value="0" class="pdf-checkbox mr-2 w-4 h-4 text-indigo-600 rounded border-gray-400 focus:ring-indigo-500" checked> <span id="modal-num-0" class="font-bold mr-1 text-indigo-700">★.</span> <span id="modal-title-0">작업환경측정 결과 요약 보고서 (A4 1장 종합평가)</span></label>
+                    <label class="flex items-center cursor-pointer hover:bg-green-100 p-1.5 rounded border border-green-300 bg-green-50/70 transition col-span-2 shadow-sm font-bold mb-1 text-green-950" id="modal-item-0"><input type="checkbox" value="0" class="pdf-checkbox mr-2 w-4 h-4 text-green-600 rounded border-gray-400 focus:ring-green-500" checked> <span id="modal-num-0" class="font-bold mr-1 text-green-700">★.</span> <span id="modal-title-0">작업환경측정 결과 요약 보고서 (A4 1장 종합평가)</span></label>
                     <label class="flex items-center cursor-pointer hover:bg-blue-100 p-1.5 rounded border border-transparent transition" id="modal-item-1"><input type="checkbox" value="1" class="pdf-checkbox mr-2 w-4 h-4 text-blue-600 rounded border-gray-400 focus:ring-blue-500" checked> <span id="modal-num-1" class="font-bold mr-1">1.</span> <span id="modal-title-1">작업환경측정 통계 분석</span></label>
                     <label class="flex items-center cursor-pointer hover:bg-blue-100 p-1.5 rounded border border-transparent transition" id="modal-item-2"><input type="checkbox" value="2" class="pdf-checkbox mr-2 w-4 h-4 text-blue-600 rounded border-gray-400 focus:ring-blue-500" checked> <span id="modal-num-2" class="font-bold mr-1">2.</span> <span id="modal-title-2">노출기준 초과 현황 리스트</span></label>
                     <label class="flex items-center cursor-pointer hover:bg-blue-100 p-1.5 rounded border border-transparent transition" id="modal-item-3"><input type="checkbox" value="3" class="pdf-checkbox mr-2 w-4 h-4 text-blue-600 rounded border-gray-400 focus:ring-blue-500" checked> <span id="modal-num-3" class="font-bold mr-1">3.</span> <span id="modal-title-3">분류별 측정 분포 및 초과 현황</span></label>
@@ -1156,15 +1156,15 @@
             const noiseRate = noiseData.length > 0 ? (((noiseData.length - noiseExc) / noiseData.length) * 100).toFixed(1) : '100.0';
 
             const catDefs = [
-                { key: '금속류', label: '금속류', color: '#4f46e5' },
-                { key: '유기화합물', label: '유기화합물', color: '#0ea5e9' },
-                { key: '소음', label: '소음 (물리적)', color: '#f43f5e' },
-                { key: '분진', label: '분진', color: '#f59e0b' },
-                { key: '산 및 알칼리류', label: '산 및 알칼리류', color: '#10b981' },
-                { key: '금속가공유', label: '금속가공유', color: '#8b5cf6' },
-                { key: '고열', label: '고열 (물리적)', color: '#f97316' },
-                { key: '가스 상태 물질류', label: '가스류', color: '#64748b' },
-                { key: '허가 대상 유해물질', label: '허가대상물질', color: '#ec4899' }
+                { key: '금속류', label: '금속류', color: '#16a34a' },
+                { key: '유기화합물', label: '유기화합물', color: '#2563eb' },
+                { key: '소음', label: '소음 (물리적)', color: '#dc2626' },
+                { key: '분진', label: '분진', color: '#d97706' },
+                { key: '산 및 알칼리류', label: '산 및 알칼리류', color: '#059669' },
+                { key: '금속가공유', label: '금속가공유', color: '#7c3aed' },
+                { key: '고열', label: '고열 (물리적)', color: '#ea580c' },
+                { key: '가스 상태 물질류', label: '가스류', color: '#475569' },
+                { key: '허가 대상 유해물질', label: '허가대상물질', color: '#db2777' }
             ];
 
             const catStatsMap = {};
@@ -1176,7 +1176,7 @@
                     k = d.agent.includes('고열') ? '고열' : '소음';
                 }
                 if (!catStatsMap[k]) {
-                    catStatsMap[k] = { key: k, label: k, color: '#94a3b8', count: 0, exceed: 0, maxRate: 0 };
+                    catStatsMap[k] = { key: k, label: k, color: '#64748b', count: 0, exceed: 0, maxRate: 0 };
                 }
                 catStatsMap[k].count++;
                 if (d.isExceed) catStatsMap[k].exceed++;
@@ -1243,19 +1243,19 @@
             const topCatsStr = activeCategories.slice(0, 3).map(c => `${c.label.replace(' (물리적)', '')}(${c.count}건)`).join('·');
             const highChemStr = chemFactors.filter(c => c.ratio >= 0.3).slice(0, 3).map(c => `${c.name}(${c.ratio.toFixed(4)})`).join(', ');
 
-            let insightHtml = `총 <strong class="text-white font-semibold">${companies.length}개 단위사업체 ${totalCount.toLocaleString()}건</strong> 측정 결과, ${topCatsStr} 등 `;
+            let insightHtml = `총 <strong class="text-gray-900 font-bold">${companies.length}개 단위사업체 ${totalCount.toLocaleString()}건</strong> 측정 결과, ${topCatsStr} 등 `;
             if (nonNoiseExc === 0) {
-                insightHtml += `<strong class="text-emerald-300">모든 화학적·분진 인자는 법적 노출기준을 100% 준수</strong>하였습니다. `;
+                insightHtml += `<strong class="text-green-700 font-bold">모든 화학적·분진 인자는 법적 노출기준을 100% 준수</strong>하였습니다. `;
             } else {
-                insightHtml += `<strong class="text-rose-300">화학적·분진 인자에서 ${nonNoiseExc}건의 기준 초과</strong>가 확인되었습니다. `;
+                insightHtml += `<strong class="text-red-600 font-bold">화학적·분진 인자에서 ${nonNoiseExc}건의 기준 초과</strong>가 확인되었습니다. `;
             }
             if (noiseExc > 0) {
-                insightHtml += `물리적 인자인 <strong class="text-rose-300">소음에서 ${noiseExc}건의 노출기준 초과</strong>가 발생했으며, `;
+                insightHtml += `물리적 인자인 <strong class="text-red-600 font-bold">소음에서 ${noiseExc}건의 노출기준 초과</strong>가 발생했으며, `;
             } else {
                 insightHtml += `소음 인자 또한 전 건 노출기준 이내로 측정되었으며, `;
             }
             if (highChemStr) {
-                insightHtml += `노출배수 상위 화학물질인 <strong class="text-amber-300">${highChemStr}</strong> 공정은 선제적 관찰 및 국소배기장치 점검이 권장됩니다.`;
+                insightHtml += `노출배수 상위 화학물질인 <strong class="text-blue-800 font-bold">${highChemStr}</strong> 공정은 선제적 관찰 및 국소배기장치 점검이 권장됩니다.`;
             } else {
                 insightHtml += `전반적인 작업환경 노출수준이 안정적으로 관리되고 있습니다.`;
             }
@@ -1263,17 +1263,15 @@
             const catLegendRowsHtml = activeCategories.slice(0, 7).map(item => {
                 const pct = totalCount > 0 ? ((item.count / totalCount) * 100).toFixed(1) : '0.0';
                 return `
-                    <tr class="border-b border-slate-100 last:border-none">
-                        <td class="py-0.5 px-1 font-medium flex items-center gap-1.5 text-left" style="border:none;">
-                            <span class="w-2 h-2 rounded-full shrink-0" style="background-color: ${item.color}"></span>
-                            <span class="truncate max-w-[90px]">${item.label}</span>
+                    <tr>
+                        <td class="py-0.5 px-1.5 font-medium text-left border border-green-300 bg-white">
+                            <span class="inline-block w-2 h-2 rounded-full mr-1 align-middle" style="background-color: ${item.color}"></span>
+                            <span class="align-middle">${item.label}</span>
                         </td>
-                        <td class="py-0.5 px-1 text-right font-semibold text-slate-800" style="border:none;">${item.count}건</td>
-                        <td class="py-0.5 px-1 text-right text-slate-500" style="border:none;">${pct}%</td>
-                        <td class="py-0.5 px-1 text-right" style="border:none;">
-                            ${item.exceed > 0 ? `<span class="px-1 py-0.2 bg-rose-100 text-rose-700 rounded font-bold">${item.exceed}건</span>` : `<span class="text-slate-400">0건</span>`}
-                        </td>
-                        <td class="py-0.5 px-1 text-right font-semibold ${item.maxRate >= 100 ? 'text-rose-600' : item.maxRate >= 80 ? 'text-orange-600' : 'text-slate-600'}" style="border:none;">
+                        <td class="py-0.5 px-1 text-center font-bold text-gray-800 border border-green-300 bg-white">${item.count}</td>
+                        <td class="py-0.5 px-1 text-center text-gray-600 border border-green-300 bg-white">${pct}%</td>
+                        <td class="py-0.5 px-1 text-center border border-green-300 bg-white ${item.exceed > 0 ? 'text-red-600 font-bold' : 'text-gray-500'}">${item.exceed}</td>
+                        <td class="py-0.5 px-1 text-center font-bold border border-green-300 bg-green-50/40 ${item.maxRate >= 100 ? 'text-red-600' : item.maxRate >= 50 ? 'text-orange-600' : 'text-gray-700'}">
                             ${item.maxRate.toFixed(1)}%
                         </td>
                     </tr>
@@ -1282,56 +1280,55 @@
 
             let excRowsHtml = '';
             if (exceedData.length === 0) {
-                excRowsHtml = `<tr><td colspan="6" class="py-6 text-center text-emerald-600 font-bold" style="border:none;">🎉 전 공정 법적 노출기준 초과 항목이 없습니다 (100% 준수)</td></tr>`;
+                excRowsHtml = `<tr><td colspan="6" class="py-5 text-center text-green-700 font-bold border border-green-300 bg-white">노출기준 초과 유해인자가 없습니다. (전 항목 100% 적법 준수)</td></tr>`;
             } else {
                 excRowsHtml = exceedData.slice(0, 6).map((d, idx) => {
                     const prevNum = d.prevValue !== null ? parseFloat(d.prevValue) : null;
                     const currNum = parseFloat(d.value);
-                    let diffHtml = '<span class="text-slate-400">-</span>';
+                    let diffHtml = '-';
                     if (prevNum !== null && !isNaN(prevNum)) {
                         const diff = (currNum - prevNum).toFixed(1);
                         const isUp = parseFloat(diff) > 0;
-                        diffHtml = `<span class="font-bold ${isUp ? 'text-rose-600' : 'text-blue-600'}">${isUp ? `+${diff}▲` : `${diff}▼`}</span>`;
+                        diffHtml = `<span class="font-bold ${isUp ? 'text-red-600' : 'text-blue-600'}">${isUp ? `+${diff}▲` : `${diff}▼`}</span>`;
                     }
                     const prevText = prevNum !== null ? prevNum.toFixed(1) : '전회없음';
                     return `
-                        <tr class="border-b border-slate-100 last:border-none">
-                            <td class="py-1 px-1.5 text-slate-400 font-medium" style="border:none;">#${idx + 1}</td>
-                            <td class="py-1 px-1.5 font-bold text-slate-800 truncate max-w-[75px]" style="border:none;">${d.company}</td>
-                            <td class="py-1 px-1.5 text-slate-700 truncate max-w-[85px]" style="border:none;">${d.location}</td>
-                            <td class="py-1 px-1.5 text-slate-700 font-semibold" style="border:none;">${d.agent}</td>
-                            <td class="py-1 px-1.5 text-right text-slate-500" style="border:none;">${prevText}</td>
-                            <td class="py-1 px-1.5 text-right font-extrabold text-rose-600" style="border:none;">${currNum.toFixed(1)} (${diffHtml})</td>
+                        <tr>
+                            <td class="py-0.5 px-1 text-center text-gray-600 border border-green-300 bg-white">${idx + 1}</td>
+                            <td class="py-0.5 px-1 text-center font-bold text-gray-800 border border-green-300 bg-white truncate max-w-[75px]">${d.company}</td>
+                            <td class="py-0.5 px-1 text-center text-gray-700 border border-green-300 bg-white truncate max-w-[85px]">${d.location}</td>
+                            <td class="py-0.5 px-1 text-center text-gray-800 font-semibold border border-green-300 bg-white">${d.agent}</td>
+                            <td class="py-0.5 px-1 text-center text-gray-600 border border-green-300 bg-white">${prevText}</td>
+                            <td class="py-0.5 px-1 text-center font-bold text-red-600 border border-green-300 bg-red-50/30">${currNum.toFixed(1)} (${diffHtml})</td>
                         </tr>
                     `;
                 }).join('');
             }
 
             const fmtCell = (val, excVal = 0) => {
-                if (val === 0) return '<span class="text-slate-300">-</span>';
-                if (excVal > 0) return `<span class="font-bold text-slate-800">${val}</span><span class="text-rose-600 font-extrabold">(${excVal})</span>`;
-                return `<span class="text-slate-700 font-medium">${val}</span>`;
+                if (val === 0) return '<span class="text-gray-300">-</span>';
+                if (excVal > 0) return `<span class="font-bold text-gray-800">${val}</span><span class="text-red-600 font-bold">(${excVal})</span>`;
+                return `<span class="text-gray-700">${val}</span>`;
             };
 
             const maxDeptRows = 9;
             const visibleDepts = deptSummary.slice(0, maxDeptRows);
             const deptRowsHtml = visibleDepts.map(d => `
-                <tr class="border-b border-slate-100 last:border-none">
-                    <td class="py-1 px-2 font-bold text-slate-900 text-left flex items-center gap-1.5" style="border:none;">
-                        <span class="w-1.5 h-1.5 rounded-full ${d.exceed > 0 ? 'bg-rose-500' : 'bg-emerald-500'}"></span>
-                        <span class="truncate max-w-[110px]">${d.team}</span>
+                <tr>
+                    <td class="py-0.5 px-2 font-bold text-gray-800 text-left border border-green-300 bg-white truncate max-w-[110px]">
+                        <span class="inline-block w-1.5 h-1.5 rounded-full mr-1 align-middle ${d.exceed > 0 ? 'bg-red-600' : 'bg-green-500'}"></span>${d.team}
                     </td>
-                    <td class="py-1 px-1 text-center" style="border:none;">${fmtCell(d.noise, d.exceed)}</td>
-                    <td class="py-1 px-1 text-center" style="border:none;">${fmtCell(d.heat)}</td>
-                    <td class="py-1 px-1 text-center" style="border:none;">${fmtCell(d.mwFluid)}</td>
-                    <td class="py-1 px-1 text-center" style="border:none;">${fmtCell(d.dust)}</td>
-                    <td class="py-1 px-1 text-center" style="border:none;">${fmtCell(d.metal)}</td>
-                    <td class="py-1 px-1 text-center" style="border:none;">${fmtCell(d.organic)}</td>
-                    <td class="py-1 px-1 text-center" style="border:none;">${fmtCell(d.acid)}</td>
-                    <td class="py-1 px-1 text-center" style="border:none;">${fmtCell(d.gas)}</td>
-                    <td class="py-1 px-2 text-right font-extrabold text-indigo-950 bg-slate-50" style="border:none;">${d.total}건</td>
-                    <td class="py-1 px-2 text-center bg-slate-50" style="border:none;">
-                        ${d.exceed > 0 ? `<span class="px-1.5 py-0.2 bg-rose-100 text-rose-700 rounded-full font-extrabold">${d.exceed}건</span>` : `<span class="text-emerald-600 font-semibold">0건</span>`}
+                    <td class="py-0.5 px-1 text-center border border-green-300 bg-white">${fmtCell(d.noise, d.exceed)}</td>
+                    <td class="py-0.5 px-1 text-center border border-green-300 bg-white">${fmtCell(d.heat)}</td>
+                    <td class="py-0.5 px-1 text-center border border-green-300 bg-white">${fmtCell(d.mwFluid)}</td>
+                    <td class="py-0.5 px-1 text-center border border-green-300 bg-white">${fmtCell(d.dust)}</td>
+                    <td class="py-0.5 px-1 text-center border border-green-300 bg-white">${fmtCell(d.metal)}</td>
+                    <td class="py-0.5 px-1 text-center border border-green-300 bg-white">${fmtCell(d.organic)}</td>
+                    <td class="py-0.5 px-1 text-center border border-green-300 bg-white">${fmtCell(d.acid)}</td>
+                    <td class="py-0.5 px-1 text-center border border-green-300 bg-white">${fmtCell(d.gas)}</td>
+                    <td class="py-0.5 px-1.5 text-center font-bold text-gray-900 border border-green-300 bg-green-50">${d.total}</td>
+                    <td class="py-0.5 px-1.5 text-center font-bold border border-green-300 bg-green-50 ${d.exceed > 0 ? 'text-red-600' : 'text-gray-600'}">
+                        ${d.exceed}
                     </td>
                 </tr>
             `).join('');
@@ -1345,279 +1342,214 @@
             const totAcid = deptSummary.reduce((a, b) => a + b.acid, 0);
             const totGas = deptSummary.reduce((a, b) => a + b.gas, 0);
 
-            const dashTitle = subTitle 
-                ? `<span class="block text-indigo-300 text-sm font-bold mb-0.5">${subTitle}</span><span class="block text-lg font-extrabold text-white">작업환경측정 결과 요약 보고서</span>` 
-                : `<span class="block text-lg font-extrabold text-white">작업환경측정 결과 요약 보고서</span>`;
+            const num0 = document.getElementById('menu-num-0') ? document.getElementById('menu-num-0').value : '★';
+            const t0 = document.getElementById('menu-title-input-0') ? document.getElementById('menu-title-input-0').value : '작업환경측정 결과 요약 보고서';
 
             const html = `
-            <div id="section-0" class="a4-page page-container flex flex-col justify-between" data-section="0" style="padding: 8mm 10mm !important;">
-                <div>
-                    <!-- Top Header Banner -->
-                    <div class="bg-slate-900 text-white rounded-xl p-3.5 shadow-sm border border-slate-800 mb-2.5">
-                        <div class="flex items-center justify-between gap-2">
-                            <div class="flex items-center gap-2.5">
-                                <div class="p-2 bg-indigo-600 rounded-lg shrink-0">
-                                    <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path></svg>
-                                </div>
-                                <div>
-                                    <div class="flex items-start gap-2">
-                                        <span class="px-2 py-0.5 text-[10px] font-bold bg-indigo-500/30 text-indigo-200 border border-indigo-400/30 rounded-full mt-0.5 shrink-0">EXECUTIVE BRIEFING</span>
-                                        <h1 class="tracking-tight leading-snug">${dashTitle}</h1>
-                                    </div>
-                                    <p class="text-[11px] text-slate-300 mt-1">
-                                        측정기관: 대한산업보건협회 &nbsp;|&nbsp; ${periodText} &nbsp;|&nbsp; 분석범위: 전체 ${companies.length}개 부서 (${totalCount.toLocaleString()}건 / ${sec1Rows.length}종 인자)
-                                    </p>
-                                </div>
-                            </div>
-                            <div class="flex flex-col items-end gap-1 shrink-0">
-                                <span class="px-2.5 py-0.5 rounded-md ${nonNoiseExc === 0 ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30' : 'bg-rose-500/20 text-rose-300 border border-rose-500/30'} text-[10px] font-bold">
-                                    화학물질·분진 준수율 ${nonNoiseRate}%
-                                </span>
-                                <span class="px-2.5 py-0.5 rounded-md ${totalExceed > 0 ? 'bg-rose-500/20 text-rose-300 border border-rose-500/30' : 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30'} text-[10px] font-bold">
-                                    ${totalExceed > 0 ? `기준 초과 ${totalExceed}건 집중관리` : '전 항목 노출기준 준수'}
-                                </span>
-                            </div>
-                        </div>
-                    </div>
+            <div id="section-0" class="a4-page page-container flex flex-col justify-start" data-section="0" style="padding: 10mm 12mm !important;">
+                <!-- 기존 보고서 표준 타이틀 디자인 적용 -->
+                <div class="text-center mb-2">
+                    ${subTitle ? `<h2 class="text-xl font-bold text-blue-800 mb-0.5 tracking-tight">${subTitle}</h2>` : ''}
+                    <h1 class="text-2xl font-extrabold text-gray-900 mb-1">작업환경측정 결과 요약 보고서</h1>
+                    <p class="text-gray-500 text-xs">${periodText} &nbsp;|&nbsp; 측정기관: 대한산업보건협회 &nbsp;|&nbsp; 대상: 총 ${companies.length}개 단위사업체 (${totalCount.toLocaleString()}건)</p>
+                </div>
 
-                    <!-- Executive Key Insight Banner -->
-                    <div class="bg-gradient-to-r from-indigo-950 via-slate-900 to-slate-900 rounded-xl p-2.5 text-white shadow-sm border border-slate-800 mb-2.5">
-                        <div class="flex items-start gap-2.5">
-                            <span class="px-1.5 py-0.5 bg-amber-500/20 border border-amber-500/40 rounded text-amber-300 text-[10px] font-bold shrink-0 mt-0.5">핵심요약</span>
-                            <p class="text-[11px] text-slate-200 leading-snug break-keep">${insightHtml}</p>
-                        </div>
-                    </div>
+                <div class="section-title" style="margin-top: 0.2rem; margin-bottom: 0.5rem; padding-bottom: 0.25rem; border-bottom: 2px solid #16a34a; font-size: 1.1rem; font-weight: bold;">
+                    <span class="sec-num-badge-0" style="background-color: #16a34a; color: white; padding: 0.1rem 0.45rem; border-radius: 4px; margin-right: 0.4rem; font-size: 0.9rem; ${num0 ? '' : 'display:none;'}">${num0}</span>
+                    <span class="sec-title-text-0">${t0}</span>
+                </div>
 
-                    <!-- 4 KPI Cards -->
-                    <div class="grid grid-cols-4 gap-2.5 mb-2.5">
-                        <div class="bg-white rounded-xl p-2.5 border border-slate-200 shadow-2xs flex flex-col justify-between">
-                            <div class="flex items-center justify-between">
-                                <span class="text-[10px] font-bold text-slate-500 uppercase">총 측정 건수</span>
-                                <span class="text-[10px] px-1.5 py-0.2 bg-indigo-50 text-indigo-700 rounded font-bold">${companies.length}개 부서</span>
-                            </div>
-                            <div class="my-1 flex items-baseline gap-1">
-                                <span class="text-xl font-extrabold text-slate-900">${totalCount.toLocaleString()}</span>
-                                <span class="text-xs font-semibold text-slate-500">건</span>
-                            </div>
-                            <div class="pt-1 border-t border-slate-100 flex items-center justify-between text-[10px] text-slate-500">
-                                <span>측정 유해인자</span>
-                                <span class="font-bold text-slate-700">${activeCategories.length}개 분류 · ${sec1Rows.length}종</span>
-                            </div>
-                        </div>
+                <!-- 종합 분석 요약 박스 (기존 보고서 그린 박스 톤앤매너) -->
+                <div class="bg-green-50 border border-green-300 rounded p-2.5 text-xs text-gray-800 mb-2.5 leading-relaxed">
+                    <p class="break-keep"><span class="font-bold text-green-800">※ 종합 분석 요약 :</span> ${insightHtml}</p>
+                </div>
 
-                        <div class="bg-white rounded-xl p-2.5 border border-slate-200 shadow-2xs flex flex-col justify-between">
-                            <div class="flex items-center justify-between">
-                                <span class="text-[10px] font-bold text-slate-500 uppercase">종합 법적 준수율</span>
-                                <span class="text-[10px] px-1.5 py-0.2 bg-emerald-50 text-emerald-700 rounded font-bold">적합 ${totalCount - totalExceed}건</span>
-                            </div>
-                            <div class="my-1 flex items-baseline gap-1">
-                                <span class="text-xl font-extrabold text-emerald-600">${compRate}</span>
-                                <span class="text-xs font-semibold text-emerald-600">%</span>
-                            </div>
-                            <div class="pt-1 border-t border-slate-100 flex items-center justify-between text-[10px] text-slate-500">
-                                <span>소음 제외 준수율</span>
-                                <span class="font-bold text-emerald-700">${nonNoiseRate}% (${nonNoiseData.length}건)</span>
-                            </div>
-                        </div>
+                <!-- 4대 핵심 지표 요약 테이블 (기존 보고서 표준 테이블 양식) -->
+                <table class="w-full text-xs mb-2.5" style="margin-bottom: 0.6rem !important;">
+                    <thead>
+                        <tr>
+                            <th width="25%" class="py-1 px-2 border border-green-300 bg-[#dcfce7] text-gray-800 font-bold">총 측정 건수 (분석 범위)</th>
+                            <th width="25%" class="py-1 px-2 border border-green-300 bg-[#dcfce7] text-gray-800 font-bold">종합 법적 준수율</th>
+                            <th width="25%" class="py-1 px-2 border border-green-300 bg-[#dcfce7] text-gray-800 font-bold">노출기준 초과 건수</th>
+                            <th width="25%" class="py-1 px-2 border border-green-300 bg-[#dcfce7] text-gray-800 font-bold">최대 노출배수 (측정치/기준)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td class="py-1.5 px-2 border border-green-300 bg-white">
+                                <span class="text-base font-extrabold text-gray-900">${totalCount.toLocaleString()}건</span>
+                                <span class="block text-[10px] text-gray-500 mt-0.5">${companies.length}개 부서 · ${activeCategories.length}개 분류(${sec1Rows.length}종)</span>
+                            </td>
+                            <td class="py-1.5 px-2 border border-green-300 bg-white">
+                                <span class="text-base font-extrabold text-green-700">${compRate}%</span>
+                                <span class="block text-[10px] text-gray-500 mt-0.5">화학물질·분진 준수율: <strong class="text-green-700">${nonNoiseRate}%</strong></span>
+                            </td>
+                            <td class="py-1.5 px-2 border border-green-300 bg-white">
+                                <span class="text-base font-extrabold ${totalExceed > 0 ? 'text-red-600' : 'text-gray-800'}">${totalExceed.toLocaleString()}건</span>
+                                <span class="block text-[10px] text-gray-500 mt-0.5">소음 단일 준수율: <strong class="${noiseExc > 0 ? 'text-red-600' : 'text-gray-700'}">${noiseRate}%</strong> (${noiseData.length - noiseExc}/${noiseData.length}건)</span>
+                            </td>
+                            <td class="py-1.5 px-2 border border-green-300 bg-white">
+                                <span class="text-xs font-extrabold ${topOverall.ratio >= 1 ? 'text-red-600' : 'text-gray-900'}">전체 1위: ${topOverall.name} (${topOverall.ratio.toFixed(4)})</span>
+                                <span class="block text-[10px] text-blue-800 font-bold mt-0.5">화학 1위: ${topChem.name} (${topChem.ratio.toFixed(4)})</span>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
 
-                        <div class="bg-white rounded-xl p-2.5 border ${totalExceed > 0 ? 'border-rose-200' : 'border-slate-200'} shadow-2xs flex flex-col justify-between">
-                            <div class="flex items-center justify-between">
-                                <span class="text-[10px] font-bold ${totalExceed > 0 ? 'text-rose-600' : 'text-slate-500'} uppercase">노출기준 초과 건수</span>
-                                <span class="text-[10px] px-1.5 py-0.2 ${totalExceed > 0 ? 'bg-rose-50 text-rose-700' : 'bg-slate-100 text-slate-600'} rounded font-bold">${noiseExc > 0 ? `소음 ${noiseExc}건` : '초과 없음'}</span>
-                            </div>
-                            <div class="my-1 flex items-baseline gap-1">
-                                <span class="text-xl font-extrabold ${totalExceed > 0 ? 'text-rose-600' : 'text-slate-800'}">${totalExceed}</span>
-                                <span class="text-xs font-semibold ${totalExceed > 0 ? 'text-rose-600' : 'text-slate-500'}">건</span>
-                            </div>
-                            <div class="pt-1 border-t border-slate-100 flex items-center justify-between text-[10px] text-slate-500">
-                                <span>소음 단일 준수율</span>
-                                <span class="font-bold ${noiseExc > 0 ? 'text-rose-700' : 'text-slate-700'}">${noiseRate}% (${noiseData.length - noiseExc}/${noiseData.length}건)</span>
-                            </div>
-                        </div>
-
-                        <div class="bg-white rounded-xl p-2.5 border border-slate-200 shadow-2xs flex flex-col justify-between">
-                            <div class="flex items-center justify-between">
-                                <span class="text-[10px] font-bold text-slate-500 uppercase">최대 노출배수 (측정/기준)</span>
-                            </div>
-                            <div class="my-1 flex items-baseline justify-between">
-                                <div>
-                                    <span class="text-[9px] font-bold text-rose-600 block truncate max-w-[75px]">1위: ${topOverall.name}</span>
-                                    <span class="text-base font-extrabold text-slate-900">${topOverall.ratio.toFixed(4)}</span>
-                                </div>
-                                <div class="text-right border-l border-slate-100 pl-2">
-                                    <span class="text-[9px] font-bold text-amber-600 block truncate max-w-[75px]">화학: ${topChem.name}</span>
-                                    <span class="text-base font-extrabold text-slate-800">${topChem.ratio.toFixed(4)}</span>
-                                </div>
-                            </div>
-                            <div class="pt-1 border-t border-slate-100 flex items-center justify-between text-[10px] text-slate-500">
-                                <span class="truncate">${physSecond ? `물리2위: ${physSecond.name}` : '기준=1.0000'}</span>
-                                <span class="font-bold text-amber-700">${physSecond ? physSecond.ratio.toFixed(4) : '-'}</span>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Middle Row: Category Distribution (5 cols) & Top 10 Exposure Ratio (7 cols) -->
-                    <div class="grid grid-cols-12 gap-2.5 mb-2.5">
-                        <div class="col-span-5 bg-white rounded-xl p-3 border border-slate-200 flex flex-col justify-between">
-                            <div>
-                                <div class="flex items-center justify-between mb-1">
-                                    <h3 class="text-xs font-bold text-slate-900">1) 유해인자 분류별 측정 비중</h3>
-                                    <span class="text-[10px] font-semibold px-2 py-0.2 bg-slate-100 text-slate-700 rounded-full">총 ${totalCount}건</span>
-                                </div>
-                                <div class="relative h-28 w-full flex items-center justify-center my-1">
-                                    <canvas id="execCategoryDoughnutChart"></canvas>
-                                    <div class="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-                                        <span class="text-[9px] font-medium text-slate-400">총 측정</span>
-                                        <span class="text-sm font-extrabold text-slate-800">${totalCount}건</span>
-                                        <span class="text-[9px] font-bold text-rose-600">초과 ${totalExceed}건</span>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="mt-1 pt-1.5 border-t border-slate-100">
-                                <table class="w-full text-[10px] mb-0" style="border:none;">
-                                    <thead>
-                                        <tr class="text-slate-400 border-b border-slate-100">
-                                            <th class="py-0.5 px-1 text-left font-medium bg-transparent" style="border:none;">분류명</th>
-                                            <th class="py-0.5 px-1 text-right font-medium bg-transparent" style="border:none;">건수</th>
-                                            <th class="py-0.5 px-1 text-right font-medium bg-transparent" style="border:none;">비중</th>
-                                            <th class="py-0.5 px-1 text-right font-medium bg-transparent" style="border:none;">초과</th>
-                                            <th class="py-0.5 px-1 text-right font-medium bg-transparent" style="border:none;">최대노출</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>${catLegendRowsHtml}</tbody>
-                                </table>
-                            </div>
-                        </div>
-
-                        <div class="col-span-7 bg-white rounded-xl p-3 border border-slate-200 flex flex-col justify-between">
-                            <div>
-                                <div class="flex items-center justify-between gap-2 mb-1">
-                                    <div>
-                                        <h3 class="text-xs font-bold text-slate-900">2) 노출배수 상위 10개 유해인자 (최대치 ÷ 노출기준)</h3>
-                                    </div>
-                                    <div class="inline-flex rounded-lg bg-slate-100 p-0.5 shrink-0 no-print">
-                                        <button id="execBtnRatioAll" onclick="switchExecRatioFilter('all')" class="px-2 py-0.5 rounded-md text-[10px] font-bold transition bg-white text-indigo-700 shadow-2xs">전체 Top 10</button>
-                                        <button id="execBtnRatioChem" onclick="switchExecRatioFilter('chem')" class="px-2 py-0.5 rounded-md text-[10px] font-semibold transition text-slate-600">화학·분진 Top 10</button>
-                                    </div>
-                                </div>
-                                <div class="flex items-center gap-2 text-[9px] text-slate-600 mb-1.5 bg-slate-50 px-2 py-1 rounded border border-slate-100">
-                                    <span class="font-bold text-slate-700">범례:</span>
-                                    <span class="inline-flex items-center gap-1"><span class="w-2 h-2 rounded-xs bg-rose-500"></span> 1.0 이상(초과)</span>
-                                    <span class="inline-flex items-center gap-1"><span class="w-2 h-2 rounded-xs bg-orange-500"></span> 0.8~1.0(근접)</span>
-                                    <span class="inline-flex items-center gap-1"><span class="w-2 h-2 rounded-xs bg-amber-500"></span> 0.3~0.8(관찰)</span>
-                                    <span class="inline-flex items-center gap-1"><span class="w-2 h-2 rounded-xs bg-indigo-500"></span> 0.3 미만(양호)</span>
-                                </div>
-                                <div class="relative h-48 w-full">
-                                    <canvas id="execTopRatioBarChart"></canvas>
-                                </div>
-                            </div>
-                            <div class="mt-1.5 p-2 bg-indigo-50/60 border border-indigo-100 rounded-lg text-[10px] text-slate-700 leading-snug">
-                                <strong>[Top 10 분석]</strong> 1위는 <strong>${topOverall.name}(${topOverall.ratio.toFixed(4)})</strong>이며, 화학적 인자 중에서는 <strong>${topChem.name}(${topChem.ratio.toFixed(4)})</strong>의 노출배수가 가장 높습니다. 0.3 이상 인자는 국소배기장치 및 보호구 착용 관리가 중요합니다.
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Third Row: Noise Distribution (5 cols) & Exceedance Details (7 cols) -->
-                    <div class="grid grid-cols-12 gap-2.5 mb-2.5">
-                        <div class="col-span-5 bg-white rounded-xl p-3 border border-slate-200 flex flex-col justify-between">
-                            <div>
-                                <div class="flex items-center justify-between mb-1">
-                                    <h3 class="text-xs font-bold text-slate-900">3) 소음 발생수준별 분포 (총 ${noiseTotal}건)</h3>
-                                    <span class="text-[10px] font-bold px-1.5 py-0.2 bg-rose-50 text-rose-700 rounded">80dB 이상 ${noiseOver80Pct}%</span>
-                                </div>
-                                <div class="grid grid-cols-2 gap-2 items-center mt-1.5">
-                                    <div class="relative h-28 w-full flex items-center justify-center">
-                                        <canvas id="execNoiseDoughnutChart"></canvas>
-                                    </div>
-                                    <div class="space-y-1 text-[10px]">
-                                        <div class="flex items-center justify-between p-1 rounded bg-rose-50 border border-rose-100">
-                                            <span class="font-semibold text-rose-800">A. 기준초과 (>90)</span>
-                                            <span class="font-bold text-rose-700">${noiseA}건</span>
-                                        </div>
-                                        <div class="flex items-center justify-between p-1 rounded bg-orange-50 border border-orange-100">
-                                            <span class="font-semibold text-orange-800">B. 85~기준이하</span>
-                                            <span class="font-bold text-orange-700">${noiseB}건</span>
-                                        </div>
-                                        <div class="flex items-center justify-between p-1 rounded bg-amber-50 border border-amber-100">
-                                            <span class="font-semibold text-amber-800">C. 80~85미만</span>
-                                            <span class="font-bold text-amber-700">${noiseC}건</span>
-                                        </div>
-                                        <div class="flex items-center justify-between p-1 rounded bg-emerald-50 border border-emerald-100">
-                                            <span class="font-semibold text-emerald-800">D. 80미만(양호)</span>
-                                            <span class="font-bold text-emerald-700">${noiseD}건</span>
-                                        </div>
-                                    </div>
+                <!-- 중단 영역: 1) 유해인자 분류별 측정 비중 & 2) 노출배수 상위 10개 유해인자 -->
+                <div class="grid grid-cols-12 gap-2.5 mb-2.5">
+                    <div class="col-span-5 bg-white p-2.5 border border-green-300 rounded-lg shadow-2xs flex flex-col justify-between">
+                        <div>
+                            <h3 class="text-xs font-bold text-center mb-1.5 bg-gradient-to-r from-green-50 to-green-100 w-full py-1 rounded border border-green-200 text-gray-800">1) 유해인자 분류별 측정 비중 (총 ${totalCount}건)</h3>
+                            <div class="relative h-28 w-full flex items-center justify-center my-1">
+                                <canvas id="execCategoryDoughnutChart"></canvas>
+                                <div class="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
+                                    <span class="text-[9px] font-medium text-gray-400">총 측정</span>
+                                    <span class="text-xs font-extrabold text-gray-800">${totalCount}건</span>
+                                    <span class="text-[9px] font-bold ${totalExceed > 0 ? 'text-red-600' : 'text-green-600'}">초과 ${totalExceed}건</span>
                                 </div>
                             </div>
                         </div>
-
-                        <div class="col-span-7 bg-white rounded-xl p-3 border border-slate-200 flex flex-col justify-between">
-                            <div>
-                                <div class="flex items-center justify-between mb-1">
-                                    <h3 class="text-xs font-bold text-slate-900">4) 노출기준 초과 현황 상세 리스트 (총 ${exceedData.length}건)</h3>
-                                    <span class="text-[10px] font-bold px-2 py-0.2 bg-rose-100 text-rose-700 rounded">전회 대비 금회 비교</span>
-                                </div>
-                                <div class="overflow-hidden border border-slate-200 rounded-lg mt-1">
-                                    <table class="w-full text-[10px] mb-0" style="border:none;">
-                                        <thead class="bg-slate-100 text-slate-600 border-b border-slate-200">
-                                            <tr>
-                                                <th class="py-1 px-1.5 text-left font-semibold bg-slate-100" style="border:none;">No.</th>
-                                                <th class="py-1 px-1.5 text-left font-semibold bg-slate-100" style="border:none;">사업체명</th>
-                                                <th class="py-1 px-1.5 text-left font-semibold bg-slate-100" style="border:none;">단위작업장소</th>
-                                                <th class="py-1 px-1.5 text-left font-semibold bg-slate-100" style="border:none;">유해인자</th>
-                                                <th class="py-1 px-1.5 text-right font-semibold bg-slate-100" style="border:none;">전회치</th>
-                                                <th class="py-1 px-1.5 text-right font-semibold bg-slate-100" style="border:none;">금회치 (증감)</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>${excRowsHtml}</tbody>
-                                    </table>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Bottom Row: Department Matrix Table -->
-                    <div class="bg-white rounded-xl p-3 border border-slate-200">
-                        <div class="flex items-center justify-between mb-1.5">
-                            <h3 class="text-xs font-bold text-slate-900">5) 단위사업체별 종합 측정 현황 매트릭스 (${companies.length > maxDeptRows ? `상위 ${maxDeptRows}개 / 전체 ${companies.length}개` : `전체 ${companies.length}개 부서`})</h3>
-                            <span class="text-[10px] text-slate-500">괄호 안 숫자 <span class="text-rose-600 font-bold">(n)</span>는 노출기준 초과 건수</span>
-                        </div>
-                        <div class="overflow-hidden border border-slate-200 rounded-lg">
-                            <table class="w-full text-[10px] mb-0" style="border:none;">
-                                <thead class="bg-slate-100 text-slate-600 border-b border-slate-200">
+                        <div class="mt-1">
+                            <table class="w-full text-[10px]" style="margin-bottom: 0 !important;">
+                                <thead>
                                     <tr>
-                                        <th class="py-1 px-2 text-left font-bold bg-slate-100" style="border:none;">단위사업체 (부서명)</th>
-                                        <th class="py-1 px-1 text-center font-semibold bg-slate-100" style="border:none;">소음</th>
-                                        <th class="py-1 px-1 text-center font-semibold bg-slate-100" style="border:none;">고열</th>
-                                        <th class="py-1 px-1 text-center font-semibold bg-slate-100" style="border:none;">가공유</th>
-                                        <th class="py-1 px-1 text-center font-semibold bg-slate-100" style="border:none;">분진</th>
-                                        <th class="py-1 px-1 text-center font-semibold bg-slate-100" style="border:none;">금속류</th>
-                                        <th class="py-1 px-1 text-center font-semibold bg-slate-100" style="border:none;">유기화합물</th>
-                                        <th class="py-1 px-1 text-center font-semibold bg-slate-100" style="border:none;">산·알칼리</th>
-                                        <th class="py-1 px-1 text-center font-semibold bg-slate-100" style="border:none;">가스류</th>
-                                        <th class="py-1 px-2 text-right font-bold bg-slate-200/60" style="border:none;">총 측정</th>
-                                        <th class="py-1 px-2 text-center font-bold bg-slate-200/60" style="border:none;">초과</th>
+                                        <th class="py-0.5 px-1 text-left font-bold bg-[#dcfce7] border border-green-300">분류명</th>
+                                        <th class="py-0.5 px-1 text-center font-bold bg-[#dcfce7] border border-green-300">건수</th>
+                                        <th class="py-0.5 px-1 text-center font-bold bg-[#dcfce7] border border-green-300">비중</th>
+                                        <th class="py-0.5 px-1 text-center font-bold bg-[#dcfce7] border border-green-300">초과</th>
+                                        <th class="py-0.5 px-1 text-center font-bold bg-[#dcfce7] border border-green-300">최대노출</th>
                                     </tr>
                                 </thead>
-                                <tbody>${deptRowsHtml}</tbody>
-                                <tfoot class="bg-slate-900 text-white font-bold text-[10px]">
-                                    <tr>
-                                        <td class="py-1.5 px-2 text-left" style="border:none;">전 사업장 합계 (${companies.length}개 부서)</td>
-                                        <td class="py-1.5 px-1 text-center" style="border:none;">${totNoise}${noiseExc > 0 ? `<span class="text-rose-400">(${noiseExc})</span>` : ''}</td>
-                                        <td class="py-1.5 px-1 text-center" style="border:none;">${totHeat}</td>
-                                        <td class="py-1.5 px-1 text-center" style="border:none;">${totMw}</td>
-                                        <td class="py-1.5 px-1 text-center" style="border:none;">${totDust}</td>
-                                        <td class="py-1.5 px-1 text-center" style="border:none;">${totMetal}</td>
-                                        <td class="py-1.5 px-1 text-center" style="border:none;">${totOrg}</td>
-                                        <td class="py-1.5 px-1 text-center" style="border:none;">${totAcid}</td>
-                                        <td class="py-1.5 px-1 text-center" style="border:none;">${totGas}</td>
-                                        <td class="py-1.5 px-2 text-right text-amber-300" style="border:none;">${totalCount.toLocaleString()}건</td>
-                                        <td class="py-1.5 px-2 text-center" style="border:none;"><span class="px-1.5 py-0.2 ${totalExceed > 0 ? 'bg-rose-600' : 'bg-emerald-600'} text-white rounded-full">${totalExceed}건</span></td>
-                                    </tr>
-                                </tfoot>
+                                <tbody>${catLegendRowsHtml}</tbody>
                             </table>
                         </div>
                     </div>
+
+                    <div class="col-span-7 bg-white p-2.5 border border-green-300 rounded-lg shadow-2xs flex flex-col justify-between">
+                        <div>
+                            <div class="flex items-center justify-between mb-1.5 bg-gradient-to-r from-green-50 to-green-100 w-full py-1 px-2 rounded border border-green-200">
+                                <h3 class="text-xs font-bold text-gray-800">2) 노출배수 상위 10개 유해인자 (최대치 ÷ 노출기준)</h3>
+                                <div class="inline-flex rounded bg-white border border-green-300 p-0.5 shrink-0 no-print">
+                                    <button id="execBtnRatioAll" onclick="switchExecRatioFilter('all')" class="px-1.5 py-0.2 rounded text-[9px] font-bold transition bg-green-600 text-white">전체 Top 10</button>
+                                    <button id="execBtnRatioChem" onclick="switchExecRatioFilter('chem')" class="px-1.5 py-0.2 rounded text-[9px] font-semibold transition text-gray-600 hover:bg-green-50">화학·분진 Top 10</button>
+                                </div>
+                            </div>
+                            <div class="flex items-center justify-center gap-2.5 text-[9px] text-gray-600 mb-1 py-0.5 bg-gray-50 rounded border border-gray-200">
+                                <span class="font-bold text-gray-700">신호등 범례:</span>
+                                <span class="inline-flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-red-600"></span> 1.0 초과(기준초과)</span>
+                                <span class="inline-flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-orange-400"></span> 0.5~1.0(개선필요)</span>
+                                <span class="inline-flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-yellow-400"></span> 0.1~0.5(관찰필요)</span>
+                                <span class="inline-flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-green-500"></span> 0.1 미만(양호)</span>
+                            </div>
+                            <div class="relative h-48 w-full">
+                                <canvas id="execTopRatioBarChart"></canvas>
+                            </div>
+                        </div>
+                        <div class="mt-1 p-1.5 bg-green-50 border border-green-200 rounded text-[10px] text-gray-700 leading-snug text-left">
+                            <span class="font-bold text-green-800">※ 노출배수 분석 :</span> 전체 1위는 <strong>${topOverall.name}(${topOverall.ratio.toFixed(4)})</strong>이며, 화학적 인자 1위는 <strong>${topChem.name}(${topChem.ratio.toFixed(4)})</strong>입니다. (1.0 초과 시 법적 노출기준 초과)
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 하단 1열: 3) 소음 발생수준별 분포 & 4) 노출기준 초과 현황 리스트 -->
+                <div class="grid grid-cols-12 gap-2.5 mb-2.5">
+                    <div class="col-span-5 bg-white p-2.5 border border-green-300 rounded-lg shadow-2xs flex flex-col justify-between">
+                        <div>
+                            <h3 class="text-xs font-bold text-center mb-1.5 bg-gradient-to-r from-green-50 to-green-100 w-full py-1 rounded border border-green-200 text-gray-800">3) 소음 발생수준별 분포 (총 ${noiseTotal}건 / 80dB↑ ${noiseOver80Pct}%)</h3>
+                            <div class="grid grid-cols-2 gap-2 items-center mt-1">
+                                <div class="relative h-24 w-full flex items-center justify-center">
+                                    <canvas id="execNoiseDoughnutChart"></canvas>
+                                </div>
+                                <table class="w-full text-[9.5px]" style="margin-bottom: 0 !important;">
+                                    <thead>
+                                        <tr>
+                                            <th class="py-0.5 px-1 bg-[#dcfce7] border border-green-300 text-left">소음 수준 구분</th>
+                                            <th class="py-0.5 px-1 bg-[#dcfce7] border border-green-300 text-center">건수</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td class="py-0.5 px-1 border border-green-300 text-left font-bold text-red-600"><span class="inline-block w-2 h-2 rounded-full bg-red-600 mr-1"></span>A. 초과(>90dB)</td>
+                                            <td class="py-0.5 px-1 border border-green-300 text-center font-bold text-red-600">${noiseA}건</td>
+                                        </tr>
+                                        <tr>
+                                            <td class="py-0.5 px-1 border border-green-300 text-left font-semibold text-orange-600"><span class="inline-block w-2 h-2 rounded-full bg-orange-400 mr-1"></span>B. 85~기준이하</td>
+                                            <td class="py-0.5 px-1 border border-green-300 text-center font-bold text-gray-800">${noiseB}건</td>
+                                        </tr>
+                                        <tr>
+                                            <td class="py-0.5 px-1 border border-green-300 text-left font-semibold text-yellow-600"><span class="inline-block w-2 h-2 rounded-full bg-yellow-400 mr-1"></span>C. 80~85미만</td>
+                                            <td class="py-0.5 px-1 border border-green-300 text-center font-bold text-gray-800">${noiseC}건</td>
+                                        </tr>
+                                        <tr>
+                                            <td class="py-0.5 px-1 border border-green-300 text-left font-semibold text-green-700"><span class="inline-block w-2 h-2 rounded-full bg-green-500 mr-1"></span>D. 80미만(양호)</td>
+                                            <td class="py-0.5 px-1 border border-green-300 text-center font-bold text-gray-800">${noiseD}건</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-span-7 bg-white p-2.5 border border-green-300 rounded-lg shadow-2xs flex flex-col justify-between">
+                        <div>
+                            <h3 class="text-xs font-bold text-center mb-1.5 bg-gradient-to-r from-green-50 to-green-100 w-full py-1 rounded border border-green-200 text-gray-800">4) 노출기준 초과 현황 리스트 (총 ${exceedData.length}건)</h3>
+                            <table class="w-full text-[10px]" style="margin-bottom: 0 !important;">
+                                <thead>
+                                    <tr>
+                                        <th class="py-0.5 px-1 bg-[#dcfce7] border border-green-300 text-center" width="7%">No.</th>
+                                        <th class="py-0.5 px-1 bg-[#dcfce7] border border-green-300 text-center" width="20%">단위사업체명</th>
+                                        <th class="py-0.5 px-1 bg-[#dcfce7] border border-green-300 text-center" width="23%">단위작업장소</th>
+                                        <th class="py-0.5 px-1 bg-[#dcfce7] border border-green-300 text-center" width="16%">유해인자</th>
+                                        <th class="py-0.5 px-1 bg-[#dcfce7] border border-green-300 text-center" width="14%">전회치</th>
+                                        <th class="py-0.5 px-1 bg-[#dcfce7] border border-green-300 text-center" width="20%">금회치 (증감)</th>
+                                    </tr>
+                                </thead>
+                                <tbody>${excRowsHtml}</tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 하단 2열: 5) 단위사업체별 종합 측정 현황 매트릭스 -->
+                <div class="bg-white p-2.5 border border-green-300 rounded-lg shadow-2xs">
+                    <div class="flex items-center justify-between mb-1.5 bg-gradient-to-r from-green-50 to-green-100 w-full py-1 px-2.5 rounded border border-green-200">
+                        <h3 class="text-xs font-bold text-gray-800">5) 단위사업체별 종합 측정 현황 (${companies.length > maxDeptRows ? `상위 ${maxDeptRows}개 / 전체 ${companies.length}개 부서` : `전체 ${companies.length}개 부서`})</h3>
+                        <span class="text-[10px] text-gray-600">※ 괄호 안 숫자 <span class="text-red-600 font-bold">(n)</span>는 노출기준 초과 건수</span>
+                    </div>
+                    <table class="w-full text-[10px]" style="margin-bottom: 0 !important;">
+                        <thead>
+                            <tr>
+                                <th class="py-1 px-2 text-left font-bold bg-[#dcfce7] border border-green-300">단위사업체명</th>
+                                <th class="py-1 px-1 text-center font-bold bg-[#dcfce7] border border-green-300">소음</th>
+                                <th class="py-1 px-1 text-center font-bold bg-[#dcfce7] border border-green-300">고열</th>
+                                <th class="py-1 px-1 text-center font-bold bg-[#dcfce7] border border-green-300">금속가공유</th>
+                                <th class="py-1 px-1 text-center font-bold bg-[#dcfce7] border border-green-300">분진</th>
+                                <th class="py-1 px-1 text-center font-bold bg-[#dcfce7] border border-green-300">금속류</th>
+                                <th class="py-1 px-1 text-center font-bold bg-[#dcfce7] border border-green-300">유기화합물</th>
+                                <th class="py-1 px-1 text-center font-bold bg-[#dcfce7] border border-green-300">산·알칼리</th>
+                                <th class="py-1 px-1 text-center font-bold bg-[#dcfce7] border border-green-300">가스류</th>
+                                <th class="py-1 px-1.5 text-center font-bold bg-green-200 border border-green-400">총 측정</th>
+                                <th class="py-1 px-1.5 text-center font-bold bg-green-200 border border-green-400">초과</th>
+                            </tr>
+                        </thead>
+                        <tbody>${deptRowsHtml}</tbody>
+                        <tfoot>
+                            <tr class="bg-green-100 font-bold text-gray-900">
+                                <td class="py-1 px-2 text-left border border-green-400">전 사업장 합계 (${companies.length}개)</td>
+                                <td class="py-1 px-1 text-center border border-green-400">${totNoise}${noiseExc > 0 ? `<span class="text-red-600">(${noiseExc})</span>` : ''}</td>
+                                <td class="py-1 px-1 text-center border border-green-400">${totHeat}</td>
+                                <td class="py-1 px-1 text-center border border-green-400">${totMw}</td>
+                                <td class="py-1 px-1 text-center border border-green-400">${totDust}</td>
+                                <td class="py-1 px-1 text-center border border-green-400">${totMetal}</td>
+                                <td class="py-1 px-1 text-center border border-green-400">${totOrg}</td>
+                                <td class="py-1 px-1 text-center border border-green-400">${totAcid}</td>
+                                <td class="py-1 px-1 text-center border border-green-400">${totGas}</td>
+                                <td class="py-1 px-1.5 text-center text-green-900 border border-green-400 bg-green-200">${totalCount.toLocaleString()}</td>
+                                <td class="py-1 px-1.5 text-center border border-green-400 bg-green-200 ${totalExceed > 0 ? 'text-red-600 font-extrabold' : 'text-gray-800'}">${totalExceed}</td>
+                            </tr>
+                        </tfoot>
+                    </table>
                 </div>
             </div>`;
 
@@ -1673,7 +1605,7 @@
                         labels: ['A. 초과 (>90dB)', 'B. 85~기준이하', 'C. 80~85미만', 'D. 80dB 미만'],
                         datasets: [{
                             data: totalN > 0 ? nc : [0, 0, 0, 1],
-                            backgroundColor: totalN > 0 ? ['#f43f5e', '#f97316', '#fbbf24', '#10b981'] : ['#e2e8f0'],
+                            backgroundColor: totalN > 0 ? ['#dc2626', '#fb923c', '#facc15', '#22c55e'] : ['#e2e8f0'],
                             borderWidth: 1.5,
                             borderColor: '#ffffff'
                         }]
@@ -1701,10 +1633,10 @@
 
             const filtered = (mode === 'all' ? globalExecRatioFactors : globalExecRatioFactors.filter(d => !d.isPhysical)).slice(0, 10);
             const getBarColor = (ratio) => {
-                if (ratio >= 1.0) return '#f43f5e';
-                if (ratio >= 0.8) return '#f97316';
-                if (ratio >= 0.3) return '#f59e0b';
-                return '#6366f1';
+                if (ratio > 1.0) return '#dc2626';
+                if (ratio >= 0.5) return '#fb923c';
+                if (ratio >= 0.1) return '#eab308';
+                return '#22c55e';
             };
 
             const maxRatioVal = Math.max(...filtered.map(d => d.ratio), mode === 'all' ? 1.0 : 0.5);
@@ -1748,11 +1680,11 @@
             const btnChem = document.getElementById('execBtnRatioChem');
             if (btnAll && btnChem) {
                 if (mode === 'all') {
-                    btnAll.className = 'px-2 py-0.5 rounded-md text-[10px] font-bold transition bg-white text-indigo-700 shadow-2xs';
-                    btnChem.className = 'px-2 py-0.5 rounded-md text-[10px] font-semibold transition text-slate-600';
+                    btnAll.className = 'px-1.5 py-0.2 rounded text-[9px] font-bold transition bg-green-600 text-white';
+                    btnChem.className = 'px-1.5 py-0.2 rounded text-[9px] font-semibold transition text-gray-600 hover:bg-green-50';
                 } else {
-                    btnChem.className = 'px-2 py-0.5 rounded-md text-[10px] font-bold transition bg-white text-indigo-700 shadow-2xs';
-                    btnAll.className = 'px-2 py-0.5 rounded-md text-[10px] font-semibold transition text-slate-600';
+                    btnChem.className = 'px-1.5 py-0.2 rounded text-[9px] font-bold transition bg-green-600 text-white';
+                    btnAll.className = 'px-1.5 py-0.2 rounded text-[9px] font-semibold transition text-gray-600 hover:bg-green-50';
                 }
             }
             renderExecTopRatioBarChart(mode);

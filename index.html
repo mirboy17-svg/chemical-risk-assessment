@@ -1974,7 +1974,51 @@
             };
 
             if (showSec7) {
-                const sec7Data = data.filter(d => (d.category === '물리적 인자' || d.agent.includes('소음')) && d.agent.includes('소음') && (d.value >= 85 || (d.prevValue !== null && d.prevValue >= 85)));
+                const rawNoiseData = data.filter(d => (d.category === '물리적 인자' || d.agent.includes('소음')) && d.agent.includes('소음'));
+                const noiseGroupMap = {};
+
+                rawNoiseData.forEach(d => {
+                    const key = `${d.company}|${d.location}`;
+                    if (!noiseGroupMap[key]) {
+                        noiseGroupMap[key] = {
+                            company: d.company,
+                            location: d.location,
+                            agent: d.agent,
+                            limit: d.limit,
+                            rawLimit: d.rawLimit,
+                            maxValue: -Infinity,
+                            maxPrevValue: null,
+                            rawPrevValStr: '전회없음'
+                        };
+                    }
+
+                    const group = noiseGroupMap[key];
+                    const currVal = parseFloat(d.value);
+                    if (!isNaN(currVal) && currVal > group.maxValue) {
+                        group.maxValue = currVal;
+                    }
+
+                    if (d.prevValue !== null && !isNaN(parseFloat(d.prevValue))) {
+                        const pVal = parseFloat(d.prevValue);
+                        if (group.maxPrevValue === null || pVal > group.maxPrevValue) {
+                            group.maxPrevValue = pVal;
+                            group.rawPrevValStr = String(pVal);
+                        }
+                    } else if (group.maxPrevValue === null && d.rawPrevValStr && !d.rawPrevValStr.replace(/\s+/g, '').includes('전회없음')) {
+                        group.rawPrevValStr = d.rawPrevValStr;
+                    }
+                });
+
+                const sec7Data = Object.values(noiseGroupMap).map(g => ({
+                    company: g.company,
+                    location: g.location,
+                    agent: g.agent,
+                    limit: g.limit,
+                    rawLimit: g.rawLimit,
+                    value: g.maxValue === -Infinity ? 0 : g.maxValue,
+                    prevValue: g.maxPrevValue,
+                    rawPrevValStr: g.rawPrevValStr
+                })).filter(d => d.value >= 85 || (d.prevValue !== null && d.prevValue >= 85));
                 
                 sec7Data.sort((a, b) => {
                     let compA = companies.indexOf(a.company);

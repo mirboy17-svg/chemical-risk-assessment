@@ -100,7 +100,7 @@
             }
             
             .major-section { page-break-before: always !important; break-before: page !important; }
-            #section-1 { page-break-before: avoid !important; break-before: avoid !important; }
+            #section-0, #section-1 { page-break-before: avoid !important; break-before: avoid !important; }
 
             table { width: 100% !important; max-width: none !important; border-collapse: collapse !important; margin-bottom: 3mm !important; page-break-inside: auto !important; break-inside: auto !important; display: table !important; }
             thead { display: table-header-group !important; } 
@@ -220,6 +220,12 @@
         </div>
         
         <div class="flex-1 overflow-y-auto p-4 space-y-1">
+            <div class="flex items-center px-2 py-1.5 bg-green-50/70 hover:bg-green-100 rounded border border-green-200 transition mb-1.5">
+                <input type="checkbox" value="0" class="print-checkbox w-4 h-4 text-green-600 rounded border-gray-300 cursor-pointer mr-2" checked>
+                <span class="w-8 text-center text-xs font-extrabold bg-green-600 text-white rounded py-0.5">요약</span>
+                <input type="text" id="menu-title-input-0" value="작업환경측정 결과 요약서" oninput="updateMenuTitle(0, this.value)" class="flex-1 min-w-0 ml-1 py-1 px-1.5 text-sm font-bold text-green-900 bg-transparent border border-transparent hover:border-green-300 focus:bg-white focus:border-green-500 rounded outline-none truncate transition">
+                <a href="#section-0" title="요약서로 이동" onclick="if(window.innerWidth < 1024) toggleSidebar()" class="p-1 ml-1 text-green-600 hover:text-green-800 rounded hover:bg-green-200 transition"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg></a>
+            </div>
             <div class="flex items-center px-2 py-1 hover:bg-blue-50 rounded transition">
                 <input type="checkbox" value="1" class="print-checkbox w-4 h-4 text-blue-600 rounded border-gray-300 cursor-pointer mr-2" checked>
                 <input type="text" id="menu-num-1" value="1" oninput="updateSectionNumber(1, this.value)" class="w-8 text-center text-sm font-bold bg-white border border-gray-300 rounded focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none py-0.5">
@@ -375,6 +381,7 @@
                     출력할 보고서 항목 선택
                 </h4>
                 <div class="grid grid-cols-2 gap-x-2 gap-y-2 text-xs text-gray-800">
+                    <label class="flex items-center cursor-pointer hover:bg-green-100 p-1.5 rounded border border-green-300 bg-green-50 transition col-span-2 shadow-sm font-bold mb-1" id="modal-item-0"><input type="checkbox" value="0" class="pdf-checkbox mr-2 w-4 h-4 text-green-600 rounded border-gray-400 focus:ring-green-500" checked> <span id="modal-num-0" class="font-bold text-green-700 mr-1">[표지/요약]</span> <span id="modal-title-0">작업환경측정 결과 요약서 (A4 세로 1장)</span></label>
                     <label class="flex items-center cursor-pointer hover:bg-blue-100 p-1.5 rounded border border-transparent transition" id="modal-item-1"><input type="checkbox" value="1" class="pdf-checkbox mr-2 w-4 h-4 text-blue-600 rounded border-gray-400 focus:ring-blue-500" checked> <span id="modal-num-1" class="font-bold mr-1">1.</span> <span id="modal-title-1">작업환경측정 통계 분석</span></label>
                     <label class="flex items-center cursor-pointer hover:bg-blue-100 p-1.5 rounded border border-transparent transition" id="modal-item-2"><input type="checkbox" value="2" class="pdf-checkbox mr-2 w-4 h-4 text-blue-600 rounded border-gray-400 focus:ring-blue-500" checked> <span id="modal-num-2" class="font-bold mr-1">2.</span> <span id="modal-title-2">노출기준 초과 현황 리스트</span></label>
                     <label class="flex items-center cursor-pointer hover:bg-blue-100 p-1.5 rounded border border-transparent transition" id="modal-item-3"><input type="checkbox" value="3" class="pdf-checkbox mr-2 w-4 h-4 text-blue-600 rounded border-gray-400 focus:ring-blue-500" checked> <span id="modal-num-3" class="font-bold mr-1">3.</span> <span id="modal-title-3">분류별 측정 분포 및 초과 현황</span></label>
@@ -779,349 +786,663 @@
                     }
                 }
 
-                const agentName = agentKey ? row[agentKey] : (defaultType === '소음' ? '소음' : '미상');
-                const limitStr = limitKey && row[limitKey] ? String(row[limitKey]).trim() : '';
-                const limit = parseFloat(limitStr);
-                const valStr = valKey && row[valKey] ? String(row[valKey]).trim() : '';
-                
-                const cleanValStr = valStr.replace(/\s+/g, '');
-                const excludeKeywords = ['횟수조정', '작업없음', '미측정', '측정불가', '가동중지', '미가동', '비가동', '휴업', '결근', '휴가'];
-                const isExcluded = excludeKeywords.some(kw => cleanValStr.includes(kw));
+                const cleanWorkerName = extractedWorkerName.replace(/[^가-힣]/g, '');
 
-                let value = parseFloat(valStr);
-                
-                if (valStr.toUpperCase().includes('N.D') || valStr.includes('불검출') || valStr.includes('ND') || valStr.includes('<')) value = 0; 
-                else if (isNaN(value)) value = 0;
+                const company = (companyKey && row[companyKey]) ? String(row[companyKey]).trim() : '단위사업체 미상';
+                const department = (deptKey && row[deptKey]) ? String(row[deptKey]).trim() : '공정 미상';
+                const location = (locKey && row[locKey]) ? String(row[locKey]).trim() : department;
+                const agent = (agentKey && row[agentKey]) ? String(row[agentKey]).trim() : (defaultType === 'noise' ? '소음' : '미분류 인자');
+                const category = defaultType === 'noise' ? '물리적 인자' : getCategory(agent);
 
-                const prevValStr = prevValKey && row[prevValKey] ? String(row[prevValKey]).trim() : '';
-                let prevValue = parseFloat(prevValStr);
-                
-                if (prevValStr.toUpperCase().includes('N.D') || prevValStr.includes('불검출') || prevValStr.includes('ND') || prevValStr.includes('<')) {
-                    prevValue = 0;
-                } else if (isNaN(prevValue) || prevValStr === '') {
-                    prevValue = null; 
+                const rawValStr = valKey && row[valKey] !== undefined ? String(row[valKey]).trim() : '0';
+                let valNum = parseFloat(rawValStr.replace(/[^0-9.-]/g, ''));
+                if (isNaN(valNum) || rawValStr.includes('불검출') || rawValStr.includes('ND') || rawValStr.includes('검출한계')) {
+                    valNum = 0;
                 }
 
-                let rowDate = null;
+                const rawPrevValStr = prevValKey && row[prevValKey] !== undefined ? String(row[prevValKey]).trim() : '';
+                let prevValNum = null;
+                if (rawPrevValStr && !rawPrevValStr.includes('전회없음') && !rawPrevValStr.includes('-')) {
+                    const parsedPrev = parseFloat(rawPrevValStr.replace(/[^0-9.-]/g, ''));
+                    if (!isNaN(parsedPrev)) prevValNum = parsedPrev;
+                }
+
+                const rawLimit = limitKey && row[limitKey] !== undefined ? String(row[limitKey]).trim() : '';
+                let limitNum = parseFloat(rawLimit.replace(/[^0-9.-]/g, ''));
+                if (isNaN(limitNum) || limitNum <= 0) {
+                    limitNum = defaultType === 'noise' ? 90.0 : 9999;
+                }
+
+                const isExceed = limitNum !== 9999 && valNum > limitNum;
+
+                let dateObj = null;
                 if (dateKey && row[dateKey]) {
-                    const ds = String(row[dateKey]).replace(/[년월일을]/g, '-').replace(/\./g, '-').replace(/\s+/g, '');
-                    const dObj = new Date(ds);
-                    if (!isNaN(dObj.getTime())) rowDate = dObj;
+                    const dParsed = new Date(row[dateKey]);
+                    if (!isNaN(dParsed.getTime())) dateObj = dParsed;
                 }
 
                 return {
-                    company: companyKey ? row[companyKey] : '미분류 사업체',
-                    department: deptKey ? row[deptKey] : '미분류 공정',
-                    location: locKey ? row[locKey] : '미분류 장소',
-                    workerName: extractedWorkerName, 
-                    agent: agentName,
-                    category: getCategory(agentName),
-                    value: value,
-                    rawValStr: valStr,
-                    prevValue: prevValue,
-                    rawPrevValStr: prevValStr,
-                    limit: isNaN(limit) ? 9999 : limit,
-                    rawLimit: limitStr,
-                    isExceed: value > (isNaN(limit) ? 9999 : limit),
-                    sheetType: defaultType,
-                    hasData: valStr !== '',
-                    isExcluded: isExcluded,
-                    date: rowDate
+                    company,
+                    department,
+                    location,
+                    workerName: cleanWorkerName,
+                    category,
+                    agent,
+                    value: valNum,
+                    rawValStr,
+                    prevValue: prevValNum,
+                    rawPrevValStr,
+                    limit: limitNum,
+                    rawLimit: rawLimit || (defaultType === 'noise' ? '90.0 dB(A)' : ''),
+                    isExceed,
+                    date: dateObj
                 };
-            }).filter(d => d.hasData && d.agent !== '미상' && !d.isExcluded);
+            }).filter(item => item.agent && item.agent !== '미분류 인자' && item.company !== '단위사업체 미상');
         }
-        
-        function resolvePreviousValues(data) {
-            const groups = {};
-            data.forEach(d => {
-                const key = `${d.company}|${d.location}`;
-                if (!groups[key]) groups[key] = [];
-                groups[key].push(d);
-            });
 
-            for (const key in groups) {
-                const group = groups[key];
-                const validPrevValues = group
-                    .filter(d => d.prevValue !== null && d.rawPrevValStr && !d.rawPrevValStr.replace(/\s+/g, '').includes('전회없음'))
-                    .map(d => d.prevValue);
-                
-                let maxPrevValue = null;
-                if (validPrevValues.length > 0) {
-                    maxPrevValue = Math.max(...validPrevValues);
-                }
+        function getCandidateCsvUrls(url) {
+            if (!url || !url.trim()) return [];
+            const trimmed = url.trim();
+            const match = trimmed.match(/\/spreadsheets\/d\/([a-zA-Z0-9-_]+)/);
+            if (match && match[1]) {
+                const sheetId = match[1];
+                const gidMatch = trimmed.match(/[#&?]gid=([0-9]+)/);
+                const gid = gidMatch ? gidMatch[1] : '0';
+                return [
+                    `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?tqx=out:csv&gid=${gid}`,
+                    `https://docs.google.com/spreadsheets/d/${sheetId}/export?format=csv&gid=${gid}`,
+                    `https://api.allorigins.win/raw?url=${encodeURIComponent(`https://docs.google.com/spreadsheets/d/${sheetId}/export?format=csv&gid=${gid}`)}`
+                ];
+            }
+            return [trimmed];
+        }
 
-                if (maxPrevValue !== null) {
-                    group.forEach(d => {
-                        if (d.prevValue === null || (d.rawPrevValStr && d.rawPrevValStr.replace(/\s+/g, '').includes('전회없음'))) {
-                            d.prevValue = maxPrevValue;
-                            d.rawPrevValStr = String(maxPrevValue);
-                            d.wasReplaced = true;
-                        }
+        async function fetchSheetData(url, defaultType) {
+            const candidateUrls = getCandidateCsvUrls(url);
+            if (candidateUrls.length === 0) return [];
+
+            for (const csvUrl of candidateUrls) {
+                try {
+                    const response = await fetch(csvUrl, { method: 'GET', redirect: 'follow' });
+                    if (!response.ok) continue;
+                    const csvText = await response.text();
+                    if (!csvText || csvText.trim().startsWith('<!DOCTYPE html>') || csvText.trim().startsWith('<html')) {
+                        continue;
+                    }
+                    const parsed = Papa.parse(csvText, {
+                        header: true,
+                        skipEmptyLines: true
                     });
-                } else {
-                    group.forEach(d => {
-                         if (d.prevValue === null || (d.rawPrevValStr && d.rawPrevValStr.replace(/\s+/g, '').includes('전회없음'))) {
-                             d.rawPrevValStr = '전회없음';
-                             d.prevValue = null;
-                         }
-                    });
+                    if (parsed && parsed.data && parsed.data.length > 0) {
+                        return processRawData(parsed.data, defaultType);
+                    }
+                } catch (err) {
+                    // 다음 후보 URL로 자동 폴백 시도
                 }
             }
-            return data;
-        }
-
-        function calculateStats(group, limit) {
-            const n = group.length;
-            if (n === 0) return { n:0, excCount:0, max:0, min:0, gm:0, gsd:0, rawMaxNum: 0 };
-            
-            const first = group[0];
-            const isPhysical = first && first.category === '물리적 인자';
-            
-            let maxVal = -Infinity;
-            let minVal = Infinity;
-            let maxRaw = '';
-            let minRaw = '';
-            let excCount = 0;
-            let logSum = 0;
-            let numValues = [];
-
-            group.forEach(d => {
-                let v = parseFloat(d.value);
-                if (isNaN(v) || v < 0) v = 0;
-                numValues.push(v);
-                
-                if (v > maxVal) { maxVal = v; maxRaw = d.rawValStr || String(d.value); }
-                if (v < minVal) { minVal = v; minRaw = d.rawValStr || String(d.value); }
-                if (v > (parseFloat(limit) || 999999)) excCount++;
-                
-                logSum += Math.log(v <= 0 ? 0.0001 : v);
-            });
-
-            if (maxVal === -Infinity) maxVal = 0;
-            if (minVal === Infinity) minVal = 0;
-
-            const meanLog = logSum / n;
-            let gm = Math.exp(meanLog);
-            let varLog = n > 1 ? numValues.reduce((a, b) => a + Math.pow(Math.log(b <= 0 ? 0.0001 : b) - meanLog, 2), 0) / (n - 1) : 0;
-            let gsd = Math.exp(Math.sqrt(varLog));
-            if (maxVal === 0) { gm = 0; gsd = 0; }
-
-            const formatValue = (val, raw) => {
-                const upperRaw = String(raw).toUpperCase().replace(/\s+/g, '');
-                const styledText = (text) => `<span style="font-size: 0.65rem; letter-spacing: -0.05em; white-space: nowrap;">${text}</span>`;
-                
-                if (upperRaw.includes('N.D') || upperRaw.includes('ND') || upperRaw.includes('불검출')) return styledText('불검출');
-                if (upperRaw.includes('<')) return styledText('검출한계');
-                
-                if (val === 0 && !isPhysical) return styledText('검출한계');
-                
-                if (isPhysical) {
-                    return val.toFixed(2);
-                }
-                return val.toFixed(4);
-            };
-
-            return { 
-                n, excCount, 
-                max: formatValue(maxVal, maxRaw), 
-                min: formatValue(minVal, minRaw), 
-                gm: gm === 0 ? "0.0000" : gm.toFixed(4), 
-                gsd: gsd === 0 ? "0.0000" : gsd.toFixed(4),
-                rawMaxNum: maxVal
-            };
-        }
-
-        function getCsvUrl(url) {
-            if(!url) return null;
-            const match = url.match(/\/d\/(.*?)(?:\/|$)/);
-            return match && match[1] ? `https://docs.google.com/spreadsheets/d/${match[1]}/export?format=csv` : null;
-        }
-
-        function fetchCSV(url, type) {
-            return new Promise((resolve, reject) => {
-                Papa.parse(url, {
-                    download: true, header: true, skipEmptyLines: true,
-                    complete: function(results) { resolve({ data: results.data, type: type }); },
-                    error: function(err) { reject(err); }
-                });
-            });
+            return [];
         }
 
         async function executeAnalysis() {
-            const noiseUrl = document.getElementById('noise-url').value;
-            const chemUrl = document.getElementById('chemical-url').value;
-            if(!noiseUrl && !chemUrl) {
-                customAlert('최소 하나 이상의 구글 스프레드시트 공유 주소를 입력해주세요.');
+            const noiseUrl = document.getElementById('noise-url').value.trim();
+            const chemUrl = document.getElementById('chemical-url').value.trim();
+
+            if (!noiseUrl && !chemUrl) {
+                customAlert("소음 또는 소음제외 구글 시트 링크를 최소 1개 이상 입력해주세요.");
                 return;
             }
 
             const overlay = document.getElementById('loading-overlay');
             overlay.style.display = 'flex';
-            
+
             try {
-                let allData = [];
-                const fetchPromises = [];
-                if(noiseUrl) fetchPromises.push(fetchCSV(getCsvUrl(noiseUrl), '소음'));
-                if(chemUrl) fetchPromises.push(fetchCSV(getCsvUrl(chemUrl), '소음제외'));
+                const [noiseData, chemData] = await Promise.all([
+                    fetchSheetData(noiseUrl, 'noise'),
+                    fetchSheetData(chemUrl, 'chemical')
+                ]);
 
-                const results = await Promise.all(fetchPromises);
-                results.forEach(res => { if(res && res.data) allData = allData.concat(processRawData(res.data, res.type)); });
-
-                if(allData.length === 0) throw new Error("처리할 수 있는 데이터가 없습니다.");
-
-                const validDates = allData.map(d => d.date).filter(d => d instanceof Date && !isNaN(d.getTime()));
-                if (validDates.length > 0) {
-                    const minDate = new Date(Math.min(...validDates));
-                    const maxDate = new Date(Math.max(...validDates));
-                    if(!document.getElementById('input-start-date').value) document.getElementById('input-start-date').value = minDate.toISOString().split('T')[0];
-                    if(!document.getElementById('input-end-date').value) document.getElementById('input-end-date').value = maxDate.toISOString().split('T')[0];
-                    updateDayDiff();
+                const combined = [...noiseData, ...chemData];
+                if (combined.length === 0) {
+                    overlay.style.display = 'none';
+                    customAlert("데이터를 불러오지 못했거나 유효한 행이 없습니다.\n구글 시트 공유 설정(링크가 있는 모든 사용자 보기 가능)을 확인해주세요.");
+                    return;
                 }
-                
-                allData = resolvePreviousValues(allData);
-                
-                globalRawData = allData;
-                renderDashboard(allData);
-            } catch(e) {
+
+                globalRawData = combined;
+
+                if (!document.getElementById('input-start-date').value) {
+                    const validDates = combined.map(d => d.date).filter(Boolean).sort((a, b) => a - b);
+                    if (validDates.length > 0) {
+                        const minD = validDates[0].toISOString().split('T')[0];
+                        const maxD = validDates[validDates.length - 1].toISOString().split('T')[0];
+                        document.getElementById('input-start-date').value = minD;
+                        document.getElementById('input-end-date').value = maxD;
+                        updateDayDiff();
+                    }
+                }
+
+                renderDashboard(globalRawData);
+            } catch (e) {
                 console.error(e);
-                customAlert("데이터 분석 중 오류가 발생했습니다.\n시트 권한이나 데이터 형식을 확인해주세요.");
+                customAlert("데이터 분석 중 오류가 발생했습니다: " + e.message);
             } finally {
                 overlay.style.display = 'none';
             }
         }
 
-        function buildGroupRows(data, groupKeys, companyArray) {
-            const groupBy = (array, keys) => array.reduce((res, obj) => {
-                const key = keys.map(k => obj[k]).join('|');
-                if (!res[key]) res[key] = [];
-                res[key].push(obj); return res;
-            }, {});
-            const groups = groupBy(data, groupKeys);
-            let rows = [];
-            for(let key in groups) {
-                const group = groups[key]; const first = group[0];
-                const excCount = group.filter(x => x.isExceed).length;
-                const maxVal = Math.max(...group.map(g => g.value));
-                let lightColor = '';
-                if (first.category === '물리적 인자' && first.agent.includes('고열')) {
-                    if (maxVal >= first.limit) lightColor = 'bg-red-600'; else if (maxVal >= 25) lightColor = 'bg-orange-400'; else if (maxVal >= 23) lightColor = 'bg-yellow-400'; else lightColor = 'bg-green-500';
-                } else if (first.category === '물리적 인자') {
-                    if (maxVal > first.limit) lightColor = 'bg-red-600'; else if (maxVal >= 85) lightColor = 'bg-orange-400'; else if (maxVal >= 80) lightColor = 'bg-yellow-400'; else lightColor = 'bg-green-500';
+        function calculateStats(group, limit) {
+            const n = group.length;
+            const excCount = group.filter(d => d.isExceed).length;
+            const nums = group.map(d => d.value);
+            const rawMaxNum = nums.length > 0 ? Math.max(...nums) : 0;
+            const rawMinNum = nums.length > 0 ? Math.min(...nums) : 0;
+
+            const isNoiseOrHeat = group[0] && group[0].category === '물리적 인자';
+            const fmtVal = (v) => {
+                if (v === 0 && !isNoiseOrHeat) return '불검출';
+                return isNoiseOrHeat ? v.toFixed(1) : Number(v.toFixed(4)).toString();
+            };
+
+            const posNums = nums.filter(v => v > 0);
+            let gm = '-';
+            let gsd = '-';
+            if (posNums.length > 0) {
+                const logSum = posNums.reduce((acc, v) => acc + Math.log(v), 0);
+                const meanLog = logSum / posNums.length;
+                const gmVal = Math.exp(meanLog);
+                gm = gmVal.toFixed(4);
+
+                if (posNums.length > 1) {
+                    const varianceLog = posNums.reduce((acc, v) => acc + Math.pow(Math.log(v) - meanLog, 2), 0) / (posNums.length - 1);
+                    gsd = Math.exp(Math.sqrt(varianceLog)).toFixed(4);
                 } else {
-                    const ratio = (maxVal / first.limit) * 100;
-                    if (ratio > 100) lightColor = 'bg-red-600'; else if (ratio >= 50) lightColor = 'bg-orange-400'; else if (ratio >= 10) lightColor = 'bg-yellow-400'; else lightColor = 'bg-green-500';
+                    gsd = '1.0000';
                 }
-                rows.push({ groupId: first.company + '|' + first[groupKeys[0]], mainKey: first[groupKeys[0]], subKey: first.category, cat: first.category, agent: first.agent, n: group.length, exc: excCount, maxVal: maxVal, lightColor: lightColor, limit: first.limit, rawLimit: first.rawLimit, company: first.company });
             }
-            
-            rows.sort((a,b) => {
-                let compA = companyArray ? companyArray.indexOf(a.company) : 0;
-                let compB = companyArray ? companyArray.indexOf(b.company) : 0;
-                if(compA !== compB) return compA - compB;
-                return a.mainKey.localeCompare(b.mainKey) || (getCategoryOrder(a.cat) - getCategoryOrder(b.cat)) || (b.exc - a.exc) || a.agent.localeCompare(b.agent);
+
+            return {
+                n,
+                excCount,
+                rawMaxNum,
+                max: fmtVal(rawMaxNum),
+                min: fmtVal(rawMinNum),
+                gm,
+                gsd
+            };
+        }
+
+        function getWorkerString(subset) {
+            const names = [];
+            subset.forEach(d => {
+                if (d.workerName && !names.includes(d.workerName)) {
+                    names.push(d.workerName);
+                }
             });
+            if (names.length === 0) return '명단 정보 없음';
+            if (names.length > 8) return names.slice(0, 8).join(', ') + ' 등';
+            return names.join(', ');
+        }
+
+        function buildGroupRows(subset, keys, companiesOrder) {
+            const map = {};
+            subset.forEach(d => {
+                const mainVal = d[keys[0]] || '-';
+                const subVal = d[keys[1]] || '-';
+                const agentVal = d[keys[2]] || '-';
+                const k = `${d.company}|${mainVal}|${subVal}|${agentVal}|${d.limit}`;
+                if (!map[k]) {
+                    map[k] = {
+                        company: d.company,
+                        mainKey: mainVal,
+                        subKey: subVal,
+                        cat: d.category,
+                        agent: agentVal,
+                        limit: d.limit,
+                        rawLimit: d.rawLimit,
+                        n: 0,
+                        exc: 0,
+                        maxVal: 0
+                    };
+                }
+                const g = map[k];
+                g.n++;
+                if (d.isExceed) g.exc++;
+                if (d.value > g.maxVal) g.maxVal = d.value;
+            });
+
+            const rows = Object.values(map).map(g => {
+                let lightColor = 'bg-green-500';
+                const limit = parseFloat(g.limit);
+                if (g.cat === '물리적 인자' && g.agent.includes('고열')) {
+                    if (g.maxVal >= limit) lightColor = 'bg-red-600';
+                    else if (g.maxVal >= 25) lightColor = 'bg-orange-400';
+                    else if (g.maxVal >= 23) lightColor = 'bg-yellow-400';
+                } else if (g.cat === '물리적 인자') {
+                    if (g.maxVal > limit) lightColor = 'bg-red-600';
+                    else if (g.maxVal >= 85) lightColor = 'bg-orange-400';
+                    else if (g.maxVal >= 80) lightColor = 'bg-yellow-400';
+                } else if (limit > 0 && limit !== 9999) {
+                    const ratio = (g.maxVal / limit) * 100;
+                    if (ratio > 100) lightColor = 'bg-red-600';
+                    else if (ratio >= 50) lightColor = 'bg-orange-400';
+                    else if (ratio >= 10) lightColor = 'bg-yellow-400';
+                }
+                return {
+                    ...g,
+                    lightColor,
+                    groupId: `${g.company}|${g.mainKey}`,
+                    subGroupId: `${g.company}|${g.mainKey}|${g.subKey}`
+                };
+            });
+
+            rows.sort((a, b) => {
+                const cA = companiesOrder ? companiesOrder.indexOf(a.company) : 0;
+                const cB = companiesOrder ? companiesOrder.indexOf(b.company) : 0;
+                if (cA !== cB) return cA - cB;
+                if (a.mainKey !== b.mainKey) return a.mainKey.localeCompare(b.mainKey);
+                const catDiff = getCategoryOrder(a.cat) - getCategoryOrder(b.cat);
+                if (catDiff !== 0) return catDiff;
+                return a.agent.localeCompare(b.agent);
+            });
+
             return rows;
         }
 
-        function renderSectionStrict(sectionNum, title, thead, rows, renderRow, isGrouped, prefixHtml, suffixHtml, emptyMsg = "데이터가 없습니다.", isLandscape = false, prefixPosition = 'bottom') {
-            let titleRow = `<tr><th colspan="100" class="bg-white text-left p-0 pt-3 pb-3 print:bg-white print:border-none" style="border: none !important; background-color: white !important;"><div class="section-title" style="margin-top: 0; margin-bottom: 0; padding-bottom: 0.2rem; border-bottom: 2px solid #16a34a; font-size: 1.25rem; font-weight: bold;">${title}</div></th></tr>`;
-            
-            let prefixRow = prefixHtml ? `<tr><th colspan="100" class="bg-white text-left p-0 pb-2 print:bg-white print:border-none" style="border: none !important; background-color: white !important; font-weight: normal;">${prefixHtml}</th></tr>` : '';
+        function renderSectionStrict(secNum, titleHtml, theadHtml, rows, rowRenderFn, isGrouped = false, prefixHtml = '', suffixHtml = '', emptyMsg = '데이터가 없습니다.', isLandscape = false, prefixPos = 'below') {
+            const baseSec = String(secNum).split('-')[0];
+            const pageClass = isLandscape ? 'a4-page-landscape page-container-landscape' : 'a4-page page-container';
 
-            let enhancedThead = '';
-            if (prefixPosition === 'top') {
-                enhancedThead = prefixRow + titleRow + thead;
+            let bodyHtml = '';
+            if (!rows || rows.length === 0) {
+                bodyHtml = `<tr><td colspan="20" class="py-8 text-center text-gray-500 font-bold border-green-300">${emptyMsg}</td></tr>`;
+            } else if (isGrouped) {
+                const groupCounts = {};
+                const subGroupCounts = {};
+                rows.forEach(r => {
+                    const gKey = r.groupId !== undefined ? r.groupId : r.mainKey;
+                    const sKey = r.subGroupId !== undefined ? r.subGroupId : `${ gKey }|${ r.subKey || '' }`;
+                    groupCounts[gKey] = (groupCounts[gKey] || 0) + 1;
+                    subGroupCounts[sKey] = (subGroupCounts[sKey] || 0) + 1;
+                });
+
+                let prevG = null;
+                let prevS = null;
+                rows.forEach(r => {
+                    const gKey = r.groupId !== undefined ? r.groupId : r.mainKey;
+                    const sKey = r.subGroupId !== undefined ? r.subGroupId : `${ gKey }|${ r.subKey || '' }`;
+                    const isNG = gKey !== prevG;
+                    const isNSG = sKey !== prevS;
+                    prevG = gKey;
+                    prevS = sKey;
+                    bodyHtml += rowRenderFn(r, true, isNG, groupCounts[gKey], isNSG, subGroupCounts[sKey]);
+                });
             } else {
-                enhancedThead = titleRow + prefixRow + thead;
-            }
-            
-            let html = '';
-            
-            if (rows.length === 0) {
-                html += `<table style="width: 100%; border-bottom: 1px solid #86efac !important;">` +
-                        `<thead>${enhancedThead}</thead>` +
-                        `<tbody><tr><td colspan="15" class="py-10 text-gray-400 text-center border border-green-300">${emptyMsg}</td></tr></tbody></table>`;
-            } else {
-                let tableStyle = "width: 100%; border-bottom: 1px solid #86efac !important;";
-                
-                let tableHtml = `<table style="${tableStyle}"><thead>${enhancedThead}</thead><tbody>`;
-                
-                for (let i = 0; i < rows.length; i++) {
-                    let r = rows[i];
-                    let rowspan = 1; let subRowspan = 1;
-                    let isNewGroup = false; let isNewSubGroup = false;
-
-                    const getGroupId = (row) => row.groupId || row.mainKey;
-                    const getSubGroupId = (row) => getGroupId(row) + '|' + row.subKey;
-
-                    if (isGrouped) {
-                        isNewGroup = (i === 0 || getGroupId(rows[i-1]) !== getGroupId(r));
-                        if (isNewGroup) {
-                            let count = 0;
-                            for (let j = i; j < rows.length; j++) {
-                                if (getGroupId(rows[j]) === getGroupId(r)) count++; else break;
-                            }
-                            rowspan = count;
-                        }
-
-                        if (r.subKey !== undefined) {
-                            isNewSubGroup = (i === 0 || getSubGroupId(rows[i-1]) !== getSubGroupId(r));
-                            if (isNewSubGroup) {
-                                let count = 0;
-                                for (let j = i; j < rows.length; j++) {
-                                    if (getSubGroupId(rows[j]) === getSubGroupId(r)) count++; else break;
-                                }
-                                subRowspan = count;
-                            }
-                        }
-                    }
-                    tableHtml += renderRow(r, isGrouped, isNewGroup, rowspan, isNewSubGroup, subRowspan);
-                }
-                tableHtml += `</tbody></table>`;
-                html += tableHtml;
-            }
-            
-            if (suffixHtml) {
-                html += suffixHtml;
+                rows.forEach(r => {
+                    bodyHtml += rowRenderFn(r, false, false, 1, false, 1);
+                });
             }
 
-            const pageClass = isLandscape ? "a4-page-landscape page-container-landscape" : "a4-page page-container";
+            const headerBlock = `<div class="section-title">${titleHtml}</div>`;
+            const topContent = prefixPos === 'top' ? `${prefixHtml}${headerBlock}` : `${headerBlock}${prefixHtml}`;
 
-            return `<div id="section-${parseInt(sectionNum)}" class="${pageClass} flex flex-col justify-start major-section" data-section="${parseInt(sectionNum)}">${html}</div>`;
+            return `
+                <div id="section-${secNum}" class="${pageClass} flex flex-col justify-start major-section" data-section="${baseSec}">
+                    ${topContent}
+                    <table class="w-full border-collapse">
+                        <thead>${theadHtml}</thead>
+                        <tbody>${bodyHtml}</tbody>
+                    </table>
+                    ${suffixHtml}
+                </div>
+            `;
         }
 
-        const getWorkerString = (subset) => {
-            let workerSet = new Set();
-            subset.forEach(d => {
-                let wName = '';
-                if (d.workerName) {
-                    wName = String(d.workerName).trim();
-                } else if (d.location) {
-                    let match = String(d.location).match(/\(([^)]+)\)/);
-                    if (match && match[1]) {
-                        wName = match[1].trim();
-                    }
+        function buildExecutiveSummaryPage(data, companies, subTitle, periodText, evalDateStr) {
+            const totalCount = data.length;
+            const exceedData = data.filter(d => d.isExceed);
+            const totalExceed = exceedData.length;
+            const complianceRate = totalCount > 0 ? (((totalCount - totalExceed) / totalCount) * 100).toFixed(1) : '100.0';
+
+            const chemData = data.filter(d => d.category !== '물리적 인자');
+            const chemExceed = chemData.filter(d => d.isExceed).length;
+            const chemCompRate = chemData.length > 0 ? (((chemData.length - chemExceed) / chemData.length) * 100).toFixed(1) : '100.0';
+
+            const catOrder = ['금속류', '유기화합물', '물리적 인자(소음)', '분진', '산 및 알칼리류', '금속가공유', '물리적 인자(고열)', '가스 상태 물질류', '허가 대상 유해물질'];
+            const catMap = {};
+            data.forEach(d => {
+                let cName = d.category;
+                if (cName === '물리적 인자') {
+                    cName = d.agent.includes('고열') ? '물리적 인자(고열)' : '물리적 인자(소음)';
                 }
-                
-                if (wName) {
-                    let names = wName.split(/[,/]/).map(n => n.trim()).filter(Boolean);
-                    names.forEach(n => {
-                        let cleanName = n.replace(/[^가-힣]/g, '').trim(); 
-                        if(cleanName && isNaN(cleanName)) {
-                            workerSet.add(cleanName);
-                        }
-                    });
+                if (!catMap[cName]) catMap[cName] = { count: 0, exceed: 0, maxRatio: 0 };
+                catMap[cName].count++;
+                if (d.isExceed) catMap[cName].exceed++;
+                if (d.limit > 0 && d.limit !== 9999) {
+                    const r = (d.value / d.limit) * 100;
+                    if (r > catMap[cName].maxRatio) catMap[cName].maxRatio = r;
                 }
             });
-            
-            let workerArr = Array.from(workerSet).filter(Boolean);
-            if (workerArr.length === 0) return "정보 없음";
-            
-            if (workerArr.length > 8) {
-                return workerArr.slice(0, 8).join(', ') + ' 등';
-            }
-            return workerArr.join(', ');
-        };
+
+            const catList = Object.keys(catMap).map(k => ({
+                name: k,
+                count: catMap[k].count,
+                pct: totalCount > 0 ? ((catMap[k].count / totalCount) * 100).toFixed(1) : '0.0',
+                exceed: catMap[k].exceed,
+                maxRatio: catMap[k].maxRatio.toFixed(1)
+            })).sort((a, b) => b.count - a.count);
+
+            const agentGroupMap = {};
+            data.forEach(d => {
+                const key = `${d.category}|${d.agent}|${d.limit}`;
+                if (!agentGroupMap[key]) {
+                    agentGroupMap[key] = {
+                        agent: d.agent,
+                        category: d.category,
+                        isPhysical: d.category === '물리적 인자',
+                        limit: d.limit,
+                        rawLimit: d.rawLimit,
+                        count: 0,
+                        exceed: 0,
+                        maxVal: 0
+                    };
+                }
+                const g = agentGroupMap[key];
+                g.count++;
+                if (d.isExceed) g.exceed++;
+                if (d.value > g.maxVal) g.maxVal = d.value;
+            });
+
+            const ratioList = Object.values(agentGroupMap)
+                .filter(g => g.limit > 0 && g.limit !== 9999)
+                .map(g => ({
+                    ...g,
+                    ratio: g.maxVal / g.limit
+                }))
+                .sort((a, b) => b.ratio - a.ratio);
+
+            const topOverall = ratioList.length > 0 ? ratioList[0] : null;
+            const chemRatioList = ratioList.filter(g => !g.isPhysical);
+            const topChem = chemRatioList.length > 0 ? chemRatioList[0] : null;
+            const top6Factors = ratioList.slice(0, 6);
+
+            const noiseData = data.filter(d => d.category === '물리적 인자' && d.agent.includes('소음'));
+            let nA = 0, nB = 0, nC = 0, nD = 0;
+            noiseData.forEach(d => {
+                if (d.value > d.limit) nA++;
+                else if (d.value >= 85) nB++;
+                else if (d.value >= 80) nC++;
+                else nD++;
+            });
+            const nTotal = noiseData.length;
+            const pct = (v) => nTotal > 0 ? ((v / nTotal) * 100).toFixed(1) : '0.0';
+
+            const compRows = companies.map(comp => {
+                const cData = data.filter(d => d.company === comp);
+                const noiseN = cData.filter(d => d.category === '물리적 인자' && d.agent.includes('소음')).length;
+                const heatN = cData.filter(d => d.category === '물리적 인자' && d.agent.includes('고열')).length;
+                const dustN = cData.filter(d => d.category === '분진').length;
+                const metalN = cData.filter(d => d.category === '금속류').length;
+                const orgN = cData.filter(d => d.category === '유기화합물').length;
+                const etcN = cData.length - (noiseN + heatN + dustN + metalN + orgN);
+                const excN = cData.filter(d => d.isExceed).length;
+                return { comp, noiseN, heatN, dustN, metalN, orgN, etcN, total: cData.length, excN };
+            });
+
+            const maxDisplayComp = 8;
+            const displayCompRows = compRows.slice(0, maxDisplayComp);
+            const remainCompCount = compRows.length - displayCompRows.length;
+
+            const topExceedDisplay = exceedData.slice(0, 5);
+            const remainExceedCount = exceedData.length - topExceedDisplay.length;
+
+            const title0 = document.getElementById('menu-title-input-0') ? document.getElementById('menu-title-input-0').value : '작업환경측정 결과 요약서';
+            const headerSub = subTitle ? `<div class="text-[1.15rem] font-extrabold text-green-800 tracking-tight">${subTitle}</div>` : '';
+
+            return `
+            <div id="section-0" class="a4-page page-container flex flex-col justify-between" data-section="0" style="padding: 12mm 14mm 12mm 14mm;">
+                <div>
+                    <!-- 1. 상단 헤더 배너 -->
+                    <div class="border-b-2 border-green-600 pb-2.5 mb-3 flex justify-between items-end">
+                        <div>
+                            <div class="inline-block px-2 py-0.5 bg-green-600 text-white text-[0.65rem] font-bold rounded mb-1 tracking-wider uppercase">EXECUTIVE SUMMARY REPORT</div>
+                            ${headerSub}
+                            <h1 class="text-2xl font-extrabold text-gray-900 tracking-tight sec-title-text-0">${title0}</h1>
+                        </div>
+                        <div class="text-right text-[0.7rem] text-gray-600 space-y-0.5">
+                            <p class="font-bold text-gray-800">측정기관: 대한산업보건협회</p>
+                            <p>${periodText}</p>
+                            <p>분석 대상: 총 <strong class="text-green-700">${companies.length}개</strong> 단위사업체 (<strong class="text-green-700">${totalCount.toLocaleString()}건</strong>)</p>
+                        </div>
+                    </div>
+
+                    <!-- 2. 핵심 브리핑 요약 박스 -->
+                    <div class="bg-green-50 border border-green-300 rounded-lg p-2.5 mb-3 text-[0.75rem] leading-snug text-gray-800 shadow-xs">
+                        <div class="font-bold text-green-900 mb-1 flex items-center">
+                            <span class="inline-block w-2 h-2 rounded-full bg-green-600 mr-1.5"></span>
+                            종합 진단 브리핑 (Executive Briefing)
+                        </div>
+                        <p class="break-keep">
+                            총 <strong>${companies.length}개 단위사업체 ${totalCount.toLocaleString()}건</strong>에 대한 작업환경측정 결과, 전체 법적 노출기준 준수율은 <strong class="text-green-700">${complianceRate}%</strong>이며, 화학물질·분진 등 화학적 인자(${chemData.length}건)의 준수율은 <strong class="text-blue-700">${chemCompRate}%</strong>입니다.
+                            ${totalExceed > 0
+                                ? `노출기준 초과 항목은 총 <strong class="text-red-600">${totalExceed}건</strong>이 발생하였으며, 최대 노출배수 1위 인자는 <strong>${topOverall ? `${topOverall.agent}(${topOverall.ratio.toFixed(4)})` : '-'}</strong>입니다. 초과 공정에 대한 공학적 개선 및 보호구 착용 관리가 시급합니다.`
+                                : `전 공정 모든 측정 유해인자가 <strong>법적 노출기준을 100% 준수(초과 0건)</strong>하여 전반적으로 안전한 작업환경이 유지되고 있습니다. 다만 상대적으로 노출배수가 높은 <strong>${topOverall ? `${topOverall.agent}(${topOverall.ratio.toFixed(4)})` : '-'}</strong>${topChem && topChem.agent !== (topOverall && topOverall.agent) ? ` 및 화학물질 <strong>${topChem.agent}(${topChem.ratio.toFixed(4)})</strong>` : ''} 취급 공정은 지속적인 환기 관리가 권장됩니다.`}
+                        </p>
+                    </div>
+
+                    <!-- 3. 4대 핵심 KPI 카드 -->
+                    <div class="grid grid-cols-4 gap-2.5 mb-3">
+                        <div class="border border-green-300 rounded-lg p-2.5 bg-white shadow-2xs">
+                            <div class="text-[0.65rem] font-bold text-gray-500">총 측정 건수</div>
+                            <div class="text-xl font-extrabold text-gray-900 mt-0.5">${totalCount.toLocaleString()}<span class="text-xs font-semibold text-gray-500 ml-0.5">건</span></div>
+                            <div class="text-[0.65rem] text-gray-600 mt-1 pt-1 border-t border-gray-100 flex justify-between">
+                                <span>단위사업체</span><span class="font-bold text-gray-800">${companies.length}개소</span>
+                            </div>
+                        </div>
+                        <div class="border border-green-300 rounded-lg p-2.5 bg-white shadow-2xs">
+                            <div class="text-[0.65rem] font-bold text-gray-500">종합 법적 준수율</div>
+                            <div class="text-xl font-extrabold text-green-700 mt-0.5">${complianceRate}<span class="text-xs font-semibold ml-0.5">%</span></div>
+                            <div class="text-[0.65rem] text-gray-600 mt-1 pt-1 border-t border-gray-100 flex justify-between">
+                                <span>화학물질 준수율</span><span class="font-bold text-blue-700">${chemCompRate}%</span>
+                            </div>
+                        </div>
+                        <div class="border ${totalExceed > 0 ? 'border-red-300 bg-red-50/30' : 'border-green-300 bg-white'} rounded-lg p-2.5 shadow-2xs">
+                            <div class="text-[0.65rem] font-bold ${totalExceed > 0 ? 'text-red-600' : 'text-gray-500'}">노출기준 초과 건수</div>
+                            <div class="text-xl font-extrabold ${totalExceed > 0 ? 'text-red-600' : 'text-gray-900'} mt-0.5">${totalExceed}<span class="text-xs font-semibold ml-0.5">건</span></div>
+                            <div class="text-[0.65rem] text-gray-600 mt-1 pt-1 border-t border-gray-100 flex justify-between">
+                                <span>법적 기준 이내</span><span class="font-bold text-gray-800">${(totalCount - totalExceed).toLocaleString()}건</span>
+                            </div>
+                        </div>
+                        <div class="border border-green-300 rounded-lg p-2.5 bg-white shadow-2xs">
+                            <div class="text-[0.65rem] font-bold text-gray-500">최대 노출배수 (측정/기준)</div>
+                            <div class="text-lg font-extrabold text-gray-900 mt-0.5 truncate">${topOverall ? topOverall.ratio.toFixed(4) : '-'}</div>
+                            <div class="text-[0.65rem] text-gray-600 mt-1 pt-1 border-t border-gray-100 flex justify-between truncate">
+                                <span class="truncate">1위: <strong>${topOverall ? topOverall.agent : '-'}</strong></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 4. 중단: 좌(분류별 측정 비중) / 우(노출배수 상위 6대 인자) -->
+                    <div class="grid grid-cols-12 gap-3 mb-3">
+                        <div class="col-span-5 border border-green-300 rounded-lg p-2.5 bg-white">
+                            <h3 class="text-xs font-bold text-gray-900 border-b border-green-200 pb-1 mb-1.5 flex justify-between items-center">
+                                <span>1) 유해인자 분류별 측정 현황</span>
+                                <span class="text-[0.65rem] text-gray-500 font-normal">총 ${totalCount}건</span>
+                            </h3>
+                            <table class="w-full text-[0.68rem] mb-0" style="margin-bottom:0;">
+                                <thead>
+                                    <tr>
+                                        <th class="py-1 px-1.5 text-left">분류명</th>
+                                        <th class="py-1 px-1 text-right">건수</th>
+                                        <th class="py-1 px-1 text-right">비중</th>
+                                        <th class="py-1 px-1 text-right">초과</th>
+                                        <th class="py-1 px-1 text-right">최대노출</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    ${catList.slice(0, 6).map(c => `
+                                        <tr>
+                                            <td class="py-1 px-1.5 text-left font-medium truncate">${c.name}</td>
+                                            <td class="py-1 px-1 text-right font-bold">${c.count}</td>
+                                            <td class="py-1 px-1 text-right text-gray-500">${c.pct}%</td>
+                                            <td class="py-1 px-1 text-right ${c.exceed > 0 ? 'text-red-600 font-bold' : 'text-gray-400'}">${c.exceed}</td>
+                                            <td class="py-1 px-1 text-right font-semibold ${parseFloat(c.maxRatio) > 100 ? 'text-red-600' : 'text-gray-700'}">${c.maxRatio}%</td>
+                                        </tr>
+                                    `).join('')}
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <div class="col-span-7 border border-green-300 rounded-lg p-2.5 bg-white flex flex-col justify-between">
+                            <div>
+                                <h3 class="text-xs font-bold text-gray-900 border-b border-green-200 pb-1 mb-1.5 flex justify-between items-center">
+                                    <span>2) 노출배수 상위 주요 유해인자 (최대치 ÷ 노출기준)</span>
+                                    <span class="text-[0.62rem] text-gray-500 font-normal">1.0 초과 시 법적 기준 초과</span>
+                                </h3>
+                                <div class="space-y-1.5 mt-1">
+                                    ${top6Factors.map((f, i) => {
+                                        const pctBar = Math.min(100, Math.max(4, (f.ratio / 1.2) * 100)).toFixed(1);
+                                        const barCol = f.ratio > 1.0 ? 'bg-red-600' : (f.ratio >= 0.5 ? 'bg-orange-400' : (f.ratio >= 0.1 ? 'bg-yellow-400' : 'bg-green-500'));
+                                        const txtCol = f.ratio > 1.0 ? 'text-red-600 font-extrabold' : 'text-gray-800 font-bold';
+                                        const unitStr = f.rawLimit ? f.rawLimit : f.limit;
+                                        return `
+                                        <div class="text-[0.68rem]">
+                                            <div class="flex justify-between items-center mb-0.5">
+                                                <span class="font-bold text-gray-800 truncate max-w-[55%]">${i + 1}. ${f.agent} <span class="text-[0.6rem] text-gray-400 font-normal">(${f.category})</span></span>
+                                                <span class="${txtCol}">${f.ratio.toFixed(4)} <span class="text-[0.6rem] text-gray-500 font-normal">(최대 ${f.maxVal} / 기준 ${unitStr})</span></span>
+                                            </div>
+                                            <div class="w-full bg-gray-100 h-2 rounded-full overflow-hidden border border-gray-200">
+                                                <div class="${barCol} h-full rounded-full" style="width: ${pctBar}%;"></div>
+                                            </div>
+                                        </div>`;
+                                    }).join('')}
+                                </div>
+                            </div>
+                            <div class="mt-2 pt-1.5 border-t border-gray-100 flex items-center justify-between text-[0.62rem] text-gray-500">
+                                <span>※ 신호등 기준:</span>
+                                <span><span class="inline-block w-2 h-2 rounded-full bg-red-600 mr-0.5"></span>1.0 초과(기준초과)</span>
+                                <span><span class="inline-block w-2 h-2 rounded-full bg-orange-400 mr-0.5"></span>0.5~1.0(관찰/개선)</span>
+                                <span><span class="inline-block w-2 h-2 rounded-full bg-yellow-400 mr-0.5"></span>0.1~0.5(주의)</span>
+                                <span><span class="inline-block w-2 h-2 rounded-full bg-green-500 mr-0.5"></span>0.1 미만(양호)</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 5. 중하단: 좌(소음 발생수준 분포) / 우(노출기준 초과 리스트 요약) -->
+                    <div class="grid grid-cols-12 gap-3 mb-3">
+                        <div class="col-span-5 border border-green-300 rounded-lg p-2.5 bg-white">
+                            <h3 class="text-xs font-bold text-gray-900 border-b border-green-200 pb-1 mb-1.5 flex justify-between items-center">
+                                <span>3) 소음 발생수준별 분포</span>
+                                <span class="text-[0.65rem] text-gray-500 font-normal">총 ${nTotal}건</span>
+                            </h3>
+                            <div class="space-y-1 text-[0.68rem]">
+                                <div class="flex justify-between items-center p-1.5 rounded bg-red-50 border border-red-200">
+                                    <span class="font-bold text-red-800 flex items-center"><span class="w-2 h-2 rounded-full bg-red-600 mr-1.5"></span>A. 기준초과 (>90dB)</span>
+                                    <span class="font-extrabold text-red-700">${nA}건 (${pct(nA)}%)</span>
+                                </div>
+                                <div class="flex justify-between items-center p-1.5 rounded bg-orange-50 border border-orange-200">
+                                    <span class="font-bold text-orange-800 flex items-center"><span class="w-2 h-2 rounded-full bg-orange-400 mr-1.5"></span>B. 85dB ~ 90dB 이하</span>
+                                    <span class="font-bold text-orange-700">${nB}건 (${pct(nB)}%)</span>
+                                </div>
+                                <div class="flex justify-between items-center p-1.5 rounded bg-yellow-50 border border-yellow-200">
+                                    <span class="font-bold text-yellow-800 flex items-center"><span class="w-2 h-2 rounded-full bg-yellow-400 mr-1.5"></span>C. 80dB ~ 85dB 미만</span>
+                                    <span class="font-bold text-yellow-700">${nC}건 (${pct(nC)}%)</span>
+                                </div>
+                                <div class="flex justify-between items-center p-1.5 rounded bg-green-50 border border-green-200">
+                                    <span class="font-bold text-green-800 flex items-center"><span class="w-2 h-2 rounded-full bg-green-500 mr-1.5"></span>D. 80dB 미만 (양호)</span>
+                                    <span class="font-bold text-green-700">${nD}건 (${pct(nD)}%)</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-span-7 border border-green-300 rounded-lg p-2.5 bg-white flex flex-col justify-between">
+                            <div>
+                                <h3 class="text-xs font-bold text-gray-900 border-b border-green-200 pb-1 mb-1.5 flex justify-between items-center">
+                                    <span>4) 노출기준 초과 현황 요약</span>
+                                    <span class="text-[0.65rem] ${totalExceed > 0 ? 'text-red-600 font-bold' : 'text-green-700 font-bold'}">총 ${totalExceed}건</span>
+                                </h3>
+                                ${totalExceed === 0 ? `
+                                    <div class="h-28 flex flex-col items-center justify-center bg-green-50/50 rounded border border-green-200 text-center p-3">
+                                        <p class="text-xs font-bold text-green-800">노출기준 초과 항목 없음 (법적 기준 100% 준수)</p>
+                                        <p class="text-[0.65rem] text-gray-500 mt-1">측정된 모든 공정 및 유해인자가 노출기준 미만으로 관리되고 있습니다.</p>
+                                    </div>
+                                ` : `
+                                    <table class="w-full text-[0.66rem] mb-0" style="margin-bottom:0;">
+                                        <thead>
+                                            <tr>
+                                                <th class="py-1 px-1">단위사업체</th>
+                                                <th class="py-1 px-1">단위작업장소</th>
+                                                <th class="py-1 px-1">유해인자</th>
+                                                <th class="py-1 px-1">전회치</th>
+                                                <th class="py-1 px-1">금회치</th>
+                                                <th class="py-1 px-1">노출기준</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            ${topExceedDisplay.map(d => `
+                                                <tr>
+                                                    <td class="py-1 px-1 font-bold truncate max-w-[80px]">${d.company}</td>
+                                                    <td class="py-1 px-1 truncate max-w-[90px]">${d.location}</td>
+                                                    <td class="py-1 px-1 truncate max-w-[80px]">${d.agent}</td>
+                                                    <td class="py-1 px-1 text-gray-600">${d.prevValue !== null ? d.prevValue : '전회없음'}</td>
+                                                    <td class="py-1 px-1 text-red-600 font-extrabold">${d.value}</td>
+                                                    <td class="py-1 px-1">${d.rawLimit || d.limit}</td>
+                                                </tr>
+                                            `).join('')}
+                                        </tbody>
+                                    </table>
+                                    ${remainExceedCount > 0 ? `<p class="text-[0.62rem] text-right text-red-600 font-bold mt-1">※ 외 ${remainExceedCount}건 초과 (세부 내역은 본문 '2. 노출기준 초과 현황 리스트' 참조)</p>` : ''}
+                                `}
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 6. 하단: 단위사업체별 종합 측정 매트릭스 요약 -->
+                    <div class="border border-green-300 rounded-lg p-2.5 bg-white">
+                        <h3 class="text-xs font-bold text-gray-900 border-b border-green-200 pb-1 mb-1.5 flex justify-between items-center">
+                            <span>5) 단위사업체별 종합 측정 현황 요약</span>
+                            <span class="text-[0.65rem] text-gray-500 font-normal">괄호 안은 초과 건수</span>
+                        </h3>
+                        <table class="w-full text-[0.66rem] mb-0" style="margin-bottom:0;">
+                            <thead>
+                                <tr>
+                                    <th class="py-1 px-1.5 text-left">단위사업체(부서)명</th>
+                                    <th class="py-1 px-1">소음</th>
+                                    <th class="py-1 px-1">고열</th>
+                                    <th class="py-1 px-1">분진</th>
+                                    <th class="py-1 px-1">금속류</th>
+                                    <th class="py-1 px-1">유기화합물</th>
+                                    <th class="py-1 px-1">기타(산/가스 등)</th>
+                                    <th class="py-1 px-1.5 bg-green-200 font-extrabold">총 측정건수</th>
+                                    <th class="py-1 px-1.5 bg-green-200 font-extrabold">초과건수</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${displayCompRows.map(r => `
+                                    <tr>
+                                        <td class="py-1 px-1.5 text-left font-bold truncate max-w-[130px]">${r.comp}</td>
+                                        <td class="py-1 px-1">${r.noiseN || '-'}</td>
+                                        <td class="py-1 px-1">${r.heatN || '-'}</td>
+                                        <td class="py-1 px-1">${r.dustN || '-'}</td>
+                                        <td class="py-1 px-1">${r.metalN || '-'}</td>
+                                        <td class="py-1 px-1">${r.orgN || '-'}</td>
+                                        <td class="py-1 px-1">${r.etcN || '-'}</td>
+                                        <td class="py-1 px-1.5 font-extrabold bg-green-50">${r.total}건</td>
+                                        <td class="py-1 px-1.5 font-extrabold bg-green-50 ${r.excN > 0 ? 'text-red-600' : 'text-green-700'}">${r.excN}건</td>
+                                    </tr>
+                                `).join('')}
+                            </tbody>
+                        </table>
+                        ${remainCompCount > 0 ? `<p class="text-[0.62rem] text-right text-gray-500 mt-1">※ 외 ${remainCompCount}개 단위사업체 세부 현황은 본문 '4. 단위사업체별 종합 현황' 참조</p>` : ''}
+                    </div>
+                </div>
+
+                <!-- 푸터 안내 -->
+                <div class="pt-2 border-t border-gray-200 flex justify-between items-center text-[0.62rem] text-gray-500">
+                    <span>※ 본 요약서는 작업환경측정 결과 데이터를 기반으로 자동 산출된 핵심 지표 요약본입니다.</span>
+                    <span class="font-semibold text-gray-600">대한산업보건협회 경남지역본부 산업위생국</span>
+                </div>
+            </div>`;
+        }
 
         function renderDashboard(data) {
             const totalCount = data.length;
@@ -1177,6 +1498,7 @@
 
             const companies = [...new Set(data.map(d => d.company))];
 
+            const showSec0 = document.querySelector('#sidebar input[value="0"].print-checkbox') ? document.querySelector('#sidebar input[value="0"].print-checkbox').checked : true;
             const showSec1 = document.querySelector('#sidebar input[value="1"].print-checkbox') ? document.querySelector('#sidebar input[value="1"].print-checkbox').checked : true;
             const showSec2 = document.querySelector('#sidebar input[value="2"].print-checkbox') ? document.querySelector('#sidebar input[value="2"].print-checkbox').checked : true;
             const showSec3 = document.querySelector('#sidebar input[value="3"].print-checkbox') ? document.querySelector('#sidebar input[value="3"].print-checkbox').checked : true;
@@ -1187,6 +1509,10 @@
             const showSec8 = document.querySelector('#sidebar input[value="8"].print-checkbox') ? document.querySelector('#sidebar input[value="8"].print-checkbox').checked : true;
 
             let reportHtml = '';
+
+            if (showSec0) {
+                reportHtml += buildExecutiveSummaryPage(data, companies, subTitle, periodText, evalDateStr);
+            }
 
             const subTitleHtml = subTitle ? `<h2 class="text-[1.65rem] font-bold text-blue-800 mb-4 tracking-tight">${subTitle}</h2>` : '';
             
@@ -2525,7 +2851,7 @@
             
             allPages.forEach(page => { 
                 const section = parseInt(page.getAttribute('data-section'));
-                if (section === 0 || !selected.includes(section)) {
+                if (!selected.includes(section)) {
                     page.classList.add('hide-in-print');
                 } else {
                     page.classList.remove('hide-in-print'); 

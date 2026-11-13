@@ -813,10 +813,20 @@
                 const agent = (agentKey && row[agentKey]) ? String(row[agentKey]).trim() : (defaultType === 'noise' ? '소음' : '미분류 인자');
                 const category = defaultType === 'noise' ? '물리적 인자' : getCategory(agent);
 
-                const rawValStr = valKey && row[valKey] !== undefined ? String(row[valKey]).trim() : '0';
+                const rawValStr = valKey && row[valKey] !== undefined && row[valKey] !== null ? String(row[valKey]).trim() : '';
+                const normValStr = rawValStr.replace(/\s+/g, '');
+                const isZeroDetected = normValStr.includes('불검출') || normValStr.toUpperCase().includes('ND') || normValStr.includes('검출한계') || normValStr.includes('미검출');
+                const isExcludedVal = normValStr === '' || normValStr === '-' || normValStr.includes('횟수조정') || normValStr.includes('미측정') || normValStr.includes('측정제외') || normValStr.includes('해당없음');
+
                 let valNum = parseFloat(rawValStr.replace(/[^0-9.-]/g, ''));
-                if (isNaN(valNum) || rawValStr.includes('불검출') || rawValStr.includes('ND') || rawValStr.includes('검출한계')) {
+                let isValidMeasurement = true;
+
+                if (isExcludedVal) {
+                    isValidMeasurement = false;
+                } else if (isZeroDetected) {
                     valNum = 0;
+                } else if (isNaN(valNum)) {
+                    isValidMeasurement = false;
                 }
 
                 const rawPrevValStr = prevValKey && row[prevValKey] !== undefined ? String(row[prevValKey]).trim() : '';
@@ -854,9 +864,10 @@
                     limit: limitNum,
                     rawLimit: rawLimit || (defaultType === 'noise' ? '90.0 dB(A)' : ''),
                     isExceed,
-                    date: dateObj
+                    date: dateObj,
+                    isValidMeasurement
                 };
-            }).filter(item => item.agent && item.agent !== '미분류 인자' && item.company !== '단위사업체 미상');
+            }).filter(item => item.isValidMeasurement && item.agent && item.agent !== '미분류 인자' && item.company !== '단위사업체 미상');
         }
 
         function getCandidateCsvUrls(url) {

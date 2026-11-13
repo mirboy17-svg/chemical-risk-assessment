@@ -998,8 +998,16 @@
                 }
             });
             if (names.length === 0) return '명단 정보 없음';
-            if (names.length > 8) return names.slice(0, 8).join(', ') + ' 등';
-            return names.join(', ');
+
+            const maskWorkerName = (name) => {
+                if (!name) return '';
+                if (name.length === 1) return name + 'O';
+                return name.charAt(0) + 'O' + name.charAt(name.length - 1);
+            };
+
+            const maskedNames = names.map(maskWorkerName);
+            if (maskedNames.length > 8) return maskedNames.slice(0, 8).join(', ') + ' 등';
+            return maskedNames.join(', ');
         }
 
         function buildGroupRows(subset, keys, companiesOrder) {
